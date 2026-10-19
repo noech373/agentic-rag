@@ -1,0 +1,29 @@
+# Local infrastructure for development. Values come from .env (see .env.example).
+#   docker compose up -d     build if needed and start
+#   docker compose down      stop (the data is kept in the named volume)
+#   docker compose down -v   stop and delete the data
+name: agentic-rag # fixed project name, so containers and volumes don't depend on the folder name
+
+services:
+  postgres:
+    build: docker/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    shm_size: 256mb
+
+  # Web UI to browse the database: http://localhost:8080
+  adminer:
+    image: adminer:6.1.2
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres # prefills the "Server" field with the service name
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  postgres-data:

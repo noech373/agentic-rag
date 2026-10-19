@@ -31,17 +31,23 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 
 ## Tech stack
 
-Python 3.14, uv, PostgreSQL + pgvector, LangChain, LangGraph, OpenAI, Langfuse.
+Python 3.14, uv, PostgreSQL + pgvector + pg_textsearch (BM25), LangChain, LangGraph, OpenAI, Langfuse.
 
 ## Getting started
 
-Requirements: [uv](https://docs.astral.sh/uv/).
+Requirements: [uv](https://docs.astral.sh/uv/) and [Docker](https://docs.docker.com/engine/install/) with the Compose and Buildx plugins.
 
 ```bash
 uv sync                          # create .venv and install the locked dependencies
 uv run pre-commit install        # run the checks automatically on every commit
 cp .env.example .env             # then fill in your own values
+docker compose up -d             # build and start PostgreSQL and Adminer
 ```
+
+Browse the database with Adminer at <http://localhost:8080/?pgsql=postgres&username=rag&db=rag>
+(adjust `username` and `db` to your `.env`, then enter `POSTGRES_PASSWORD`).
+
+`docker compose down` stops the containers and keeps the data; add `-v` to delete the data too.
 
 ## Development
 
