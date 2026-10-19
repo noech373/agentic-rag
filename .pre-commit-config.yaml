@@ -1,0 +1,47 @@
+# Checks run automatically on `git commit` (install once with `uv run pre-commit install`).
+# Run them on every file with `uv run pre-commit run --all-files`.
+repos:
+  # Generic file hygiene.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files # e.g. a downloaded PDF committed by mistake
+      - id: detect-private-key
+
+  # Secret scanning: blocks commits containing API keys (OpenAI, Langfuse, ...).
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  # Fails if uv.lock is out of sync with pyproject.toml.
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.13
+    hooks:
+      - id: uv-lock
+
+  # Python tools run through uv, so their versions come from uv.lock only
+  # (same versions locally, in pre-commit and in CI).
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+      - id: pyright
+        name: pyright
+        entry: uv run pyright
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false # type-checks the whole project, not just changed files
