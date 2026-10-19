@@ -1,0 +1,67 @@
+# Continuous integration: every push to main and every pull request is checked
+# on a fresh GitHub-hosted machine.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: # manual trigger from the Actions tab
+
+# Least privilege: the workflow can read the code, nothing else.
+permissions:
+  contents: read
+
+# A new push cancels the run still in progress for the same branch or pull request.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, type-check and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15 # default is 6 hours: a stuck job would burn the minutes quota
+
+    steps:
+      # Third-party actions are pinned to a commit SHA (immutable), not a tag (can be moved).
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # full history, so the secret scan sees every commit
+          persist-credentials: false # don't leave the token in .git/config, no step needs it
+
+      # The gitleaks pre-commit hook only scans staged files: in CI nothing is staged, so it
+      # would always pass. Scan the whole git history with the official release binary instead,
+      # verified against its pinned checksum.
+      - name: Scan the git history for secrets
+        env:
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/$archive" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.13" # same uv version as local development
+
+      # uv installs the Python version from .python-version, then the locked dependencies.
+      # --locked fails if uv.lock is out of date with pyproject.toml instead of updating it.
+      - name: Install the project and dev dependencies
+        run: uv sync --locked
+
+      # Same hooks as on `git commit`, but enforced: local hooks can be skipped
+      # (git commit --no-verify) or simply not installed.
+      - name: Run pre-commit checks (lint, format, types, file hygiene, lockfile)
+        env:
+          SKIP: gitleaks # covered by the history scan above
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run unit tests
+        run: uv run pytest -m "not integration and not eval"
