@@ -1,0 +1,59 @@
+[project]
+name = "agentic-rag"
+version = "0.1.0"
+description = "Production-grade agentic RAG over EU regulatory compliance documents."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "noech373" }]
+requires-python = ">=3.14"
+# Runtime dependencies are added with `uv add <pkg>` only when a phase needs them.
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pyright[nodejs]>=1.1.414",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes: unused imports/variables, undefined names
+    "I",   # isort: import ordering
+    "N",   # pep8-naming
+    "UP",  # pyupgrade: modern syntax for the target Python version
+    "B",   # flake8-bugbear: likely bugs (mutable default args, ...)
+    "S",   # flake8-bandit: security smells (hardcoded secrets, SQL built with f-strings, ...)
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+    "PT",  # flake8-pytest-style
+    "RUF", # ruff-specific rules
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"] # `assert` is how pytest works
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+markers = [
+    "integration: needs external services (Postgres running in Docker)",
+    "eval: LLM-based evaluation, slow and calls paid APIs",
+]

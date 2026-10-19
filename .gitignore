@@ -1,0 +1,18 @@
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+build/
+dist/
+
+# Virtual environment managed by uv (rebuilt with `uv sync`)
+.venv/
+
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+
+# Secrets: real credentials live in .env, never in git.
+# .env.example (placeholders only) is committed to document the expected variables.
+.env
+.env.*
+!.env.example
