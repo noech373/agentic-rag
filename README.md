@@ -1,5 +1,7 @@
 # agentic-rag
 
+[![CI](https://github.com/noech373/agentic-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/noech373/agentic-rag/actions/workflows/ci.yml)
+
 An agentic RAG (retrieval-augmented generation) assistant for EU regulatory compliance
 (GDPR, AI Act, DORA, NIS2, ...), built with production practices in mind.
 
@@ -36,15 +38,19 @@ Python 3.14, uv, PostgreSQL + pgvector, LangChain, LangGraph, OpenAI, Langfuse.
 Requirements: [uv](https://docs.astral.sh/uv/).
 
 ```bash
-uv sync    # create .venv and install the locked dependencies
+uv sync                          # create .venv and install the locked dependencies
+uv run pre-commit install        # run the checks automatically on every commit
+cp .env.example .env             # then fill in your own values
 ```
 
 ## Development
 
 ```bash
-uv run ruff check .     # lint
-uv run ruff format .    # format
-uv run pyright          # type-check (strict mode)
+uv run pytest -m "not integration and not eval"   # fast unit tests
+uv run pre-commit run --all-files                 # every check the CI runs
+uv run ruff check .                               # lint only
+uv run ruff format .                              # format only
+uv run pyright                                    # type-check only (strict mode)
 ```
 
 ## License
