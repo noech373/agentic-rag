@@ -1,0 +1,331 @@
+# Public corpus: where to download each source document and its expected SHA-256.
+# The documents are not committed. `uv run agentic-rag download` fetches them into data/corpus/
+# and rejects any file whose checksum differs, so every checkout ingests exactly the same bytes
+# (the evaluation dataset depends on it). A source that changes upstream fails loudly instead
+# of silently changing the answers.
+#
+# EU legal acts come from Cellar, the Publications Office's repository for machine access
+# (eur-lex.europa.eu blocks scripts with a JavaScript challenge). Each URL pins one manifestation
+# (the original Official Journal text in English, XHTML).
+#
+# Reuse: EU legal acts under Commission Decision 2011/833/EU; EDPB, ENISA and ESAs documents
+# under their reuse notices; CNIL GDPR Developer Guide under GPL-3.0.
+
+
+# --- EU legal acts (XHTML) ---
+
+[[documents]]
+id = "gdpr"
+title = "Regulation (EU) 2016/679 (General Data Protection Regulation)"
+short_title = "GDPR"
+publisher = "European Union"
+doc_type = "regulation"
+regulations = ["GDPR"]
+format = "xhtml"
+url = "https://publications.europa.eu/resource/cellar/3e485e15-11bd-11e6-ba9a-01aa75ed71a1.0006.03/DOC_1"
+source_url = "https://data.europa.eu/eli/reg/2016/679/oj"
+sha256 = "962539af03738bf552319ff4ce42d69e5f95a576307c4dfed7bf87e81b646b9d"
+
+[[documents]]
+id = "ai-act"
+title = "Regulation (EU) 2024/1689 (Artificial Intelligence Act)"
+short_title = "AI Act"
+publisher = "European Union"
+doc_type = "regulation"
+regulations = ["AI Act"]
+format = "xhtml"
+url = "https://publications.europa.eu/resource/cellar/dc8116a1-3fe6-11ef-865a-01aa75ed71a1.0006.03/DOC_1"
+source_url = "https://data.europa.eu/eli/reg/2024/1689/oj"
+sha256 = "8f0b656302f9864cc87e040c371f209a9d65ae1a6cecc25ca5eb737e872d721a"
+
+[[documents]]
+id = "dora"
+title = "Regulation (EU) 2022/2554 (Digital Operational Resilience Act)"
+short_title = "DORA"
+publisher = "European Union"
+doc_type = "regulation"
+regulations = ["DORA"]
+format = "xhtml"
+url = "https://publications.europa.eu/resource/cellar/0caf473a-85bd-11ed-9887-01aa75ed71a1.0006.03/DOC_1"
+source_url = "https://data.europa.eu/eli/reg/2022/2554/oj"
+sha256 = "cf50d8f023d23b2a56f535aaee0760eba7f1925ef08a9858c5c31d43d414f46b"
+
+[[documents]]
+id = "nis2"
+title = "Directive (EU) 2022/2555 (NIS 2 Directive)"
+short_title = "NIS2"
+publisher = "European Union"
+doc_type = "directive"
+regulations = ["NIS2"]
+format = "xhtml"
+url = "https://publications.europa.eu/resource/cellar/9b84d482-85bd-11ed-9887-01aa75ed71a1.0006.03/DOC_1"
+source_url = "https://data.europa.eu/eli/dir/2022/2555/oj"
+sha256 = "6ee66d5c419d9a056fb98d94083cacf9b818803bd6b416435718e0d4919cb589"
+
+[[documents]]
+id = "data-act"
+title = "Regulation (EU) 2023/2854 (Data Act)"
+short_title = "Data Act"
+publisher = "European Union"
+doc_type = "regulation"
+regulations = ["Data Act"]
+format = "xhtml"
+url = "https://publications.europa.eu/resource/cellar/ef51c6ab-a06c-11ee-b164-01aa75ed71a1.0006.03/DOC_1"
+source_url = "https://data.europa.eu/eli/reg/2023/2854/oj"
+sha256 = "1085b7fa3011970b65b1e4d56205202dceb37f72cd22336aa0c78af35ceaea66"
+
+# --- Guidelines and reports (PDF, with tables) ---
+
+[[documents]]
+id = "edpb-guidelines-2022-09"
+title = "EDPB Guidelines 9/2022 on personal data breach notification under GDPR (version 2.0)"
+short_title = "EDPB Guidelines 9/2022"
+publisher = "EDPB"
+doc_type = "guidelines"
+regulations = ["GDPR"]
+format = "pdf"
+url = "https://www.edpb.europa.eu/system/files/2023-04/edpb_guidelines_202209_personal_data_breach_notification_v2.0_en.pdf"
+source_url = "https://www.edpb.europa.eu/documents/guideline/guidelines-92022-on-personal-data-breach-notification-under-gdpr_en"
+sha256 = "063f63d2b78a669b9af4b45fec2e16c7e6e1442989bf7d70c756361824306e6e"
+
+[[documents]]
+id = "edpb-guidelines-2021-01"
+title = "EDPB Guidelines 01/2021 on examples regarding personal data breach notification (version 2.0)"
+short_title = "EDPB Guidelines 01/2021"
+publisher = "EDPB"
+doc_type = "guidelines"
+regulations = ["GDPR"]
+format = "pdf"
+url = "https://www.edpb.europa.eu/system/files/documents/2022-01/edpb_guidelines_012021_pdbnotification_adopted_en.pdf"
+source_url = "https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-012021-examples-regarding-personal-data-breach_en"
+sha256 = "3a488520ab3a14500911ae44ac9cc5bcc3aa2242b2457f87bcd5286a10ae5949"
+
+[[documents]]
+id = "enisa-nis2-implementation-guidance"
+title = "ENISA technical implementation guidance on cybersecurity risk-management measures under NIS2 (version 1.0)"
+short_title = "ENISA NIS2 implementation guidance"
+publisher = "ENISA"
+doc_type = "guidelines"
+regulations = ["NIS2"]
+format = "pdf"
+url = "https://www.enisa.europa.eu/sites/default/files/2025-06/ENISA_Technical_implementation_guidance_on_cybersecurity_risk_management_measures_version_1.0.pdf"
+source_url = "https://www.enisa.europa.eu/publications/nis2-technical-implementation-guidance"
+sha256 = "f03186edb047ece269ab9deeb3f0ec6172582ccc577617f0eb79e9bf96a7021b"
+
+[[documents]]
+id = "esas-dora-incident-reporting"
+title = "ESAs final report on the draft RTS and ITS on major ICT-related incident reporting under DORA (JC 2024 33)"
+short_title = "ESAs JC 2024 33"
+publisher = "ESAs"
+doc_type = "report"
+regulations = ["DORA"]
+format = "pdf"
+url = "https://www.esma.europa.eu/sites/default/files/2024-07/JC_2024-33_-_Final_report_on_the_draft_RTS_and_ITS_on_incident_reporting.pdf"
+source_url = "https://www.esma.europa.eu/sites/default/files/2024-07/JC_2024-33_-_Final_report_on_the_draft_RTS_and_ITS_on_incident_reporting.pdf"
+sha256 = "d39d2fa1b96e0b4d0d3bfaa862e82995eefb96a0d2d9ed06cff3109991282fb4"
+
+# --- CNIL GDPR Developer Guide (Markdown, one file per sheet, pinned to commit ee71299) ---
+
+[[documents]]
+id = "cnil-developer-guide-00"
+title = "CNIL GDPR Developer Guide, sheet 0: Develop in compliance with the GDPR"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/00-Develop%20in%20compliance%20with%20the%20GDPR.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/00-Develop%20in%20compliance%20with%20the%20GDPR.md"
+sha256 = "109811f5642e71053f780c19caf6548351d55a5a28bd712731df192712e5d3fa"
+
+[[documents]]
+id = "cnil-developer-guide-01"
+title = "CNIL GDPR Developer Guide, sheet 1: Identify personal data"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/01-Identify%20personal%20data.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/01-Identify%20personal%20data.md"
+sha256 = "4132749e4c14de5583376d2bc5fb8b97f546a0c1426b62da195a50deef0f836e"
+
+[[documents]]
+id = "cnil-developer-guide-02"
+title = "CNIL GDPR Developer Guide, sheet 2: Prepare your development"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/02-Prepare%20your%20development.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/02-Prepare%20your%20development.md"
+sha256 = "8b0d60da058bdefc3fa539d1f3e25d883e82b3ea052ac03dc2447d269c28c15a"
+
+[[documents]]
+id = "cnil-developer-guide-03"
+title = "CNIL GDPR Developer Guide, sheet 3: Secure your development environment"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/03-Secure%20your%20development%20environment.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/03-Secure%20your%20development%20environment.md"
+sha256 = "ab5b9f454c6ac2fd460995cf1938aae27b9f45909bdfa4e44d51432dcb9e5385"
+
+[[documents]]
+id = "cnil-developer-guide-04"
+title = "CNIL GDPR Developer Guide, sheet 4: Manage your source code"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/04-Manage%20your%20source%20code.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/04-Manage%20your%20source%20code.md"
+sha256 = "f49bb63b44006364dd7fd0aee44ef6c083b8b8d722d2dafef595eab94ded435c"
+
+[[documents]]
+id = "cnil-developer-guide-05"
+title = "CNIL GDPR Developer Guide, sheet 5: Make an informed choice of architecture"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/05-Make%20an%20informed%20choice%20of%20architecture.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/05-Make%20an%20informed%20choice%20of%20architecture.md"
+sha256 = "2644c44d510425aeeee4e32162e754ab21e412a8ad9156d8ce0a089d2ae4170a"
+
+[[documents]]
+id = "cnil-developer-guide-06"
+title = "CNIL GDPR Developer Guide, sheet 6: Secure your websites, applications and servers"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/06-Secure%20your%20websites%2C%20applications%20and%20servers.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/06-Secure%20your%20websites%2C%20applications%20and%20servers.md"
+sha256 = "035938e655a88454bfa60ad647afd6b684e0ce1a47e66ade74a50fa8afe39bc1"
+
+[[documents]]
+id = "cnil-developer-guide-07"
+title = "CNIL GDPR Developer Guide, sheet 7: Minimize data collection"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/07-Minimize%20data%20collection.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/07-Minimize%20data%20collection.md"
+sha256 = "84487580ea64c3bbccac227a397cbf9a49e1153b31d202a4c5cdc1c63f7bb3ac"
+
+[[documents]]
+id = "cnil-developer-guide-08"
+title = "CNIL GDPR Developer Guide, sheet 8: Manage user profiles"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/08-Manage%20user%20profiles.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/08-Manage%20user%20profiles.md"
+sha256 = "f44f19a30f4d86545b17e42498c16b68fe78cd48b45ed60c13f8d2b911ffa8d2"
+
+[[documents]]
+id = "cnil-developer-guide-09"
+title = "CNIL GDPR Developer Guide, sheet 9: Control your libraries and SDKs"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/09-Control%20your%20libraries%20and%20SDKs.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/09-Control%20your%20libraries%20and%20SDKs.md"
+sha256 = "4f217cfb7eba660600e37eaf3055fdb97ba1ebbb4782b8aabcb2c7d0e4142e0a"
+
+[[documents]]
+id = "cnil-developer-guide-10"
+title = "CNIL GDPR Developer Guide, sheet 10: Ensure the quality of the code and its documentation"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/10-Ensure%20the%20quality%20of%20the%20code%20and%20its%20documentation.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/10-Ensure%20the%20quality%20of%20the%20code%20and%20its%20documentation.md"
+sha256 = "9c72b879c6d2dff82ab5810f190d670ff735b376727203dc0f7241cab821739a"
+
+[[documents]]
+id = "cnil-developer-guide-11"
+title = "CNIL GDPR Developer Guide, sheet 11: Test your applications"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/11-Test%20your%20applications.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/11-Test%20your%20applications.md"
+sha256 = "067d2ff9f39477103d74d19d2ed00a0c6c0bf6a8d6c935bf254f79a5d3833937"
+
+[[documents]]
+id = "cnil-developer-guide-12"
+title = "CNIL GDPR Developer Guide, sheet 12: Inform users"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/12-Inform%20users.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/12-Inform%20users.md"
+sha256 = "658a425b3659e6b4b8265867f6772674401d45667afd00de11e0e0c2ab7c0d19"
+
+[[documents]]
+id = "cnil-developer-guide-13"
+title = "CNIL GDPR Developer Guide, sheet 13: Prepare for the exercise of people rights"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/13-Prepare%20for%20the%20exercise%20of%20people%20rights.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/13-Prepare%20for%20the%20exercise%20of%20people%20rights.md"
+sha256 = "35be2dd6b51f59eb47817596d859b43b37b91c590b48a56caee9616e12b83ca1"
+
+[[documents]]
+id = "cnil-developer-guide-14"
+title = "CNIL GDPR Developer Guide, sheet 14: Define a data retention period"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/14-Define%20a%20data%20retention%20period.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/14-Define%20a%20data%20retention%20period.md"
+sha256 = "510da142dc58c134c38ec10a59838969fd827f5e7216a6b260c2199db1f29aca"
+
+[[documents]]
+id = "cnil-developer-guide-15"
+title = "CNIL GDPR Developer Guide, sheet 15: Take into account the legal basis in the technical implementation"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/15-Take%20into%20account%20the%20legal%20basis%20in%20the%20technical%20implementation.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/15-Take%20into%20account%20the%20legal%20basis%20in%20the%20technical%20implementation.md"
+sha256 = "2b341444b407ad04d90ed849d0c3d6f92047fcc9413dd5c9d19d15fd4b52f765"
+
+[[documents]]
+id = "cnil-developer-guide-16"
+title = "CNIL GDPR Developer Guide, sheet 16: Use analytics on your websites and applications"
+short_title = "CNIL GDPR Developer Guide"
+publisher = "CNIL"
+doc_type = "guide"
+regulations = ["GDPR"]
+format = "markdown"
+url = "https://raw.githubusercontent.com/LINCnil/GDPR-Developer-Guide/ee71299c282e020e87533b6e176a37744fdca368/16-Use%20analytics%20on%20your%20websites%20and%20applications.md"
+source_url = "https://github.com/LINCnil/GDPR-Developer-Guide/blob/ee71299c282e020e87533b6e176a37744fdca368/16-Use%20analytics%20on%20your%20websites%20and%20applications.md"
+sha256 = "8f1a550490487c263a8314674ebc027668f8e36c55694abeb2d5522def871c4e"

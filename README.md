@@ -5,7 +5,7 @@
 An agentic RAG (retrieval-augmented generation) assistant for EU regulatory compliance
 (GDPR, AI Act, DORA, NIS2, ...), built with production practices in mind.
 
-> **Status:** work in progress, Phase 0 (project scaffolding).
+> **Status:** work in progress, Phase 1 (ingestion).
 
 ## Goals
 
@@ -20,8 +20,8 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Project scaffolding: tooling, CI, local infrastructure, configuration | In progress |
-| 1 | Ingestion: pluggable connectors, layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, incremental updates, access control | Planned |
+| 0 | Project scaffolding: tooling, CI, local infrastructure, configuration | Done |
+| 1 | Ingestion: pluggable connectors, layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, incremental updates, access control | In progress |
 | 2 | Baseline RAG: vector search, cited answers, tracing | Planned |
 | 3 | Evaluation: golden dataset, retrieval and generation metrics, CI quality gates | Planned |
 | 4 | Measured improvements: hybrid search (BM25 + vectors), reranking, contextual retrieval | Planned |
@@ -48,6 +48,32 @@ Browse the database with Adminer at <http://localhost:8080/?pgsql=postgres&usern
 (adjust `username` and `db` to your `.env`, then enter `POSTGRES_PASSWORD`).
 
 `docker compose down` stops the containers and keeps the data; add `-v` to delete the data too.
+
+## Corpus
+
+26 public documents on EU compliance, with a common thread (incident and breach notification
+under GDPR, NIS2 and DORA):
+
+- **EU legal acts** (XHTML): GDPR, AI Act, DORA, NIS2, Data Act.
+- **Guidelines and reports** (PDF, with tables): EDPB Guidelines 9/2022 and 01/2021 on personal
+  data breaches, ENISA NIS2 technical implementation guidance, ESAs final report on DORA
+  incident reporting (JC 2024 33).
+- **CNIL GDPR Developer Guide** (Markdown, 17 sheets).
+
+```bash
+uv run agentic-rag download   # fetch the corpus into data/corpus/ (~11 MB)
+```
+
+The documents are not stored in this repository. [`corpus/manifest.toml`](corpus/manifest.toml)
+lists the download URL and the SHA-256 of each one: a file whose checksum differs is rejected, so
+every checkout ingests exactly the same bytes and the evaluation stays valid. Re-running the
+command only downloads what is missing or corrupted.
+
+EU legal acts are fetched from [Cellar](https://op.europa.eu/en/web/cellar), the Publications
+Office's repository for machine access. Each document keeps its own license: EU legal acts may be
+reused under [Commission Decision 2011/833/EU](https://data.europa.eu/eli/dec/2011/833/oj), the
+CNIL guide is published under [GPL-3.0](https://github.com/LINCnil/GDPR-Developer-Guide), and the
+EDPB, ENISA and ESAs documents under their publishers' reuse terms.
 
 ## Development
 

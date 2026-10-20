@@ -9,8 +9,13 @@ authors = [{ name = "noech373" }]
 requires-python = ">=3.14"
 # Runtime dependencies are added with `uv add <pkg>` only when a phase needs them.
 dependencies = [
+    "httpx>=0.28.1",
     "pydantic-settings>=2.16.0",
+    "typer>=0.27.3",
 ]
+
+[project.scripts]
+agentic-rag = "agentic_rag.cli:app"
 
 [dependency-groups]
 dev = [
