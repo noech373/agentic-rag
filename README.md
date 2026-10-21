@@ -91,6 +91,9 @@ p. 10*.
   entities shall...") are divisions, with their guidance nested below. As for legal acts, a
   block is the content of one division (a table is a block of its own), footnotes are skipped,
   and each block keeps the page it starts on.
+- **Markdown** (CNIL guide, internal policies): the headings give the path, read line by line.
+  The lead paragraph that the CNIL styles as a heading under a sheet's title is text, and links
+  keep only their text.
 
 ```bash
 uv run agentic-rag convert    # run Docling on the PDFs once, cached in data/cache/ (~10 min)
