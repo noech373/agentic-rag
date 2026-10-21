@@ -99,6 +99,34 @@ p. 10*.
 uv run agentic-rag convert    # run Docling on the PDFs once, cached in data/cache/ (~10 min)
 ```
 
+## Chunking
+
+Blocks follow the documents, so their sizes vary widely: a quarter of the corpus's 3282 blocks
+have fewer than 50 tokens (GDPR Art. 33(2) has 20), while the AI Act definitions run to 3392.
+The chunker evens them out without crossing a legal boundary:
+
+- **Merge** consecutive blocks of the same article, recital, annex or point (or of the same
+  heading, in guidelines) up to 512 tokens, counted with `cl100k_base`, the tokenizer of the
+  embedding model.
+- **Split** a longer block between its lines (subparagraphs, points, list items); a nested point
+  stays with the line that introduces it.
+- **Never split or merge a table**.
+
+A chunk keeps the path its blocks share, and the numbers stay at the start of each line: GDPR
+Article 33 becomes a single 319-token chunk whose lines start with "1." to "5.", so an answer can
+still cite *Art. 33(1)*. A heading that a merged chunk drops from its path (the *GUIDANCE* and
+*EXAMPLES OF EVIDENCE* parts of each ENISA point) becomes a line of its text. The corpus gives
+1922 chunks, and a test checks that their text is exactly the text of the blocks, apart from these
+heading lines. The 512-token budget is a starting point, to be compared with others in Phase 4.
+
+Known limitations:
+
+- A single line over the budget stays whole: a recital is one line, up to 833 tokens, well below
+  the 8191 tokens the embedding model accepts.
+- In PDFs, nesting only shows in the bullets, so a split can separate "...the following:" from
+  its list (3 cases in the corpus).
+- The pieces of a split PDF block all carry the page the block starts on.
+
 ## Development
 
 ```bash
