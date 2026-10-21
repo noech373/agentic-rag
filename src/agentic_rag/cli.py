@@ -1,5 +1,6 @@
 """Command-line interface: `uv run agentic-rag --help`."""
 
+import time
 from pathlib import Path
 from typing import Annotated
 
@@ -15,7 +16,7 @@ app = typer.Typer(no_args_is_help=True)
 def main() -> None:
     """Agentic RAG over EU regulatory compliance documents."""
     # With a single command, Typer would make it the root command and `agentic-rag download`
-    # would fail. This callback keeps `download` a subcommand; its docstring is the --help text.
+    # would fail. This callback keeps commands as subcommands; its docstring is the --help text.
 
 
 @app.command("download")
@@ -43,3 +44,25 @@ def download_corpus(
     if failures:
         typer.echo(f"{failures} of {len(documents)} documents failed", err=True)
         raise typer.Exit(code=1)
+
+
+@app.command("convert")
+def convert_pdfs(
+    manifest: Annotated[Path, typer.Option(help="Corpus manifest.")] = Path("corpus/manifest.toml"),
+    corpus_dir: Annotated[Path, typer.Option(help="Downloaded corpus.")] = Path("data/corpus"),
+    cache_dir: Annotated[Path, typer.Option(help="Docling cache.")] = Path("data/cache"),
+) -> None:
+    """Run Docling on the PDFs of the corpus and cache its output (minutes per document)."""
+    # Imported here: Docling takes seconds to import, the other commands do not need it.
+    from agentic_rag.ingestion.pdf import cache_path, load_or_convert
+
+    for document in load_manifest(manifest).documents:
+        if document.format != "pdf":
+            continue
+        content = (corpus_dir / document.filename).read_bytes()
+        if cache_path(content, cache_dir).exists():
+            typer.echo(f"{'up to date':<11} {document.id}")
+            continue
+        start = time.perf_counter()
+        load_or_convert(content, cache_dir)
+        typer.echo(f"{'converted':<11} {document.id} in {time.perf_counter() - start:.0f} s")

@@ -75,6 +75,27 @@ reused under [Commission Decision 2011/833/EU](https://data.europa.eu/eli/dec/20
 CNIL guide is published under [GPL-3.0](https://github.com/LINCnil/GDPR-Developer-Guide), and the
 EDPB, ENISA and ESAs documents under their publishers' reuse terms.
 
+## Parsing
+
+Each document is split into blocks tagged with their place in the document, so that answers can
+cite it: *GDPR, Article 33(1)*, *EDPB Guidelines 9/2022, II. > A. > 1. Article 33 requirements,
+p. 10*.
+
+- **EU legal acts**: a dedicated parser reads the structure from the identifiers of the
+  Official Journal's XHTML (`art_33`, `033.001`).
+- **PDFs**: [Docling](https://github.com/docling-project/docling) finds headings, lists and
+  tables with a layout model, on CPU and without OCR (every PDF has a text layer), and nests the
+  headings from the PDF bookmarks and the numbering. Two rules, measured on the corpus: headings
+  that are sentences ("49. Advisable measures:") are turned back into text, as they would shift
+  the chapters after them; the points of a legal text quoted by ENISA ("3.5.1. The relevant
+  entities shall...") are divisions, with their guidance nested below. As for legal acts, a
+  block is the content of one division (a table is a block of its own), footnotes are skipped,
+  and each block keeps the page it starts on.
+
+```bash
+uv run agentic-rag convert    # run Docling on the PDFs once, cached in data/cache/ (~10 min)
+```
+
 ## Development
 
 ```bash

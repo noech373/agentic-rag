@@ -428,7 +428,7 @@ def _parse_corpus(document_id: str) -> list[Block]:
     return parse_eurlex(_corpus(document_id))
 
 
-def _numbers(blocks: list[Block], kind: str) -> list[str]:
+def _numbers(blocks: list[Block], kind: str) -> list[str | None]:
     """The numbers of the divisions of a kind, in document order, without repetition."""
     numbers = [d.number for block in blocks for d in block.path if d.kind == kind]
     return list(dict.fromkeys(numbers))
