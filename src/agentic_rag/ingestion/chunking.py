@@ -80,12 +80,18 @@ def _merge(chunk: Chunk, previous: _Path, block: Block, piece: str) -> Chunk | N
     """The chunk with the piece of the block appended, or None if they must stay apart."""
     if "table" in (chunk.kind, block.kind) or _unit(chunk.path) != _unit(block.path):
         return None
-    # The merged chunk keeps only the shared path: a heading the block enters ("GUIDANCE" under
-    # point 3.2.4 of the ENISA guidance) becomes a line, or the text would lose it.
-    entered = block.path[len(_common_prefix(previous, block.path)) :]
-    headings = [d.title for d in entered if d.kind == "heading" and d.title]
-    text = "\n".join([chunk.text, *headings, piece])
-    return chunk.model_copy(update={"text": text, "path": _common_prefix(chunk.path, block.path)})
+    # The merged chunk keeps only the shared path, so the headings it drops ("GUIDANCE" under
+    # point 3.2.4 of the ENISA guidance) become lines, or the text would lose them: those of the
+    # chunk go first, those the block enters go before its piece.
+    path = _common_prefix(chunk.path, block.path)
+    left = _headings(chunk.path[len(path) :])
+    entered = _headings(block.path[len(_common_prefix(previous, block.path)) :])
+    text = "\n".join([*left, chunk.text, *entered, piece])
+    return chunk.model_copy(update={"text": text, "path": path})
+
+
+def _headings(divisions: _Path) -> list[str]:
+    return [d.title for d in divisions if d.kind == "heading" and d.title]
 
 
 def _unit(path: _Path) -> _Path:
