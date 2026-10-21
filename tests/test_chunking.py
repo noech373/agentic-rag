@@ -239,6 +239,21 @@ def test_a_point_merges_with_its_guidance_whose_headings_become_lines() -> None:
     assert chunks[0].path == point
 
 
+def test_a_chunk_starting_under_a_heading_keeps_it_when_merged_with_the_next_one() -> None:
+    point = (Division(kind="point", number="2.1.4"),)
+    blocks = [
+        _text("· Ensure that key personnel", (*point, *_headings("GUIDANCE"))),
+        _text("· Records of", (*point, *_headings("EXAMPLES OF EVIDENCE"))),
+    ]
+
+    chunks = chunk_blocks(blocks, counter=_words)
+
+    assert _texts(chunks) == [
+        "GUIDANCE\n· Ensure that key personnel\nEXAMPLES OF EVIDENCE\n· Records of"
+    ]
+    assert chunks[0].path == point
+
+
 def test_a_table_never_merges_with_text_or_another_table() -> None:
     table = "| a | b |\n| --- | --- |\n| 1 | 2 |"
     blocks = [
@@ -409,6 +424,13 @@ def test_corpus_enisa_chunks_only_add_the_headings_they_enter() -> None:
 
     assert set(added) <= headings
     assert added["GUIDANCE"] > 100
+
+
+def test_corpus_enisa_guidance_never_loses_its_heading() -> None:
+    # Guidance and evidence are bullets; the requirement of a point is not: "3.2.4. The logs".
+    for chunk in _chunks(_ENISA):
+        if chunk.path and chunk.path[-1].kind == "point":
+            assert not chunk.text.startswith("·"), chunk.text[:80]
 
 
 def test_corpus_merging_more_than_offsets_splitting() -> None:
