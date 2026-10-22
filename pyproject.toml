@@ -14,6 +14,7 @@ dependencies = [
     # invalidates the conversion cache (~13 min to rebuild). Update by hand.
     "docling-slim[convert-core,format-pdf,models-local]>=2.141.0,<2.142",
     "httpx>=0.28.1",
+    "langfuse>=5.0.4",
     "lxml>=6.1.3",
     "openai>=3.36.1",
     "opencv-python-headless>=5.0.0.93",
