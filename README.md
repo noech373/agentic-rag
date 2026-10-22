@@ -5,7 +5,8 @@
 An agentic RAG (retrieval-augmented generation) assistant for EU regulatory compliance
 (GDPR, AI Act, DORA, NIS2, ...), built with production practices in mind.
 
-> **Status:** work in progress, Phase 1 (ingestion).
+> **Status:** work in progress. A baseline RAG works end to end (ingestion, vector search,
+> cited answers); the evaluation comes next, then measured improvements.
 
 ## Goals
 
@@ -13,7 +14,8 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
   and an explicit "I don't know" when the sources do not cover the question.
 - **Evaluation-driven development**: every retrieval or generation change is measured
   against a versioned test set before it is kept.
-- **Extensible ingestion**: adding a new document source means writing one connector class.
+- **Swappable components**: the parsers, embedding model, store, retriever and LLM each sit
+  behind an interface; adding one is a new class and one line in the factory.
 - **Document-level access control**: users only retrieve documents they are allowed to see.
 
 ## Roadmap
@@ -21,17 +23,18 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Project scaffolding: tooling, CI, local infrastructure, configuration | Done |
-| 1 | Ingestion: pluggable connectors, layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, incremental updates, access control | In progress |
-| 2 | Baseline RAG: vector search, cited answers, tracing | Planned |
+| 1 | Ingestion: layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, embeddings, incremental updates | Done |
+| 2 | Baseline RAG: vector search, cited answers, "I don't know", tracing | In progress |
 | 3 | Evaluation: golden dataset, retrieval and generation metrics, CI quality gates | Planned |
 | 4 | Measured improvements: hybrid search (BM25 + vectors), reranking, contextual retrieval | Planned |
 | 5 | Guardrails: input and output checks, prompt-injection defense | Planned |
-| 6 | Production readiness: streaming API, user feedback, resilience | Planned |
+| 6 | Production readiness: streaming API, user feedback, resilience, access control, more document sources | Planned |
 | 7 | Agentic RAG with LangGraph: query routing, question decomposition, self-correction | Planned |
 
 ## Tech stack
 
-Python 3.14, uv, PostgreSQL + pgvector + pg_textsearch (BM25), LangChain, LangGraph, OpenAI, Langfuse.
+Python 3.14, uv, PostgreSQL + pgvector + pg_textsearch (BM25), Docling, OpenAI (embeddings and
+LLM). Planned: Langfuse (tracing), LangGraph (agentic phase).
 
 ## Getting started
 
@@ -42,12 +45,51 @@ uv sync                          # create .venv and install the locked dependenc
 uv run pre-commit install        # run the checks automatically on every commit
 cp .env.example .env             # then fill in your own values
 docker compose up -d             # build and start PostgreSQL and Adminer
+
+uv run agentic-rag download      # fetch the corpus (see below)
+uv run agentic-rag convert       # run Docling on the PDFs once (~13 min on CPU, cached)
+uv run agentic-rag ingest        # parse, chunk, embed and store it (~20 s; unchanged files are skipped)
+uv run agentic-rag ask "Within how many hours must a personal data breach be notified?"
 ```
+
+```text
+A controller must notify the supervisory authority without undue delay and, where feasible,
+no later than 72 hours after becoming aware of the breach. [3]
+
+[3] GDPR, Article 33 https://data.europa.eu/eli/reg/2016/679/oj
+```
+
+`OPENAI_CHAT_MODEL` in `.env` picks the LLM: any model of the OpenAI Responses API.
+`ask --retrieved` also lists the sources that were retrieved but not cited, with their scores.
 
 Browse the database with Adminer at <http://localhost:8080/?pgsql=postgres&username=rag&db=rag>
 (adjust `username` and `db` to your `.env`, then enter `POSTGRES_PASSWORD`).
 
 `docker compose down` stops the containers and keeps the data; add `-v` to delete the data too.
+
+## Architecture
+
+```text
+ingestion   manifest > download > parse (by format) > chunk > embed > store
+question    embed > vector search (top k) > prompt with numbered sources > LLM > answer citing [n]
+```
+
+```text
+src/agentic_rag/
+├── document.py     domain types: Division, Block, Chunk
+├── ingestion/      corpus download, parsers/ (EUR-Lex, PDF, Markdown), chunking, pipeline
+├── embeddings/     base.py (Embedder), openai.py
+├── storage/        base.py (ChunkStore, VectorSearch), postgres.py
+├── retrieval/      base.py (Retriever), vector.py
+├── generation/     base.py (Generator, Answer), prompt.py, openai.py
+├── rag.py          retrieve, then generate
+├── factory.py      the one place that picks the implementations, from the settings
+└── cli.py, config.py
+```
+
+Each replaceable part has a package: `base.py` holds its interface, and each implementation is a
+module next to it. A BM25 retriever, another embedding model or another database is a new module and
+one line in `factory.py`; the rest of the code only knows the interfaces. The tests mirror this tree.
 
 ## Corpus
 
@@ -126,6 +168,23 @@ Known limitations:
 - In PDFs, nesting only shows in the bullets, so a split can separate "...the following:" from
   its list (3 cases in the corpus).
 - The pieces of a split PDF block all carry the page the block starts on.
+
+## Retrieval and answers
+
+- **Storage**: one PostgreSQL database for the documents, chunks and vectors. The vector column has
+  no fixed dimension and each document records its embedding model, so another model needs no
+  migration and a search only compares vectors of one model. Search is exact (cosine distance): on
+  ~2000 chunks it takes ~9 ms, while an HNSW index would need tuning to find the true nearest chunks.
+- **Ingestion is incremental**: a document is embedded again only when its file or the embedding
+  model changes, and a file edited since its download is refused.
+- **Answers**: the LLM gets the question and the 8 nearest chunks, each numbered and preceded by
+  where it comes from (document, chapter, article and their titles, page). It must cite a number
+  after each statement, answer only from the sources, and reply exactly *"I don't know based on the
+  available sources."* otherwise. The CLI lists the cited sources with their links. OpenAI is asked
+  not to keep the responses (`store=False`).
+
+Known limitations, to be measured by the evaluation: vector search only (BM25 and reranking are
+planned), a fixed number of sources, and no access control on the documents yet.
 
 ## Development
 
