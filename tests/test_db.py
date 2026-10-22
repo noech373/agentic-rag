@@ -2,12 +2,12 @@ from collections.abc import Iterator
 
 import pytest
 from pydantic import TypeAdapter, ValidationError
-from sqlalchemy import URL, Engine, create_engine, delete, func, select, text
-from sqlalchemy.exc import DataError, IntegrityError, OperationalError
+from sqlalchemy import URL, Engine, Float, create_engine, delete, func, select, text
+from sqlalchemy.exc import DataError, IntegrityError, OperationalError, ProgrammingError
 from sqlalchemy.orm import Session
 
 from agentic_rag.config import OpenAISettings, PostgresSettings
-from agentic_rag.db import EMBEDDING_DIMENSIONS, Base, Chunk, Document
+from agentic_rag.db import BM25_INDEX, EMBEDDING_DIMENSIONS, Base, Chunk, Document
 from agentic_rag.ingestion.document import Division
 
 _ARTICLE_33 = (
@@ -61,6 +61,7 @@ def engine() -> Iterator[Engine]:
     engine = create_engine(_url(settings, _TEST_DATABASE))
     with engine.begin() as connection:
         connection.execute(text("CREATE EXTENSION vector"))
+        connection.execute(text("CREATE EXTENSION pg_textsearch"))
     Base.metadata.create_all(engine)
     yield engine
 
@@ -100,12 +101,13 @@ def _chunk(
     position: int = 0,
     path: tuple[Division, ...] = _ARTICLE_33,
     embedding: list[float] | None = None,
+    text: str | None = None,
 ) -> Chunk:
     return Chunk(
         document_id=document_id,
         position=position,
         kind="text",
-        text=f"Chunk {position} of {document_id}.",
+        text=f"Chunk {position} of {document_id}." if text is None else text,
         path=[division.model_dump() for division in path],
         page=None,
         embedding=_vector(1.0) if embedding is None else embedding,
@@ -271,3 +273,90 @@ def test_an_embedding_must_have_the_schema_dimensions(session: Session) -> None:
 
     with pytest.raises(DataError, match=f"expected {EMBEDDING_DIMENSIONS} dimensions, not 3"):
         session.commit()
+
+
+# --- Search: BM25 (pg_textsearch) and exact vector search ---
+
+
+def _bm25(session: Session, query: str) -> list[tuple[int, float]]:
+    """(position, score) of every chunk, best first: scores are negative, 0 with no common term."""
+    score = Chunk.text.op("<@>", return_type=Float())(func.to_bm25query(query, BM25_INDEX))
+    statement = select(Chunk.position, score).order_by(score, Chunk.position)
+    return [(position, value) for position, value in session.execute(statement)]
+
+
+def _ranked(session: Session, query: str) -> list[int]:
+    """The positions of the chunks sharing a term with the query, best first."""
+    return [position for position, score in _bm25(session, query) if score < 0]
+
+
+def _texts(session: Session, *texts: str) -> None:
+    _save(session, _document(), *(_chunk(position=i, text=t) for i, t in enumerate(texts)))
+
+
+@pytest.mark.integration
+def test_bm25_matches_the_stems_of_the_query(session: Session) -> None:
+    _texts(
+        session,
+        "The data subject has the right to erasure.",
+        "The controller shall notify the authority of a personal data breach.",
+    )
+
+    assert _ranked(session, "notified breaches") == [1]
+
+
+@pytest.mark.integration
+def test_bm25_ignores_case_and_stop_words(session: Session) -> None:
+    _texts(session, "The controller shall notify the authority of a personal data breach.")
+
+    assert _bm25(session, "THE Breach") == _bm25(session, "breach")
+
+
+@pytest.mark.integration
+def test_bm25_weighs_a_rare_term_more_than_a_common_one(session: Session) -> None:
+    _texts(
+        session,
+        "personal data processing",
+        "personal data controller",
+        "personal data security",  # "personal" is in 3 chunks out of 4
+        "breach data security",  # "breach" in only 1
+    )
+
+    assert _ranked(session, "personal breach")[0] == 3
+
+
+@pytest.mark.integration
+def test_bm25_sees_inserted_and_deleted_chunks_at_once(session: Session) -> None:
+    _texts(session, "The controller shall notify the authority of a personal data breach.")
+    assert _ranked(session, "breach") == [0]
+
+    session.execute(delete(Document))
+    session.commit()
+
+    assert _ranked(session, "breach") == []
+
+
+@pytest.mark.integration
+def test_the_short_bm25_syntax_fails_with_a_bound_parameter(session: Session) -> None:
+    """Why queries name the index: `text <@> :query` cannot find it (pg_textsearch 1.5.1)."""
+    _texts(session, "The controller shall notify the authority of a personal data breach.")
+    score = Chunk.text.op("<@>", return_type=Float())("breach")
+
+    with pytest.raises(ProgrammingError, match="no BM25 index found"):
+        session.execute(select(Chunk.position).order_by(score))
+
+
+@pytest.mark.integration
+def test_vector_search_returns_the_nearest_chunks_by_cosine_distance(session: Session) -> None:
+    _save(
+        session,
+        _document(),
+        _chunk(position=0, embedding=_vector(1.0, 0.0)),
+        _chunk(position=1, embedding=_vector(0.0, 1.0)),
+        _chunk(position=2, embedding=_vector(1.0, 1.0)),
+    )
+    question = _vector(1.0, 0.2)
+
+    statement = select(Chunk.position).order_by(Chunk.embedding.cosine_distance(question))
+
+    assert list(session.scalars(statement)) == [0, 2, 1]
