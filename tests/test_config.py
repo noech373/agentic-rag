@@ -41,6 +41,14 @@ def test_langfuse_tracing_is_disabled_without_keys() -> None:
     assert not LangfuseSettings().enabled
 
 
+def test_langfuse_tracing_is_disabled_with_the_empty_keys_of_the_example_env(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / ".env").write_text("LANGFUSE_PUBLIC_KEY=\nLANGFUSE_SECRET_KEY=\n")
+
+    assert not LangfuseSettings().enabled
+
+
 def test_langfuse_tracing_is_enabled_with_both_keys(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-test")
     monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-test")

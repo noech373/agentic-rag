@@ -12,7 +12,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class _EnvSettings(BaseSettings):
     # extra="ignore": the shared .env also holds variables meant for the other groups.
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # env_ignore_empty: `KEY=` (as in .env.example) means unset, not an empty string.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_ignore_empty=True)
 
 
 class OpenAISettings(_EnvSettings):
