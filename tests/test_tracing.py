@@ -53,6 +53,20 @@ class _FakeGenerator(Generator):
         return Answer(text=self.text, sources=tuple(sources))
 
 
+class _ObservedGenerator(_FakeGenerator):
+    """Opens an observation, as Langfuse's OpenAI integration does around each call."""
+
+    def __init__(self, langfuse: Langfuse) -> None:
+        super().__init__()
+        self.langfuse = langfuse
+
+    def generate(self, question: str, sources: Sequence[RetrievedChunk]) -> Answer:
+        with self.langfuse.start_as_current_observation(
+            name="OpenAI-generation", as_type="generation"
+        ):
+            return super().generate(question, sources)
+
+
 def _result(article: str, score: float) -> RetrievedChunk:
     document = IndexedDocument(
         id="gdpr",
@@ -123,6 +137,16 @@ def test_the_retrieval_is_nested_with_what_it_found_and_the_scores(langfuse: Lan
         {"citation": "GDPR, Article 33", "score": 0.6123, "text": "Text of Article 33."},
         {"citation": "GDPR, Article 34", "score": 0.5, "text": "Text of Article 34."},
     ]
+
+
+def test_every_observation_of_a_question_carries_the_trace_name(langfuse: Langfuse) -> None:
+    _rag(langfuse, generator=_ObservedGenerator(langfuse)).ask("How fast?")
+
+    names = {
+        name: (span.attributes or {}).get("langfuse.trace.name")
+        for name, span in _spans(langfuse).items()
+    }
+    assert names == {"ask": "ask", "retrieve": "ask", "OpenAI-generation": "ask"}
 
 
 def test_a_retriever_alone_is_its_own_trace(langfuse: Langfuse) -> None:
