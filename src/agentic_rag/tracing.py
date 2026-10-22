@@ -5,7 +5,7 @@ keys are set. The OpenAI calls themselves (embedding, generation, with tokens an
 traced by Langfuse's OpenAI integration, nested under these observations.
 """
 
-from langfuse import Langfuse
+from langfuse import Langfuse, propagate_attributes
 
 from agentic_rag.generation.base import Answer, Generator
 from agentic_rag.generation.prompt import citation
@@ -24,9 +24,14 @@ class TracedRAG(RAG):
         self._langfuse = langfuse
 
     def ask(self, question: str) -> Answer:
-        with self._langfuse.start_as_current_observation(
-            name="ask", as_type="chain", input=question, metadata={"k": self._k}
-        ) as observation:
+        # The trace name goes on every observation, the OpenAI calls included: Langfuse filters
+        # its observations table on it.
+        with (
+            propagate_attributes(trace_name="ask"),
+            self._langfuse.start_as_current_observation(
+                name="ask", as_type="chain", input=question, metadata={"k": self._k}
+            ) as observation,
+        ):
             answer = super().ask(question)
             cited = {number: citation(source) for number, source in answer.cited.items()}
             observation.update(output={"text": answer.text, "cited": cited})
