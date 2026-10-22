@@ -8,9 +8,9 @@ from lxml import etree
 from lxml.etree import _Element  # pyright: ignore[reportPrivateUsage]  # no public name
 
 from agentic_rag.document import Block, Division
-from agentic_rag.ingestion.eurlex import parse_eurlex
+from agentic_rag.ingestion.parsers.eurlex import parse_eurlex
 
-_CORPUS = Path(__file__).parents[1] / "data" / "corpus"
+_CORPUS = Path(__file__).parents[3] / "data" / "corpus"
 
 
 # --- Builders: a minimal act in the XHTML of the Official Journal, as served by Cellar ---

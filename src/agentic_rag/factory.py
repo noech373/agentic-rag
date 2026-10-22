@@ -7,8 +7,9 @@ from openai import OpenAI
 from sqlalchemy import create_engine
 
 from agentic_rag.config import Settings
-from agentic_rag.embeddings import Embedder, OpenAIEmbedder
-from agentic_rag.postgres import PostgresStore, database_url
+from agentic_rag.embeddings.base import Embedder
+from agentic_rag.embeddings.openai import OpenAIEmbedder
+from agentic_rag.storage.postgres import PostgresStore, database_url
 
 
 def make_store(settings: Settings) -> PostgresStore:

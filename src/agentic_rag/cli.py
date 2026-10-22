@@ -54,7 +54,7 @@ def convert_pdfs(
 ) -> None:
     """Run Docling on the PDFs of the corpus and cache its output (minutes per document)."""
     # Imported here: Docling takes seconds to import, the other commands do not need it.
-    from agentic_rag.ingestion.pdf import cache_path, load_or_convert
+    from agentic_rag.ingestion.parsers.pdf import cache_path, load_or_convert
 
     for document in load_manifest(manifest).documents:
         if document.format != "pdf":

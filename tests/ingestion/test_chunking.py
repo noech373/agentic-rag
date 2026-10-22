@@ -7,12 +7,12 @@ from pydantic import ValidationError
 
 from agentic_rag.document import Block, Chunk, Division
 from agentic_rag.ingestion.chunking import chunk_blocks, count_tokens
-from agentic_rag.ingestion.eurlex import parse_eurlex
-from agentic_rag.ingestion.markdown import parse_markdown
-from agentic_rag.ingestion.pdf import cache_path, parse_pdf
+from agentic_rag.ingestion.parsers.eurlex import parse_eurlex
+from agentic_rag.ingestion.parsers.markdown import parse_markdown
+from agentic_rag.ingestion.parsers.pdf import cache_path, parse_pdf
 
-_CORPUS = Path(__file__).parents[1] / "data" / "corpus"
-_CACHE = Path(__file__).parents[1] / "data" / "cache"
+_CORPUS = Path(__file__).parents[2] / "data" / "corpus"
+_CACHE = Path(__file__).parents[2] / "data" / "cache"
 
 _SECTION = (
     Division(kind="chapter", number="IV", title="Controller and processor"),

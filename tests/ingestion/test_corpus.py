@@ -16,7 +16,7 @@ from agentic_rag.ingestion.corpus import (
     load_manifest,
 )
 
-_MANIFEST = Path(__file__).parents[1] / "corpus" / "manifest.toml"
+_MANIFEST = Path(__file__).parents[2] / "corpus" / "manifest.toml"
 _CONTENT = b"Article 33: notify the breach within 72 hours."
 
 

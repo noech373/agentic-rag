@@ -9,14 +9,14 @@ from sqlalchemy.orm import Session
 
 from agentic_rag.config import PostgresSettings
 from agentic_rag.document import Chunk, Division
-from agentic_rag.postgres import (
+from agentic_rag.storage.base import IndexedDocument
+from agentic_rag.storage.postgres import (
     BM25_INDEX,
     ChunkRow,
     DocumentRow,
     PostgresStore,
     database_url,
 )
-from agentic_rag.store import IndexedDocument
 
 _ARTICLE_33 = (
     Division(kind="chapter", number="IV", title="Controller and processor"),

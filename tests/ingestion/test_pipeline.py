@@ -6,10 +6,10 @@ from typing import get_args
 import pytest
 
 from agentic_rag.document import Block, Chunk, Division
-from agentic_rag.embeddings import Embedder
+from agentic_rag.embeddings.base import Embedder
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, DocumentFormat, SourceDocument
 from agentic_rag.ingestion.pipeline import Ingester, Outcome, Parser, default_parsers
-from agentic_rag.store import ChunkStore, IndexedDocument
+from agentic_rag.storage.base import ChunkStore, IndexedDocument
 
 
 class _FakeStore(ChunkStore):
