@@ -40,6 +40,10 @@ class RetrievedChunk(BaseModel):
 class ChunkStore(Protocol):
     """Written by the ingestion, one whole document at a time."""
 
+    def create_schema(self) -> None:
+        """Create what the store needs and is missing (tables, indexes...); safe to repeat."""
+        ...
+
     def indexed_documents(self) -> dict[str, IndexedDocument]: ...
 
     def replace_document(

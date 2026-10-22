@@ -66,3 +66,27 @@ def convert_pdfs(
         start = time.perf_counter()
         load_or_convert(content, cache_dir)
         typer.echo(f"{'converted':<11} {document.id} in {time.perf_counter() - start:.0f} s")
+
+
+@app.command("ingest")
+def ingest_corpus(
+    manifest: Annotated[Path, typer.Option(help="Corpus manifest.")] = Path("corpus/manifest.toml"),
+    corpus_dir: Annotated[Path, typer.Option(help="Downloaded corpus.")] = Path("data/corpus"),
+    cache_dir: Annotated[Path, typer.Option(help="Docling cache.")] = Path("data/cache"),
+    force: Annotated[
+        bool, typer.Option(help="Also re-ingest unchanged documents (after a parser change).")
+    ] = False,
+) -> None:
+    """Parse, chunk and embed the corpus into the store; unchanged documents are skipped."""
+    from agentic_rag.config import get_settings
+    from agentic_rag.factory import make_embedder, make_store
+    from agentic_rag.ingestion.pipeline import Ingester, default_parsers  # imports Docling
+
+    settings = get_settings()
+    ingester = Ingester(make_store(settings), make_embedder(settings), default_parsers(cache_dir))
+    documents = load_manifest(manifest).documents
+    start = time.perf_counter()
+    for outcome in ingester.run(documents, corpus_dir, force=force):
+        details = f" ({outcome.chunks} chunks)" if outcome.chunks is not None else ""
+        typer.echo(f"{outcome.action:<11} {outcome.document_id}{details}")
+    typer.echo(f"done in {time.perf_counter() - start:.0f} s")
