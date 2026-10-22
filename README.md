@@ -34,7 +34,7 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 ## Tech stack
 
 Python 3.14, uv, PostgreSQL + pgvector + pg_textsearch (BM25), Docling, OpenAI (embeddings and
-LLM). Planned: Langfuse (tracing), LangGraph (agentic phase).
+LLM), Langfuse (tracing). Planned: LangGraph (agentic phase).
 
 ## Getting started
 
@@ -83,6 +83,7 @@ src/agentic_rag/
 ├── retrieval/      base.py (Retriever), vector.py
 ├── generation/     base.py (Generator, Answer), prompt.py, openai.py
 ├── rag.py          retrieve, then generate
+├── tracing.py      Langfuse wrappers around the RAG and its retriever
 ├── factory.py      the one place that picks the implementations, from the settings
 └── cli.py, config.py
 ```
@@ -185,6 +186,25 @@ Known limitations:
 
 Known limitations, to be measured by the evaluation: vector search only (BM25 and reranking are
 planned), a fixed number of sources, and no access control on the documents yet.
+
+## Tracing
+
+With the keys of a [Langfuse](https://langfuse.com) project in `.env` (`LANGFUSE_*`), each
+question becomes a trace:
+
+```text
+ask                    the question; the answer and the sources it cites
+├── retrieve           the k chunks found, with their citations and scores
+│   └── embedding      the question's embedding: tokens, cost
+└── generation         the full prompt, the model, tokens (reasoning included), cost
+```
+
+A trace tells a retrieval miss (the right article is not among the sources) from an LLM mistake,
+and shows where the time goes: on the first traces, embedding the question took 1.3 to 2.6 s and the
+vector search ~50 ms. `ask` and `retrieve` come from wrappers that `factory.py` adds around the RAG
+and its retriever, so their code knows nothing of Langfuse; Langfuse's OpenAI integration traces
+the OpenAI calls. Without the keys, nothing is traced or sent. With them, the questions, sources and
+answers are sent to Langfuse: masking personal data is planned with the guardrails (Phase 5).
 
 ## Development
 
