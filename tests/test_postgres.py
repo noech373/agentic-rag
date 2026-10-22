@@ -8,8 +8,7 @@ from sqlalchemy.exc import DataError, IntegrityError, OperationalError, Programm
 from sqlalchemy.orm import Session
 
 from agentic_rag.config import PostgresSettings
-from agentic_rag.ingestion.chunking import Chunk
-from agentic_rag.ingestion.document import Division
+from agentic_rag.document import Chunk, Division
 from agentic_rag.postgres import (
     BM25_INDEX,
     ChunkRow,

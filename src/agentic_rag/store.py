@@ -10,7 +10,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from agentic_rag.ingestion.chunking import Chunk
+from agentic_rag.document import Chunk
 
 
 class IndexedDocument(BaseModel):

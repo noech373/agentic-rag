@@ -12,7 +12,7 @@ would hold no content, since the next "##" closes it, and its text would be lost
 
 import re
 
-from agentic_rag.ingestion.document import Block, Division
+from agentic_rag.document import Block, Division
 
 _HEADING = re.compile(r"(?P<marks>#{1,6})\s+(?P<title>.*?)[\s#]*")  # "## Title", "## Title ##"
 _LINK = re.compile(r"\[(?P<text>[^\]]*)\]\([^)]*\)")  # "[text](https://...)": the URL is noise

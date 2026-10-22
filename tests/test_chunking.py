@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from agentic_rag.ingestion.chunking import Chunk, chunk_blocks, count_tokens
-from agentic_rag.ingestion.document import Block, Division
+from agentic_rag.document import Block, Chunk, Division
+from agentic_rag.ingestion.chunking import chunk_blocks, count_tokens
 from agentic_rag.ingestion.eurlex import parse_eurlex
 from agentic_rag.ingestion.markdown import parse_markdown
 from agentic_rag.ingestion.pdf import cache_path, parse_pdf
