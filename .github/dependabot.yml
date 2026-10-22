@@ -22,6 +22,8 @@ updates:
     groups:
       python-minor-and-patch: # one PR for all non-breaking updates; majors get their own PR
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: docling-slim # updated by hand: see the comment in pyproject.toml
 
   - package-ecosystem: pre-commit # `rev` fields in .pre-commit-config.yaml
     directory: /
