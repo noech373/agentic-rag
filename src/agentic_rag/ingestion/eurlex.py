@@ -17,7 +17,7 @@ from collections.abc import Iterator
 from lxml import etree
 from lxml.etree import _Element  # pyright: ignore[reportPrivateUsage]  # no public name
 
-from agentic_rag.ingestion.document import Block, Division, DivisionKind
+from agentic_rag.document import Block, Division, DivisionKind
 
 _X = "{http://www.w3.org/1999/xhtml}"  # every tag is namespaced: f"{_X}p" matches <p>
 _INDENT = "  "  # per level of nested points

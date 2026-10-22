@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from agentic_rag.config import PostgresSettings
-from agentic_rag.ingestion.chunking import Chunk
+from agentic_rag.document import Chunk
 from agentic_rag.store import ChunkStore, IndexedDocument, RetrievedChunk, VectorSearch
 
 BM25_INDEX = "chunks_text_bm25_idx"  # queries name it: text <@> to_bm25query(:query, BM25_INDEX)

@@ -20,8 +20,8 @@ from docling_core.types.doc.items.table.table_data import TableCell, TableData
 from docling_core.types.doc.items.text import ListItem, SectionHeaderItem, TextItem
 from docling_core.types.doc.labels import DocItemLabel
 
+from agentic_rag.document import Block, Division
 from agentic_rag.ingestion import pdf
-from agentic_rag.ingestion.document import Block, Division
 from agentic_rag.ingestion.pdf import (
     PdfConversionError,
     blocks_from_docling,

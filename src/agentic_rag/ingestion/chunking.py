@@ -2,12 +2,10 @@
 
 import functools
 from collections.abc import Callable, Sequence
-from typing import Literal
 
 import tiktoken
-from pydantic import BaseModel, ConfigDict, Field
 
-from agentic_rag.ingestion.document import Block, Division, DivisionKind
+from agentic_rag.document import Block, Chunk, Division, DivisionKind
 
 type TokenCounter = Callable[[str], int]
 type _Path = tuple[Division, ...]
@@ -15,21 +13,6 @@ type _Path = tuple[Division, ...]
 # A chunk never spans two of these. The unit of a block is its path down to the first of them
 # (Article 33, Recital 85, Annex III, point 3.2.4), or its whole path if it has none (headings).
 _UNITS: frozenset[DivisionKind] = frozenset({"article", "recital", "annex", "point"})
-
-
-class Chunk(BaseModel):
-    """What gets embedded, retrieved and given to the LLM: consecutive blocks of one unit.
-
-    Small blocks of a unit are merged up to the token budget, long ones are split between their
-    lines. A table is always a chunk of its own, never split.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    kind: Literal["text", "table"]
-    text: str = Field(min_length=1)  # the blocks' lines, and the headings entered between them
-    path: tuple[Division, ...]  # the longest path its blocks share: Article 33 for 33(1) to 33(5)
-    page: int | None = None  # PDFs: the page the chunk starts on
 
 
 @functools.cache
