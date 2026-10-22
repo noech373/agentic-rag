@@ -90,3 +90,32 @@ def ingest_corpus(
         details = f" ({outcome.chunks} chunks)" if outcome.chunks is not None else ""
         typer.echo(f"{outcome.action:<11} {outcome.document_id}{details}")
     typer.echo(f"done in {time.perf_counter() - start:.0f} s")
+
+
+@app.command("ask")
+def ask(
+    question: Annotated[str, typer.Argument(help="A question on EU compliance.")],
+    k: Annotated[int, typer.Option(min=1, help="Number of sources given to the LLM.")] = 8,
+    retrieved: Annotated[
+        bool, typer.Option(help="List every retrieved source with its score, cited or not.")
+    ] = False,
+) -> None:
+    """Answer a question from the ingested corpus, citing the sources."""
+    from agentic_rag.config import get_settings
+    from agentic_rag.factory import make_rag
+    from agentic_rag.generation.prompt import citation
+
+    if not question.strip():
+        raise typer.BadParameter("the question is empty")
+    answer = make_rag(get_settings(), k=k).ask(question)
+    typer.echo(answer.text)
+
+    cited = answer.cited
+    sources = dict(enumerate(answer.sources, start=1)) if retrieved else cited
+    if sources:
+        typer.echo()
+    for number, source in sources.items():
+        url = f" {source.document.source_url}" if source.document.source_url else ""
+        score = f"{source.score:.3f} " if retrieved else ""
+        mark = "" if not retrieved or number in cited else " (not cited)"
+        typer.echo(f"[{number}] {score}{citation(source)}{url}{mark}")
