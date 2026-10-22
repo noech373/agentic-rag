@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 
 from agentic_rag.document import Block, Division
-from agentic_rag.ingestion.markdown import parse_markdown
+from agentic_rag.ingestion.parsers.markdown import parse_markdown
 
-_CORPUS = Path(__file__).parents[1] / "data" / "corpus"
+_CORPUS = Path(__file__).parents[3] / "data" / "corpus"
 
 
 def _parse(text: str) -> list[Block]:

@@ -7,7 +7,7 @@ import httpx
 import pytest
 from openai import OpenAI
 
-from agentic_rag.embeddings import OpenAIEmbedder
+from agentic_rag.embeddings.openai import OpenAIEmbedder
 
 
 class _FakeOpenAI:

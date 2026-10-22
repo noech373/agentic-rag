@@ -21,8 +21,8 @@ from docling_core.types.doc.items.text import ListItem, SectionHeaderItem, TextI
 from docling_core.types.doc.labels import DocItemLabel
 
 from agentic_rag.document import Block, Division
-from agentic_rag.ingestion import pdf
-from agentic_rag.ingestion.pdf import (
+from agentic_rag.ingestion.parsers import pdf
+from agentic_rag.ingestion.parsers.pdf import (
     PdfConversionError,
     blocks_from_docling,
     cache_path,
@@ -31,7 +31,7 @@ from agentic_rag.ingestion.pdf import (
     read_outline,
 )
 
-_ROOT = Path(__file__).parents[1]
+_ROOT = Path(__file__).parents[3]
 _CORPUS = _ROOT / "data" / "corpus"
 _CACHE = _ROOT / "data" / "cache"
 
