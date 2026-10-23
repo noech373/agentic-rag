@@ -1,0 +1,837 @@
+# Golden set: questions with the passages that answer them, to measure the retrieval.
+#
+# A passage is a short verbatim quote (4 to 25 words), not a chunk id, so the set outlives any
+# change to the parsing or the chunking. A retrieved chunk is relevant when it contains a quote
+# whole, ignoring case, punctuation and spacing, in whatever document: a guideline that quotes
+# the GDPR word for word answers as well as the GDPR.
+# A check mark in a table counts as a word: ✔ (or ✓) is "yes", ✘ (or ✗) is "no".
+#
+# category: factual | vague | table | multi-document | unanswerable
+# origin:   passage | blind
+#           passage: written while reading a passage, by hand or by an AI;
+#           blind: written without reading the corpus, as a user would. Comparing the scores
+#           of the two shows whether the questions written from a passage are easier.
+# evidence: one [[questions.evidence]] per fact the answer needs. `any_of` lists passages that
+#           state this fact: one of them is enough (several when documents state it in
+#           different words). `document` is where the quote was taken from.
+# An unanswerable question has no evidence, and its answer is the RAG's exact refusal.
+#
+# Check: uv run pytest tests/evaluation/test_golden.py
+
+[[questions]]
+id = "ccpa-opt-out"
+category = "unanswerable"
+origin = "passage"
+question = "Can California residents opt out of the sale of their personal information?"
+answer = "I don't know based on the available sources."
+
+
+[[questions]]
+id = "nis2-managed-security-provider-definition"
+category = "factual"
+origin = "passage"
+question = "What counts as a company that runs IT security for other businesses, and how is it different from a regular IT outsourcing company?"
+answer = "It is a managed service provider (one that installs, runs or maintains customers’ IT systems, on site or remotely) that specifically carries out or helps with activities relating to cybersecurity risk management, for example incident response, penetration testing, security audits and consultancy (NIS2, Article 6(39) and (40), recital 86)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "an entity that provides services related to the installation, management, operation or maintenance of ICT products, networks, infrastructure, applications or any other network and information systems" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "a managed service provider that carries out or provides assistance for activities relating to cybersecurity risk management" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "managed security service providers in areas such as incident response, penetration testing, security audits and consultancy" },
+]
+
+[[questions]]
+id = "nis2-in-house-data-centre-exclusion"
+category = "applicability"
+origin = "passage"
+question = "We run our own server rooms just for our own company’s needs. Do the new EU security rules treat us like the big hosting companies?"
+answer = "No, not as a data centre service provider: the term 'data centre service' does not apply to in-house corporate data centres owned and operated by the entity for its own purposes (NIS2, recital 35)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "should not apply to in-house corporate data centres owned and operated by the entity concerned, for its own purposes" },
+]
+
+[[questions]]
+id = "nis2-medical-device-manufacturer"
+category = "table"
+origin = "passage"
+question = "We manufacture medical devices. Do the NIS2 rules apply to us, and as what kind of entity?"
+answer = "NIS2 applies if the company is at least a medium-sized enterprise. If it makes medical devices considered critical during a public health emergency (Annex I), it is an essential entity when it exceeds the medium-sized ceilings. For other medical devices and in vitro diagnostic devices (Annex II) it is an important entity (NIS2, Article 2(1), Article 3(1)(a) and 3(2), Annexes I and II)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "which qualify as medium-sized enterprises under Article 2 of the Annex to Recommendation 2003/361/EC, or exceed the ceilings for medium-sized enterprises" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "Entities manufacturing medical devices considered to be critical during a public health emergency" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "entities of a type referred to in Annex I which exceed the ceilings for medium-sized enterprises" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "Entities manufacturing medical devices as defined in Article 2, point (1), of Regulation (EU) 2017/745" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "entities of a type referred to in Annex I or II which do not qualify as essential entities pursuant to paragraph 1 of this Article shall be considered to be important entities" },
+]
+
+[[questions]]
+id = "nis2-essential-entity-fine"
+category = "factual"
+origin = "blind"
+question = "What is the maximum administrative fine for an essential entity under NIS2?"
+answer = "Member States must provide for a maximum of at least EUR 10 000 000 or at least 2 % of the total worldwide annual turnover of the undertaking in the preceding financial year, whichever is higher (NIS2, Article 34(4))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "essential entities are subject, in accordance with paragraphs 2 and 3 of this Article, to administrative fines of a maximum of at least EUR 10 000 000" },
+  { document = "nis2", quote = "a maximum of at least 2 % of the total worldwide annual turnover in the preceding financial year of the undertaking to which the essential entity belongs" },
+]
+
+[[questions]]
+id = "nis1-replacement-reasons"
+category = "vague"
+origin = "blind"
+question = "Why did the EU decide to replace its previous cybersecurity law?"
+answer = "The review of Directive 2016/1148 found inherent shortcomings: very divergent national implementation (including of its scope, left to Member States), which fragmented the internal market, and an obsolete distinction between operators of essential services and digital service providers. NIS2 aims to remove these divergences, and the previous directive is repealed (NIS2, recitals 2, 4, 5 and 6; Article 44)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "has revealed inherent shortcomings that prevent it from addressing effectively current and emerging cybersecurity challenges" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "a wide divergence in its implementation by Member States, including in relation to its scope" },
+  { document = "nis2", quote = "All those divergences entail a fragmentation of the internal market" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "the differentiation between operators of essential services and digital service providers, which has been proven to be obsolete" },
+]
+
+[[questions]]
+id = "nis2-small-company-scope"
+category = "factual"
+origin = "blind"
+question = "Is a small company exempt from NIS2?"
+answer = "Not automatically. The general rule covers medium-sized and larger entities in the listed sectors, but some entities are covered regardless of size, for example providers of public electronic communications networks or services, trust service providers, TLD registries and DNS service providers, and sole providers in a Member State of an essential service (NIS2, Article 2(1) and 2(2))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "which qualify as medium-sized enterprises under Article 2 of the Annex to Recommendation 2003/361/EC, or exceed the ceilings for medium-sized enterprises" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "Regardless of their size, this Directive also applies to entities of a type referred to in Annex I or II" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "the entity is the sole provider in a Member State of a service which is essential for the maintenance of critical societal or economic activities" },
+]
+
+[[questions]]
+id = "nis2-minimum-security-measures"
+category = "factual"
+origin = "blind"
+question = "What security measures does NIS2 require at a minimum?"
+answer = "Appropriate and proportionate measures based on an all-hazards approach, including at least: risk analysis and information system security policies; incident handling; business continuity and crisis management; supply chain security; security in acquisition, development and maintenance (including vulnerability handling and disclosure); procedures to assess the effectiveness of the measures; basic cyber hygiene and training; cryptography and encryption policies; human resources security, access control and asset management; and multi-factor or continuous authentication and secured communications where appropriate (NIS2, Article 21(2))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "based on an all-hazards approach that aims to protect network and information systems and the physical environment of those systems from incidents" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "policies on risk analysis and information system security" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "incident handling" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "business continuity, such as backup management and disaster recovery, and crisis management" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "supply chain security, including security-related aspects concerning the relationships between each entity and its direct suppliers or service providers" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "security in network and information systems acquisition, development and maintenance, including vulnerability handling and disclosure" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "policies and procedures to assess the effectiveness of cybersecurity risk-management measures" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "basic cyber hygiene practices and cybersecurity training" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "policies and procedures regarding the use of cryptography and, where appropriate, encryption" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "human resources security, access control policies and asset management" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "the use of multi-factor authentication or continuous authentication solutions" },
+]
+
+[[questions]]
+id = "cyberattack-reporting-deadlines"
+category = "multi-document"
+origin = "blind"
+question = "After a serious cyberattack, what deadlines do I have to report it to the authorities?"
+answer = "For a significant incident: an early warning within 24 hours of becoming aware of it, an incident notification within 72 hours, and a final report no later than one month after the incident notification (NIS2, Article 23(4)(a), (b) and (d); recital 102)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "within 24 hours of becoming aware of the significant incident, an early warning" },
+  { document = "nis2", quote = "submit an early warning without undue delay and in any event within 24 hours" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "within 72 hours of becoming aware of the significant incident, an incident notification" },
+  { document = "nis2", quote = "incident notification without undue delay and in any event within 72 hours of becoming aware of the significant incident" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "a final report not later than one month after the submission of the incident notification" },
+  { document = "nis2", quote = "A final report should be submitted not later than one month after the incident notification" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "An intermediate report shall be submitted the latest within 72 hours from the submission of the initial notification" },
+  { document = "esas-dora-incident-reporting", quote = "by referring to 72 hours from the submission of the initial notification" },
+  { document = "esas-dora-incident-reporting", quote = "intermediate report at the latest within 72 hours from the submission of the initial report" },
+  { document = "esas-dora-incident-reporting", quote = "The timeline envisaged under DORA is the latest within 72 hours from the submission of the initial notification" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "the final report shall be submitted no later than one month from the submission of the latest updated intermediate report" },
+  { document = "esas-dora-incident-reporting", quote = "requiring the submission of the final report no later than 1 month from the submission of the latest intermediate report" },
+  { document = "esas-dora-incident-reporting", quote = "the timelines for the submission of the final report of one month after the submission of the intermediate report" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "within 4 hours from the moment of classification of the incident as major" },
+  { document = "esas-dora-incident-reporting", quote = "within 4 hours from the classification of the incident but no later than 24 hours" },
+  { document = "esas-dora-incident-reporting", quote = "within 4 hours from the moment the financial entity classifies the incident as major" },
+  { document = "esas-dora-incident-reporting", quote = "the requirement to submit the initial notification 4 hours after classification" },
+]
+
+[[questions]]
+id = "supplier-security-check"
+category = "multi-document"
+origin = "passage"
+question = "How should we check the security of our suppliers?"
+answer = """
+Under NIS2, supply chain security is one of the minimum cybersecurity risk-management measures: it covers the security aspects of your relationship with each direct supplier and service provider (Article 21(2)(d)). When choosing these measures, you must take into account the vulnerabilities specific to each supplier, the overall quality of their products, their cybersecurity practices, including their secure development procedures, and the results of the EU-level coordinated security risk assessments of critical supply chains (Article 21(3)).
+In practice, this takes the form of a supply chain security policy governing your relations with direct suppliers and service providers (Implementing Regulation (EU) 2024/2690, Annex, points 5.1 and 5.2, as detailed in the ENISA technical implementation guidance). The policy lays down criteria for selecting and contracting suppliers: besides their cybersecurity practices and the quality and resilience of their ICT products and services, these include their ability to meet your security specifications and your ability to diversify sources and limit vendor lock-in. ENISA also recommends a risk analysis before signing any agreement. Contracts, where appropriate through SLAs, should include an obligation for suppliers to notify you of incidents without undue delay and a right to audit or to receive audit reports. Throughout the relationship, keep an up-to-date registry of your direct suppliers, monitor SLA reports, review incidents involving their products and services, and monitor and evaluate changes in their cybersecurity practices at planned intervals, acting on them where necessary.
+"""
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "supply chain security, including security-related aspects concerning the relationships between each entity and its direct suppliers or service providers" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "nis2", quote = "the vulnerabilities specific to each direct supplier and service provider" },
+  { document = "nis2", quote = "and cybersecurity practices of their suppliers and service providers, including their secure development procedures" },
+  { document = "nis2", quote = "entities are required to take into account the results of the coordinated security risk assessments of critical supply chains" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "establish, implement and apply a supply chain security policy which governs the relations with their direct suppliers and service providers" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "lay down criteria to select and contract suppliers and service providers" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the cybersecurity practices of the suppliers and service providers, including their secure development procedures" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the ability of the suppliers and service providers to meet cybersecurity specifications set by the relevant entities" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the overall quality and resilience of ICT products and ICT services and the cybersecurity risk-management measures embedded in them" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the ability of the relevant entities to diversify sources of supply and limit vendor lock-in" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "ensure that their contracts with the suppliers and service providers specify, where appropriate through service level agreements" },
+  { document = "enisa-nis2-implementation-guidance", quote = "an obligation on suppliers and service providers to notify, without undue delay, the relevant entities of incidents" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the right to audit or right to receive audit reports" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "Perform a risk analysis before entering into any agreement with suppliers and service providers related to information security" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "monitor, evaluate and, where necessary, act upon changes in the cybersecurity practices of suppliers and service providers, at planned intervals" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "regularly monitor reports on the implementation of the service level agreements, where applicable" },
+  { document = "enisa-nis2-implementation-guidance", quote = "review incidents related to ICT products and ICT services from suppliers and service providers" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "maintain and keep up to date a registry of their direct suppliers and service providers" },
+]
+
+[[questions]]
+id = "breach-users-database-deadline"
+category = "factual"
+origin = "blind"
+question = "I just found out someone accessed my users’ database. How long do I have to tell the authorities?"
+answer = "Without undue delay and, where feasible, not later than 72 hours after becoming aware of it (GDPR, Article 33(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "where feasible, not later than 72 hours" },
+  { document = "edpb-guidelines-2021-01", quote = "where feasible, not later than after 72 hours" },
+  { document = "cnil-developer-guide-12", quote = "report the violation to the local data protection agency within 72 hours" },
+  { document = "esas-dora-incident-reporting", quote = "(GDPR) within 72 hours of its detection" },
+]
+
+[[questions]]
+id = "ip-addresses-personal-data"
+category = "factual"
+origin = "passage"
+question = "Do I need to treat my visitors’ IP addresses as private information?"
+answer = "Yes, they can be personal data: IP addresses are online identifiers which, combined with other information, can be used to create profiles of people and identify them (GDPR, recital 30). The CNIL lists the IP address among examples of personal data."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "online identifiers provided by their devices, applications, tools and protocols, such as internet protocol addresses" },
+  { document = "cnil-developer-guide-01", quote = "IP address, computer connection identifier or cookie identifier" },
+]
+
+[[questions]]
+id = "workplace-emotion-recognition"
+category = "vague"
+origin = "blind"
+question = "Is it allowed to use AI to guess how my coworkers feel from their webcam?"
+answer = "No: the AI Act prohibits AI systems that infer the emotions of people in the workplace and in education institutions, except for medical or safety reasons (Article 5(1)(f))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "ai-act", quote = "to infer emotions of a natural person in the areas of workplace and education institutions" },
+  { document = "ai-act", quote = "detect the emotional state of individuals in situations related to the workplace and education should be prohibited" },
+]
+
+[[questions]]
+id = "chatbot-disclose-ai"
+category = "factual"
+origin = "passage"
+question = "My app has a support chatbot. Do I have to tell people it’s not a human?"
+answer = "Yes, unless it is obvious: AI systems meant to interact directly with people must be designed so that people are informed they are interacting with an AI system, unless this is obvious to a reasonably well-informed person. The obligation is on the provider of the system (AI Act, Article 50(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "ai-act", quote = "interacting with an AI system, unless this is obvious from the point of view of a natural person" },
+]
+
+[[questions]]
+id = "analytics-cookie-lifetime"
+category = "factual"
+origin = "passage"
+question = "How long can an analytics cookie stay if I don’t ask for consent?"
+answer = "13 months at most: to be exempt from consent, an audience measurement tracker must, among other conditions, have its lifetime limited to 13 months (CNIL, sheet 16)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-16", quote = "To limit the lifetime of the trackers to 13 months" },
+]
+
+[[questions]]
+id = "smart-thermostat-data-access"
+category = "vague"
+origin = "blind"
+question = "I bought a smart thermostat. Can I get the data it collected from the manufacturer?"
+answer = "Yes, when you cannot access the data directly from the device: the data holder must make the readily available data, with the metadata needed to interpret and use it, accessible to you without undue delay, easily, securely and free of charge (Data Act, Article 4(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "data-act", quote = "shall make readily available data, as well as the relevant metadata necessary to interpret and use those data, accessible to the user" },
+]
+
+[[questions]]
+id = "bank-simulated-attack-frequency"
+category = "factual"
+origin = "blind"
+question = "How often does a bank have to run a full simulated attack on its live systems?"
+answer = "At least every 3 years, for the financial entities identified by the competent authority (not all of them); the authority may ask to reduce or increase this frequency based on the entity’s risk profile (DORA, Article 26(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "dora", quote = "shall carry out at least every 3 years advanced testing by means of TLPT" },
+]
+
+[[questions]]
+id = "scrolling-as-consent"
+category = "vague"
+origin = "blind"
+question = "If a user just keeps scrolling on my site, can I count that as a yes to tracking?"
+answer = "No: consent must be given by a clear affirmative act, a statement or conduct that clearly indicates acceptance; silence, pre-ticked boxes or inactivity do not constitute consent (GDPR, recital 32)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "Silence, pre-ticked boxes or inactivity should not therefore constitute consent" },
+]
+
+
+[[questions]]
+id = "erasure-legal-obligation"
+category = "factual"
+origin = "passage"
+question = "Can a data subject request the erasure of their personal data when the controller is processing it based on a legal obligation?"
+answer = "No: when the processing rests on a legal obligation, the right to erasure does not apply (CNIL, sheet 15, table of the rights by legal basis; GDPR, Article 17(3)(b))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-15", quote = "Legal obligation ✔ ✔ ✘ ✔ ✘ ✘" },
+  { document = "gdpr", quote = "for compliance with a legal obligation which requires processing" },
+]
+
+[[questions]]
+id = "marketplace-credentials-breach"
+category = "table"
+origin = "passage"
+question = "We run an e-commerce site with buyers in several EU countries. Hackers leaked our users' logins and order history on the internet. Who do we have to tell, and what should we do right away?"
+answer = "The lead supervisory authority must be notified (if the processing is cross-border) and so must the data subjects, as the breach could lead to a high risk. To mitigate the risk, the controller should for example force a password reset of the affected accounts, and consider other notification obligations (EDPB Guidelines 9/2022, example vi)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "Yes, report to lead supervisory authority if involves cross-border processing" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "forcing password resets of the affected accounts" },
+]
+
+[[questions]]
+id = "exfiltration-online-service-notification"
+category = "table"
+origin = "passage"
+question = "Hackers broke into our web app and copied our customers' personal data. All our customers live in one EU country. Do we have to alert the regulator and the people affected?"
+answer = "The supervisory authority, if there are likely consequences to individuals; the individuals too, depending on the nature of the data affected and if the severity of the likely consequences is high (EDPB Guidelines 9/2022, example ii; GDPR, Articles 33(1) and 34(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "Yes, report to the supervisory authority if there are likely consequences to individuals" },
+  { document = "gdpr", quote = "unless the personal data breach is unlikely to result in a risk to the rights and freedoms of natural persons" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "if the severity of the likely consequences to individuals is high" },
+  { document = "gdpr", quote = "high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject" },
+]
+
+[[questions]]
+id = "dora-report-identification-code"
+category = "table"
+origin = "passage"
+question = "Which company ID goes into a DORA incident report, and what does it look like?"
+answer = "A Legal Entity Identifier (LEI): a unique 20-character alphanumeric code, based on ISO 17442-1:2020. A third-party provider submitting the report for the entity can instead use the identification code specified in the Commission Implementing Regulation that specifies Article 28(9) of DORA (ESAs, data glossary, field 1.3)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "Legal Entity Identifier (LEI), which is a unique 20 alphanumeric character code" },
+]
+
+[[questions]]
+id = "dora-client-impact-mandatory"
+category = "table"
+origin = "passage"
+question = "After the first notification of a major ICT incident, when do we have to tell the regulator whether our clients or counterparties were affected?"
+answer = "In the intermediate and final reports, when the 'Relevance of clients and financial counterparts' threshold is met; it is not required in the initial notification (ESAs, data glossary, field 3.8)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "Yes, if 'Relevance of clients and financial counterparts ' threshold is met" },
+]
+
+[[questions]]
+id = "hospital-records-unavailable"
+category = "table"
+origin = "passage"
+question = "Our hospital's patient files were unreachable for a day and a half after a cyber-attack. Do we have to report that as a breach?"
+answer = "Yes: medical records unavailable for 30 hours because of a cyber-attack must be notified to the supervisory authority, as a high risk to patients' well-being and privacy may occur, and the affected individuals must be told too (EDPB Guidelines 9/2022, example viii; EDPB Guidelines 01/2021, case 03)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "the hospital is obliged to notify as high risk to patient's well being and privacy may occur" },
+  { document = "edpb-guidelines-2021-01", quote = "A notification to the SA is considered necessary, as special categories of personal data are involved" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "Yes, report to the affected individuals" },
+  { document = "edpb-guidelines-2021-01", quote = "Informing the data subjects about the breach is necessary due to the impact for the patients" },
+]
+
+[[questions]]
+id = "encrypted-usb-key-stolen"
+category = "table"
+origin = "passage"
+question = "Burglars took a flash drive with a backup of our customer files from our office. The drive was encrypted. Do we need to declare this?"
+answer = "Probably not: if the data are encrypted with a state of the art algorithm, backups exist, the unique key is not compromised and the data can be restored in good time, it may not be a reportable breach. If the key is later compromised, notification is required (EDPB Guidelines 9/2022, example i; EDPB Guidelines 01/2021, case 10)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "The key is stolen during a break-in. No. No. As long as the data are encrypted with a state of the art algorithm" },
+  { document = "edpb-guidelines-2021-01", quote = "The confidentiality of the personal data on the devices was not compromised due to the strong password protection" },
+]
+
+[[questions]]
+id = "dora-incident-type-initial-notification"
+category = "table"
+origin = "passage"
+question = "Is the 'type of incident' field required in the first notification of a major incident?"
+answer = "No: the 'type of the incident' field (3.23) is not mandatory for the initial notification, but it is for the intermediate and the final reports (ESAs draft ITS, data glossary)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "esas-dora-incident-reporting", quote = "3.23. Type of the incident Classification of incidents by type. No Yes Yes" },
+]
+
+[[questions]]
+id = "eu-adequacy-country-list"
+category = "unanswerable"
+origin = "passage"
+question = "Which countries are on the Commission's list of adequate countries for data transfers?"
+answer = "I don't know based on the available sources."
+
+[[questions]]
+id = "cyber-resilience-act-sbom"
+category = "unanswerable"
+origin = "passage"
+question = "Does the Cyber Resilience Act require a software bill of materials?"
+answer = "I don't know based on the available sources."
+
+[[questions]]
+id = "meta-us-transfer-fine"
+category = "unanswerable"
+origin = "passage"
+question = "What fine did Meta get for its transfers of data to the US?"
+answer = "I don't know based on the available sources."
+
+[[questions]]
+id = "iso-27001-supplier-clause"
+category = "unanswerable"
+origin = "passage"
+question = "Which clause of ISO 27001 covers supplier relationships?"
+answer = "I don't know based on the available sources."
+
+[[questions]]
+id = "bank-breach-who-to-notify"
+category = "multi-document"
+origin = "passage"
+question = "A hacker got into our bank's customer database. Do we report to the financial regulator, the data protection authority, or both?"
+answer = "Both, under two separate obligations: a major ICT-related incident must be reported to the competent financial authority (DORA, Article 19(1)), and a personal data breach must be notified to the supervisory authority without undue delay and, where feasible, within 72 hours of becoming aware of it (GDPR, Article 33(1))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "dora", quote = "Financial entities shall report major ICT-related incidents to the relevant competent authority" },
+  { document = "esas-dora-incident-reporting", quote = "FEs shall report major ICT-related incidents to the relevant competent authority" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "not later than 72 hours after having become aware of it, notify the personal data breach to the supervisory authority" },
+  { document = "gdpr", quote = "where feasible, not later than 72 hours" },
+  { document = "edpb-guidelines-2021-01", quote = "where feasible, not later than after 72 hours" },
+  { document = "cnil-developer-guide-12", quote = "report the violation to the local data protection agency within 72 hours" },
+  { document = "esas-dora-incident-reporting", quote = "(GDPR) within 72 hours of its detection" },
+]
+
+[[questions]]
+id = "cloud-provider-contract-content"
+category = "multi-document"
+origin = "passage"
+question = "We outsource customer-data processing to a cloud provider. What must the contract cover?"
+answer = "Under the GDPR, the contract must set out the subject-matter, duration, nature and purpose of the processing and stipulate, among other things, that the processor acts only on the controller's documented instructions (Article 28(3)). If you are a financial entity, DORA adds at least a clear description of the functions and ICT services, and the locations where they are provided and where data is processed (Article 30(2))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "sets out the subject-matter and duration of the processing, the nature and purpose of the processing" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "processes the personal data only on documented instructions from the controller" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "dora", quote = "a clear and complete description of all functions and ICT services to be provided by the ICT third-party service provider" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "dora", quote = "the locations, namely the regions or countries, where the contracted or subcontracted functions and ICT services are to be provided" },
+]
+
+[[questions]]
+id = "connected-product-sanctions"
+category = "factual"
+origin = "passage"
+question = "If our connected product breaks the data-sharing rules and personal data is involved, which authority can sanction us?"
+answer = "The GDPR supervisory authorities: they monitor the application of the Data Act insofar as personal data is concerned, and for infringements of Chapters II (data from connected products), III and V they may impose administrative fines in accordance with Article 83 GDPR, up to the amount of its Article 83(5) (Data Act, Articles 37(3) and 40(4))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "data-act", quote = "responsible for monitoring the application of this Regulation insofar as the protection of personal data is concerned" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "data-act", quote = "may within their scope of competence impose administrative fines in accordance with Article 83 of Regulation (EU) 2016/679" },
+]
+
+[[questions]]
+id = "employee-leaving-assets"
+category = "factual"
+origin = "passage"
+question = "When an employee leaves, what do we have to do with the laptop and accounts they had?"
+answer = "The assets in the employee's custody must be deposited, returned or deleted upon termination of employment, and this must be documented; where that is not possible, make sure the assets can no longer access the network and information systems (ENISA guidance, 12.5). Their access rights must also be modified accordingly (ENISA guidance, 11.2.2(b))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "ensure that their assets which are under custody of personnel are deposited, returned or deleted upon termination of employment" },
+  { document = "enisa-nis2-implementation-guidance", quote = "ensure that assets are deposited, returned or irrevocably deleted on termination of employment" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "shall document the deposit, return and deletion of those assets" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "ensure that access rights are modified accordingly upon termination or change of employment" },
+]
+
+[[questions]]
+id = "security-patch-production"
+category = "vague"
+origin = "passage"
+question = "Can we push a security patch straight to production?"
+answer = "Not without testing it: security patches must be applied within a reasonable time after they become available, but they must be tested before being applied in production systems, come from trusted sources and be checked for integrity (ENISA guidance, 6.6.1)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "security patches are tested before being applied in production systems" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "security patches are applied within a reasonable time after they become available" },
+]
+
+[[questions]]
+id = "supplier-registry-content"
+category = "factual"
+origin = "blind"
+question = "What information should we keep on record about our suppliers?"
+answer = "A registry of the direct suppliers and service providers, kept up to date, with the contact points for each one and the list of ICT products, services and processes they provide (ENISA guidance, 5.2)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "contact points for each direct supplier and service provider" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "a list of ICT products, ICT services and ICT processes provided by the direct supplier or service provider" },
+]
+
+[[questions]]
+id = "network-segmentation-evidence"
+category = "vague"
+origin = "blind"
+question = "What evidence could I give an auditor to show that my network is segmented?"
+answer = "Documented network segmentation rules based on relevant standards and good practices (ENISA guidance, 6.8.1, examples of evidence); the segmentation should come from the risk assessment and appear in the network diagram."
+
+[[questions.evidence]]
+any_of = [
+  { document = "enisa-nis2-implementation-guidance", quote = "Documented network segmentation rules based on relevant standards and good practices" },
+]
+
+[[questions]]
+id = "cloud-switching-notice-period"
+category = "factual"
+origin = "blind"
+question = "What is the notice period when I want to change cloud provider?"
+answer = "The contract must set a maximum notice period for initiating the switching process, which cannot exceed two months (Data Act, Article 25(2))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "data-act", quote = "a maximum notice period for initiation of the switching process, which shall not exceed two months" },
+]
+
+[[questions]]
+id = "breach-no-notification-individuals"
+category = "factual"
+origin = "blind"
+question = "Are there situations where I don't need to inform the individuals concerned by a breach?"
+answer = "Yes: communication to the data subjects is not required if the controller applied appropriate protection measures to the affected data (such as encryption), took subsequent measures that ensure the high risk is no longer likely to materialise, or if it would involve disproportionate effort, in which case a public communication is made instead (GDPR, Article 34(3))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "The communication to the data subject referred to in paragraph 1 shall not be required if any of the following conditions are met" },
+  { document = "edpb-guidelines-2022-09", quote = "Article 34(3) GDPR states three conditions that, if met, do not require notification to individuals" },
+]
+
+[[questions]]
+id = "job-applicant-ranking-high-risk"
+category = "vague"
+origin = "blind"
+question = "We use a tool to rank job candidates. Is it considered high-risk?"
+answer = "Yes: AI systems used for the recruitment or selection of people, in particular to filter applications and evaluate candidates, are listed in Annex III and considered high-risk (AI Act, Article 6(2)); they are always high-risk when they perform profiling of natural persons (Article 6(3))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "ai-act", quote = "intended to be used for the recruitment or selection of natural persons, in particular to place targeted job advertisements" },
+  { document = "ai-act", quote = "in particular for the recruitment and selection of persons, for making decisions affecting terms of the work-related relationship" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "ai-act", quote = "AI systems referred to in Annex III shall be considered to be high-risk" },
+  { document = "ai-act", quote = "should also be classified as high-risk, since those systems may have an appreciable impact on future career prospects" },
+]
+
+[[questions]]
+id = "dora-register-of-information"
+category = "factual"
+origin = "blind"
+question = "What does DORA Article 28 provide regarding the register of information?"
+answer = "Financial entities must maintain and update a register of information on all contractual arrangements for ICT services provided by ICT third-party service providers, at entity, sub-consolidated and consolidated levels; they must report on it to the competent authorities at least yearly and give them the register on request (DORA, Article 28(3))."
+
+[[questions.evidence]]
+any_of = [
+  { document = "dora", quote = "maintain and update at entity level, and at sub-consolidated and consolidated levels, a register of information" },
+]
+
+[[questions]]
+id = "cookie-shopping-basket-consent"
+category = "vague"
+origin = "blind"
+question = "Is consent required for a cookie that is only used to remember the shopping basket?"
+answer = "In general, no: consent is not required for trackers whose sole purpose is to carry out electronic communication or that are strictly necessary to provide a service requested by the user. A cookie used for several purposes still needs consent for the purposes that require it (CNIL, sheet 15)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-15", quote = "strictly necessary to provide a service requested by the user" },
+]
+
+[[questions]]
+id = "cnil-guide-main-recommendations"
+category = "vague"
+origin = "blind"
+question = "What are the main recommendations of the CNIL developer guide?"
+answer = "The guide sums them up in six steps: be aware of the GDPR core principles (and identify a person responsible for compliance, or rely on the DPO); map and categorize the data and processing in your system, in a record of processing activities; prioritize the required actions according to the risks for data subjects; manage the risks, with a privacy impact assessment when the processing is likely to create high risks; put in place internal processes to ensure compliance at every development stage; document the compliance of your developments (CNIL GDPR Developer Guide, sheet 0)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Be aware of the GDPR core principles" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Map and categorize the data and processing in your system" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Prioritize the required actions" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Manage the risks. When you find out that a processing of personal data is likely to create high risks" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Put in place internal processes to ensure compliance during all development stages" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "cnil-developer-guide-00", quote = "Document developments compliance to prove your compliance with the GDPR at all times" },
+]
+
+[[questions]]
+id = "non-eu-company-gdpr-scope"
+category = "factual"
+origin = "blind"
+question = "We're a US company selling online to customers in France. Does the GDPR apply to us?"
+answer = "Yes: the GDPR applies to a controller not established in the Union when it processes the personal data of people who are in the Union in connection with offering them goods or services, paid or not (GDPR, Article 3(2)(a)). The company must then designate in writing a representative in the Union, unless its processing is only occasional and unlikely to result in a risk (Article 27)."
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "by a controller or processor not established in the Union, where the processing activities are related to" },
+  { document = "gdpr", quote = "not established in the Union should be subject to this Regulation where the processing activities are related to offering goods or services" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "gdpr", quote = "Where Article 3(2) applies, the controller or the processor shall designate in writing a representative in the Union" },
+  { document = "gdpr", quote = "the controller or the processor should designate a representative, unless the processing is occasional" },
+  { document = "edpb-guidelines-2022-09", quote = "Article 27 GDPR requires a controller (and a processor) to designate a representative in the EU" },
+]

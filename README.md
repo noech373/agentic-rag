@@ -6,7 +6,8 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 (GDPR, AI Act, DORA, NIS2, ...), built with production practices in mind.
 
 > **Status:** work in progress. A baseline RAG works end to end (ingestion, vector search,
-> cited answers); the evaluation comes next, then measured improvements.
+> cited answers, tracing); the evaluation is under way (a golden set of 44 questions), and the
+> measured improvements follow.
 
 ## Goals
 
@@ -24,8 +25,8 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 |---|---|---|
 | 0 | Project scaffolding: tooling, CI, local infrastructure, configuration | Done |
 | 1 | Ingestion: layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, embeddings, incremental updates | Done |
-| 2 | Baseline RAG: vector search, cited answers, "I don't know", tracing | In progress |
-| 3 | Evaluation: golden dataset, retrieval and generation metrics, CI quality gates | Planned |
+| 2 | Baseline RAG: vector search, cited answers, "I don't know", tracing | Done |
+| 3 | Evaluation: golden dataset, retrieval and generation metrics, CI quality gates | In progress |
 | 4 | Measured improvements: hybrid search (BM25 + vectors), reranking, contextual retrieval | Planned |
 | 5 | Guardrails: input and output checks, prompt-injection defense | Planned |
 | 6 | Production readiness: streaming API, user feedback, resilience, access control, more document sources | Planned |
@@ -205,6 +206,43 @@ vector search ~50 ms. `ask` and `retrieve` come from wrappers that `factory.py` 
 and its retriever, so their code knows nothing of Langfuse; Langfuse's OpenAI integration traces
 the OpenAI calls. Without the keys, nothing is traced or sent. With them, the questions, sources and
 answers are sent to Langfuse: masking personal data is planned with the guardrails (Phase 5).
+
+## Evaluation
+
+Every later change (hybrid search, reranking, other chunking) is kept only if it improves a
+measure, so the measure comes first. [`eval/golden.toml`](eval/golden.toml) is the golden set: 44
+questions, each with the passages of the corpus that answer it.
+
+| Category | Questions | What it tests |
+|---|---|---|
+| factual | 17 | a precise fact in one text |
+| vague | 10 | a question as a user asks it, without the words of the article |
+| table | 8 | facts that only a table of a PDF states |
+| multi-document | 4 | an answer that needs two documents |
+| unanswerable | 5 | a question the corpus does not cover: the right answer is the refusal |
+
+- **Passages, not chunk ids.** The evidence of a question is a short verbatim quote of the
+  corpus. A retrieved chunk is relevant when it contains the quote whole (case, punctuation and
+  spacing ignored), so the golden set stays valid when the parsing or the chunking changes, which is
+  exactly what the later phases do. A fact can list several quotes (`any_of`) when documents state it
+  in different words: a guideline that quotes the GDPR answers as well as the GDPR.
+- **Written two ways.** 25 questions were written while reading a passage, 19 blind, as a user
+  would, without reading the corpus. Comparing their scores shows whether the first kind is too easy.
+- **Checked by tests.** `tests/evaluation/test_golden.py` verifies the structure (unique ids,
+  documents of the manifest, an unanswerable question has no evidence and expects the refusal) and
+  that each quote is whole in a chunk of its document and not so generic that it matches many chunks
+  (these two read the corpus: they are skipped until `download` and `convert` have run).
+
+```bash
+uv run pytest tests/evaluation/test_golden.py
+```
+
+Still to do: the retrieval metrics (recall@k, MRR) and their runner, then the generation metrics
+(faithfulness, answer relevancy) with an LLM judge calibrated on human grades, thresholds in CI, and
+pooling (judging what several retrievers return) to find relevant chunks the quotes do not list. With
+44 questions the scores are a baseline, not a proof: the confidence interval at 95 % is about
+±14 points, so improvements will be compared question by question, and the set will grow to
+about 100 before the finer conclusions of Phase 4.
 
 ## Development
 
