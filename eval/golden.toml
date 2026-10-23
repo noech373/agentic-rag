@@ -35,7 +35,7 @@ answer = "It is a managed service provider (one that installs, runs or maintains
 
 [[questions.evidence]]
 any_of = [
-  { document = "nis2", quote = "an entity that provides services related to the installation, management, operation or maintenance of ICT products, networks, infrastructure, applications or any other network and information systems" },
+  { document = "nis2", quote = "an entity that provides services related to the installation, management, operation or maintenance of ICT products, networks, infrastructure, applications or any other network" },
 ]
 
 [[questions.evidence]]
@@ -50,7 +50,7 @@ any_of = [
 
 [[questions]]
 id = "nis2-in-house-data-centre-exclusion"
-category = "applicability"
+category = "vague"
 origin = "passage"
 question = "We run our own server rooms just for our own company’s needs. Do the new EU security rules treat us like the big hosting companies?"
 answer = "No, not as a data centre service provider: the term 'data centre service' does not apply to in-house corporate data centres owned and operated by the entity for its own purposes (NIS2, recital 35)."
@@ -89,7 +89,7 @@ any_of = [
 
 [[questions.evidence]]
 any_of = [
-  { document = "nis2", quote = "entities of a type referred to in Annex I or II which do not qualify as essential entities pursuant to paragraph 1 of this Article shall be considered to be important entities" },
+  { document = "nis2", quote = "which do not qualify as essential entities pursuant to paragraph 1 of this Article shall be considered to be important entities" },
 ]
 
 [[questions]]
@@ -101,8 +101,8 @@ answer = "Member States must provide for a maximum of at least EUR 10 000 000 or
 
 [[questions.evidence]]
 any_of = [
-  { document = "nis2", quote = "essential entities are subject, in accordance with paragraphs 2 and 3 of this Article, to administrative fines of a maximum of at least EUR 10 000 000" },
-  { document = "nis2", quote = "a maximum of at least 2 % of the total worldwide annual turnover in the preceding financial year of the undertaking to which the essential entity belongs" },
+  { document = "nis2", quote = "paragraphs 2 and 3 of this Article, to administrative fines of a maximum of at least EUR 10 000 000" },
+  { document = "nis2", quote = "a maximum of at least 2 % of the total worldwide annual turnover in the preceding financial year of the undertaking" },
 ]
 
 [[questions]]
@@ -169,7 +169,7 @@ any_of = [
 
 [[questions.evidence]]
 any_of = [
-  { document = "nis2", quote = "incident handling" },
+  { document = "nis2", quote = "(b) incident handling; (c) business continuity" },
 ]
 
 [[questions.evidence]]
