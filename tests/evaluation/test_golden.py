@@ -6,7 +6,7 @@ import unicodedata
 from collections import Counter
 from functools import cache
 from pathlib import Path
-from typing import Literal
+from typing import Literal, NamedTuple, get_args
 
 import pytest
 from pydantic import BaseModel, ConfigDict, Field
@@ -39,12 +39,16 @@ class _Evidence(BaseModel):
     any_of: tuple[_Quote, ...] = Field(min_length=1)
 
 
+_Category = Literal["factual", "vague", "table", "multi-document", "unanswerable"]
+
+
 class _Question(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: str = Field(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
-    category: Literal["factual", "vague", "table", "multi-document", "unanswerable"]
+    category: _Category
     origin: Literal["passage", "blind"]
+    holdout: bool = False
     question: str = Field(min_length=1)
     answer: str = Field(min_length=1)
     evidence: tuple[_Evidence, ...] = ()
@@ -114,7 +118,18 @@ def test_only_unanswerable_questions_are_refused(question: _Question) -> None:
 
 @pytest.mark.parametrize("question", _each("multi-document"))
 def test_multi_document_questions_need_two_documents(question: _Question) -> None:
-    assert len({evidence.any_of[0].document for evidence in question.evidence}) >= 2
+    titles = {document.id: document.short_title for document in _MANIFEST.documents}
+    documents = {titles[evidence.any_of[0].document] for evidence in question.evidence}
+
+    assert len(documents) >= 2  # by title: the 17 sheets of the CNIL guide are one document
+
+
+@pytest.mark.parametrize("category", get_args(_Category))
+def test_a_fifth_of_each_category_is_held_out(category: str) -> None:
+    questions = [question for question in _QUESTIONS if question.category == category]
+    held_out = sum(question.holdout for question in questions)
+
+    assert abs(held_out - len(questions) / 5) <= 1, f"{held_out} of {len(questions)} held out"
 
 
 @pytest.mark.parametrize("question", _each())
@@ -134,9 +149,14 @@ def test_quotes_are_short(question: _Question) -> None:
 # --- On the real corpus (skipped until `uv run agentic-rag download` and `convert`) ---
 
 
+class _Chunk(NamedTuple):
+    text: str  # normalized
+    table: bool
+
+
 @cache
-def _chunks() -> dict[str, list[str]]:
-    """The normalized text of each chunk, by document, as the ingestion stores them."""
+def _chunks() -> dict[str, list[_Chunk]]:
+    """The chunks of each document, as the ingestion stores them."""
     paths = {document.id: _CORPUS / document.filename for document in _MANIFEST.documents}
     for document in _MANIFEST.documents:  # before parsing anything: a skip is not cached
         path = paths[document.id]
@@ -147,7 +167,7 @@ def _chunks() -> dict[str, list[str]]:
     parsers = default_parsers(_CACHE)
     return {
         document.id: [
-            _normalize(chunk.text)
+            _Chunk(_normalize(chunk.text), chunk.kind == "table")
             for chunk in chunk_blocks(parsers[document.format](paths[document.id].read_bytes()))
         ]
         for document in _MANIFEST.documents
@@ -160,8 +180,8 @@ def test_quotes_are_whole_in_a_chunk_of_their_document(question: _Question) -> N
     for quote in _quotes(question):
         elsewhere = [
             document
-            for document, texts in chunks.items()
-            if any(_contains(text, quote.quote) for text in texts)
+            for document, document_chunks in chunks.items()
+            if any(_contains(chunk.text, quote.quote) for chunk in document_chunks)
         ]
         assert quote.document in elsewhere, (
             f"{quote.quote!r} is in no chunk of {quote.document}, but in: {elsewhere}"
@@ -172,5 +192,42 @@ def test_quotes_are_whole_in_a_chunk_of_their_document(question: _Question) -> N
 def test_quotes_are_specific(question: _Question) -> None:
     chunks = _chunks()
     for quote in _quotes(question):
-        count = sum(_contains(text, quote.quote) for texts in chunks.values() for text in texts)
+        count = sum(
+            _contains(chunk.text, quote.quote)
+            for document_chunks in chunks.values()
+            for chunk in document_chunks
+        )
         assert count <= _MAX_CHUNKS, f"{quote.quote!r} is in {count} chunks: quote more precisely"
+
+
+@pytest.mark.parametrize("question", _each())
+def test_quotes_are_in_no_document_of_another_regulation(question: _Question) -> None:
+    regulations = {document.id: set(document.regulations) for document in _MANIFEST.documents}
+    chunks = _chunks()
+    for quote in _quotes(question):
+        foreign = [
+            document
+            for document, document_chunks in chunks.items()
+            if not regulations[document] & regulations[quote.document]
+            and any(_contains(chunk.text, quote.quote) for chunk in document_chunks)
+        ]
+        assert foreign == [], f"{quote.quote!r} is also in {foreign}: quote more precisely"
+
+
+def _only_in_tables(evidence: _Evidence) -> bool:
+    """Whether every chunk that states this fact is a table: prose cannot answer it."""
+    found = [
+        chunk
+        for document_chunks in _chunks().values()
+        for chunk in document_chunks
+        for quote in evidence.any_of
+        if _contains(chunk.text, quote.quote)
+    ]
+    return bool(found) and all(chunk.table for chunk in found)
+
+
+@pytest.mark.parametrize("question", _each("table"))
+def test_table_questions_need_a_fact_stated_only_in_tables(question: _Question) -> None:
+    assert any(_only_in_tables(evidence) for evidence in question.evidence), (
+        "every fact is also in prose: the question does not test the tables"
+    )
