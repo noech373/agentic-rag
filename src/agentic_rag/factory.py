@@ -29,8 +29,12 @@ def make_embedder(settings: Settings) -> Embedder:
     return OpenAIEmbedder(_openai(settings), openai.embedding_model, openai.embedding_dimensions)
 
 
+def make_retriever(settings: Settings) -> Retriever:
+    return VectorRetriever(make_store(settings), make_embedder(settings))
+
+
 def make_rag(settings: Settings, *, k: int = 8) -> RAG:
-    retriever: Retriever = VectorRetriever(make_store(settings), make_embedder(settings))
+    retriever = make_retriever(settings)
     generator = OpenAIGenerator(_openai(settings), settings.openai.chat_model)
     if not settings.langfuse.enabled:
         return RAG(retriever, generator, k=k)
