@@ -30,7 +30,6 @@ def make_embedder(settings: Settings) -> Embedder:
     return OpenAIEmbedder(_openai(settings), openai.embedding_model, openai.embedding_dimensions)
 
 
-# pipeline has no default: forgetting to pass it on would silently run the baseline
 def make_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
     match pipeline.retriever:
         case "vector":
