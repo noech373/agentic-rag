@@ -6,10 +6,23 @@ from typing import Annotated
 
 import httpx
 import typer
+from pydantic import ValidationError
 
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, download, load_manifest
+from agentic_rag.pipeline_config import PipelineConfig, load_pipeline
 
 app = typer.Typer(no_args_is_help=True)
+
+# Shared by `ask` and `eval`, so both build the same RAG from the same file.
+PipelineOption = Annotated[
+    Path | None,
+    typer.Option(
+        "--pipeline",
+        exists=True,
+        dir_okay=False,
+        help="Pipeline TOML file (pipelines/<name>.toml). Default: the baseline.",
+    ),
+]
 
 
 @app.callback()
@@ -99,16 +112,17 @@ def ask(
     retrieved: Annotated[
         bool, typer.Option(help="List every retrieved source with its score, cited or not.")
     ] = False,
+    pipeline: PipelineOption = None,
 ) -> None:
     """Answer a question from the ingested corpus, citing the sources."""
     from agentic_rag.config import get_settings
     from agentic_rag.factory import make_rag
     from agentic_rag.generation.prompt import citation
-    from agentic_rag.pipeline_config import PipelineConfig
 
     if not question.strip():
         raise typer.BadParameter("the question is empty")
-    answer = make_rag(get_settings(), PipelineConfig(), k=k).ask(question)
+    config = _load_pipeline(pipeline)  # before the settings: a bad file fails fast
+    answer = make_rag(get_settings(), config, k=k).ask(question)
     typer.echo(answer.text)
 
     cited = answer.cited
@@ -120,3 +134,13 @@ def ask(
         score = f"{source.score:.3f} " if retrieved else ""
         mark = "" if not retrieved or number in cited else " (not cited)"
         typer.echo(f"[{number}] {score}{citation(source)}{url}{mark}")
+
+
+def _load_pipeline(path: Path | None) -> PipelineConfig:
+    """No file means the baseline."""
+    if path is None:
+        return PipelineConfig()
+    try:
+        return load_pipeline(path)
+    except ValidationError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--pipeline") from exc
