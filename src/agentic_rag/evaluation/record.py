@@ -1,4 +1,4 @@
-"""Save a run to JSON and load it back, so two runs can be compared without running them again."""
+"""A run of the golden set with its provenance, saved to JSON to compare runs without rerunning."""
 
 import hashlib
 import subprocess
@@ -6,7 +6,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
-from agentic_rag.evaluation.runner import QuestionResult
+from agentic_rag.evaluation.golden import load_golden_set
+from agentic_rag.evaluation.runner import QuestionResult, run_retriever, tuning_questions
+from agentic_rag.pipeline_config import PipelineConfig
+from agentic_rag.retrieval.base import Retriever
 
 
 class RunRecord(BaseModel):
@@ -17,6 +20,20 @@ class RunRecord(BaseModel):
     dirty: bool  # uncommitted changes: the code may not match git_sha
     config: dict[str, str | int | float | bool]
     results: tuple[QuestionResult, ...]
+
+
+def record_run(
+    golden_path: Path, retriever: Retriever, pipeline: PipelineConfig, repo: Path
+) -> RunRecord:
+    """Run the retriever on the tuning questions and keep what makes the run comparable."""
+    results = run_retriever(tuning_questions(load_golden_set(golden_path)), retriever)
+    return RunRecord(
+        golden_sha256=file_sha256(golden_path),
+        git_sha=git_sha(repo),
+        dirty=git_dirty(repo),
+        config=pipeline.model_dump(),  # validated, defaults included: what actually ran
+        results=tuple(results),
+    )
 
 
 def file_sha256(path: Path) -> str:
