@@ -4,6 +4,7 @@ from agentic_rag.evaluation.comparison import (
     IncomparableRunsError,
     check_comparable,
     comparison_table,
+    summary_table,
 )
 from agentic_rag.evaluation.record import RunRecord
 from agentic_rag.evaluation.runner import QuestionResult
@@ -106,3 +107,22 @@ def test_the_caption_gives_the_number_of_questions() -> None:
     table = comparison_table(_run(0, 1, 1), _run(1, 1, 1), "baseline", "bm25")
 
     assert table.splitlines()[-1].startswith("3 questions.")
+
+
+def test_a_run_alone_shows_each_mean_with_its_interval() -> None:
+    table = summary_table(_run(0.5, 0.5), "baseline")
+
+    assert table.splitlines()[0] == "| metric | baseline [95% CI] |"
+    assert _rows(table)["recall@8"] == ["0.50 [0.50, 0.50]"]
+    assert list(_rows(table))[1:] == ["recall@5", "recall@8", "recall@20", "recall@50", "mrr"]
+
+
+def test_the_interval_of_a_run_alone_spans_its_scores() -> None:
+    table = summary_table(_run(0, 1, 0, 1), "baseline")
+
+    [cell] = _rows(table)["mrr"]
+    mean, interval = cell.split(" ", 1)
+    low, high = (float(bound) for bound in interval.strip("[]").split(", "))
+    assert mean == "0.50"
+    assert 0 <= low < 0.5 < high <= 1
+    assert table.splitlines()[-1] == "4 questions."

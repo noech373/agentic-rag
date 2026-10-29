@@ -12,6 +12,10 @@ from agentic_rag.evaluation.runner import QuestionResult, run_retriever, tuning_
 from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.retrieval.base import Retriever
 
+RESULTS_DIR = Path(
+    "eval/results"
+)  # from the repo root; committed, so the README tables can be rebuilt
+
 
 class RunRecord(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -51,8 +55,10 @@ def git_sha(repo: Path) -> str:
 
 
 def git_dirty(repo: Path) -> bool:
-    """Tracked files changed since the last commit; untracked ones (new runs) don't count."""
-    return _git(repo, "status", "--porcelain", "--untracked-files=no") != ""
+    """Tracked files changed since the last commit, saved runs aside: rerunning the baseline
+    must not make the next run dirty. Untracked files (new runs) don't count either."""
+    results = f":(top,exclude){RESULTS_DIR.as_posix()}"
+    return _git(repo, "status", "--porcelain", "--untracked-files=no", "--", results) != ""
 
 
 def _git(repo: Path, *args: str) -> str:
