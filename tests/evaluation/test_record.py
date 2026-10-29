@@ -158,6 +158,20 @@ def test_an_untracked_file_does_not_make_the_repo_dirty(tmp_path: Path) -> None:
     assert not git_dirty(repo)
 
 
+def test_rerunning_a_committed_run_does_not_make_the_repo_dirty(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    run = repo / "eval" / "results" / "baseline.json"
+    run.parent.mkdir(parents=True)
+    run.write_text("{}")
+    _git(repo, "add", "eval")
+    _git(repo, "commit", "--quiet", "-m", "baseline run")
+
+    run.write_text('{"rerun": true}')
+
+    assert not git_dirty(repo)
+    assert not git_dirty(repo / "eval")  # the path is from the repo root, wherever git runs
+
+
 def test_outside_a_repo_git_fails_loudly(tmp_path: Path) -> None:
     with pytest.raises(subprocess.CalledProcessError):
         git_sha(tmp_path)

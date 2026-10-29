@@ -25,6 +25,17 @@ def check_comparable(baseline: RunRecord, candidate: RunRecord) -> list[str]:
     return warnings
 
 
+def summary_table(run: RunRecord, name: str) -> str:
+    """One Markdown row per metric: the mean with its 95% CI, for a run seen alone."""
+    means = mean_scores(run.results)
+    lines = [f"| metric | {name} [95% CI] |", "|---|---|"]
+    for metric, mean in means.items():
+        low, high = bootstrap_ci([{**r.recall, "mrr": r.mrr}[metric] for r in run.results])
+        lines.append(f"| {metric} | {mean:.2f} [{low:.2f}, {high:.2f}] |")
+    lines += ["", f"{len(run.results)} questions."]
+    return "\n".join(lines)
+
+
 def comparison_table(
     baseline: RunRecord, candidate: RunRecord, baseline_name: str, candidate_name: str
 ) -> str:

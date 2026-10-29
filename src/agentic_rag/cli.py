@@ -8,6 +8,7 @@ import httpx
 import typer
 from pydantic import ValidationError
 
+from agentic_rag.evaluation.record import RunRecord, load_run
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, download, load_manifest
 from agentic_rag.pipeline_config import PipelineConfig, load_pipeline
 
@@ -134,6 +135,56 @@ def ask(
         score = f"{source.score:.3f} " if retrieved else ""
         mark = "" if not retrieved or number in cited else " (not cited)"
         typer.echo(f"[{number}] {score}{citation(source)}{url}{mark}")
+
+
+@app.command("eval")
+def evaluate(
+    pipeline: PipelineOption = None,
+    golden: Annotated[Path, typer.Option(exists=True, dir_okay=False, help="Golden set.")] = Path(
+        "eval/golden.toml"
+    ),
+) -> None:
+    """Score the retrieval on the tuning questions and save the run; see also `compare`."""
+    from agentic_rag.config import get_settings
+    from agentic_rag.evaluation import comparison, record
+    from agentic_rag.factory import make_retriever
+
+    config = _load_pipeline(pipeline)
+    settings = get_settings()
+    name = pipeline.stem if pipeline is not None else "baseline"
+
+    run = record.record_run(golden, lambda p: make_retriever(settings, p), config, Path())
+    path = record.RESULTS_DIR / f"{name}.json"
+    record.save_run(run, path)
+    typer.echo(f"saved {path}\n")
+    typer.echo(comparison.summary_table(run, name))
+
+
+RunArgument = Annotated[Path, typer.Argument(exists=True, dir_okay=False)]
+
+
+@app.command("compare")
+def compare(baseline: RunArgument, candidate: RunArgument) -> None:
+    """Compare two saved runs (eval/results/<name>.json): the candidate against the baseline."""
+    from agentic_rag.evaluation import comparison
+
+    before = _load_run(baseline, "BASELINE")
+    after = _load_run(candidate, "CANDIDATE")
+    try:
+        warnings = comparison.check_comparable(before, after)
+    except comparison.IncomparableRunsError as exc:
+        typer.echo(f"not compared: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(comparison.comparison_table(before, after, baseline.stem, candidate.stem))
+    for warning in warnings:
+        typer.echo(f"\nwarning: {warning}", err=True)
+
+
+def _load_run(path: Path, hint: str) -> RunRecord:
+    try:
+        return load_run(path)
+    except ValidationError as exc:
+        raise typer.BadParameter(f"not a saved run: {exc}", param_hint=hint) from exc
 
 
 def _load_pipeline(path: Path | None) -> PipelineConfig:
