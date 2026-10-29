@@ -104,10 +104,11 @@ def ask(
     from agentic_rag.config import get_settings
     from agentic_rag.factory import make_rag
     from agentic_rag.generation.prompt import citation
+    from agentic_rag.pipeline_config import PipelineConfig
 
     if not question.strip():
         raise typer.BadParameter("the question is empty")
-    answer = make_rag(get_settings(), k=k).ask(question)
+    answer = make_rag(get_settings(), PipelineConfig(), k=k).ask(question)
     typer.echo(answer.text)
 
     cited = answer.cited

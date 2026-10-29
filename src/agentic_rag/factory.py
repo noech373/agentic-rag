@@ -1,4 +1,4 @@
-"""Composition root: the one place that picks the implementations, from the settings.
+"""Composition root: the one place that picks the implementations, from the settings and pipeline.
 
 Another store, embedding model, retriever or LLM is a new class, and a change here only.
 """
@@ -13,6 +13,7 @@ from agentic_rag.config import LangfuseSettings, Settings
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.embeddings.openai import OpenAIEmbedder
 from agentic_rag.generation.openai import OpenAIGenerator
+from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.rag import RAG
 from agentic_rag.retrieval.base import Retriever
 from agentic_rag.retrieval.vector import VectorRetriever
@@ -29,12 +30,15 @@ def make_embedder(settings: Settings) -> Embedder:
     return OpenAIEmbedder(_openai(settings), openai.embedding_model, openai.embedding_dimensions)
 
 
-def make_retriever(settings: Settings) -> Retriever:
-    return VectorRetriever(make_store(settings), make_embedder(settings))
+# pipeline has no default: forgetting to pass it on would silently run the baseline
+def make_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
+    match pipeline.retriever:
+        case "vector":
+            return VectorRetriever(make_store(settings), make_embedder(settings))
 
 
-def make_rag(settings: Settings, *, k: int = 8) -> RAG:
-    retriever = make_retriever(settings)
+def make_rag(settings: Settings, pipeline: PipelineConfig, *, k: int = 8) -> RAG:
+    retriever = make_retriever(settings, pipeline)
     generator = OpenAIGenerator(_openai(settings), settings.openai.chat_model)
     if not settings.langfuse.enabled:
         return RAG(retriever, generator, k=k)
