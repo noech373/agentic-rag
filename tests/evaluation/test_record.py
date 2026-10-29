@@ -12,9 +12,12 @@ from agentic_rag.evaluation.record import (
     git_dirty,
     git_sha,
     load_run,
+    record_run,
     save_run,
 )
 from agentic_rag.evaluation.runner import QuestionResult
+from agentic_rag.pipeline_config import PipelineConfig
+from agentic_rag.storage.base import RetrievedChunk
 
 
 def _record() -> RunRecord:
@@ -158,3 +161,65 @@ def test_an_untracked_file_does_not_make_the_repo_dirty(tmp_path: Path) -> None:
 def test_outside_a_repo_git_fails_loudly(tmp_path: Path) -> None:
     with pytest.raises(subprocess.CalledProcessError):
         git_sha(tmp_path)
+
+
+_GOLDEN = """
+[[questions]]
+id = "kept"
+category = "factual"
+origin = "blind"
+question = "When to notify?"
+answer = "Without undue delay."
+[[questions.evidence]]
+any_of = [{ document = "gdpr", quote = "notify without undue delay" }]
+
+[[questions]]
+id = "held-out"
+category = "factual"
+origin = "blind"
+holdout = true
+question = "When to notify?"
+answer = "Without undue delay."
+[[questions.evidence]]
+any_of = [{ document = "gdpr", quote = "notify without undue delay" }]
+"""
+
+
+class _NothingFound:
+    def retrieve(self, query: str, k: int) -> list[RetrievedChunk]:
+        return []
+
+
+def _repo_with_golden(tmp_path: Path) -> tuple[Path, Path]:
+    repo = _repo(tmp_path)
+    golden = repo / "golden.toml"
+    golden.write_text(_GOLDEN)
+    _git(repo, "add", "golden.toml")
+    _git(repo, "commit", "--quiet", "-m", "golden set")
+    return repo, golden
+
+
+def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
+    repo, golden = _repo_with_golden(tmp_path)
+
+    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+
+    assert [r.question_id for r in record.results] == ["kept"]
+
+
+def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
+    repo, golden = _repo_with_golden(tmp_path)
+
+    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+
+    assert record.golden_sha256 == file_sha256(golden)
+    assert record.git_sha == _git(repo, "rev-parse", "HEAD")
+    assert not record.dirty
+
+
+def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> None:
+    repo, golden = _repo_with_golden(tmp_path)
+
+    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+
+    assert record.config == {"retriever": "vector"}
