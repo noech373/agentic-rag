@@ -1,5 +1,6 @@
 """Compare a run with the baseline: only the pipeline config should differ between them."""
 
+from agentic_rag.evaluation.aggregate import bootstrap_ci, mean_scores, paired_differences
 from agentic_rag.evaluation.record import RunRecord
 
 
@@ -22,3 +23,27 @@ def check_comparable(baseline: RunRecord, candidate: RunRecord) -> list[str]:
         if record.dirty:
             warnings.append(f"the {name} ran on uncommitted changes: not for the README")
     return warnings
+
+
+def comparison_table(
+    baseline: RunRecord, candidate: RunRecord, baseline_name: str, candidate_name: str
+) -> str:
+    """One Markdown row per metric: both means and the paired difference with its 95% CI."""
+    before = mean_scores(baseline.results)
+    after = mean_scores(candidate.results)
+    lines = [
+        f"| metric | {baseline_name} | {candidate_name} | difference [95% CI] |",
+        "|---|---|---|---|",
+    ]
+    for metric in before:
+        differences = paired_differences(baseline.results, candidate.results, metric)
+        low, high = bootstrap_ci(differences)
+        difference = f"{after[metric] - before[metric]:+.2f} [{low:+.2f}, {high:+.2f}]"
+        if low > 0 or high < 0:
+            difference = f"**{difference}**"
+        lines.append(f"| {metric} | {before[metric]:.2f} | {after[metric]:.2f} | {difference} |")
+    lines += [
+        "",
+        f"{len(baseline.results)} questions. Bold: the 95% interval of the difference excludes 0.",
+    ]
+    return "\n".join(lines)
