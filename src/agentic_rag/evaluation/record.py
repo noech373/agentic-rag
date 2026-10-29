@@ -2,6 +2,7 @@
 
 import hashlib
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
@@ -23,9 +24,13 @@ class RunRecord(BaseModel):
 
 
 def record_run(
-    golden_path: Path, retriever: Retriever, pipeline: PipelineConfig, repo: Path
+    golden_path: Path,
+    make_retriever: Callable[[PipelineConfig], Retriever],
+    pipeline: PipelineConfig,
+    repo: Path,
 ) -> RunRecord:
     """Run the retriever on the tuning questions and keep what makes the run comparable."""
+    retriever = make_retriever(pipeline)  # from the config it records: they cannot differ
     results = run_retriever(tuning_questions(load_golden_set(golden_path)), retriever)
     return RunRecord(
         golden_sha256=file_sha256(golden_path),

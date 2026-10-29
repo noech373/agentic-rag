@@ -202,7 +202,7 @@ def _repo_with_golden(tmp_path: Path) -> tuple[Path, Path]:
 def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
     repo, golden = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert [r.question_id for r in record.results] == ["kept"]
 
@@ -210,7 +210,7 @@ def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
 def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
     repo, golden = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert record.golden_sha256 == file_sha256(golden)
     assert record.git_sha == _git(repo, "rev-parse", "HEAD")
@@ -220,6 +220,19 @@ def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
 def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> None:
     repo, golden = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert record.config == {"retriever": "vector"}
+
+
+def test_the_retriever_is_built_from_the_recorded_config(tmp_path: Path) -> None:
+    repo, golden = _repo_with_golden(tmp_path)
+    built_from: list[PipelineConfig] = []
+
+    def make(pipeline: PipelineConfig) -> _NothingFound:
+        built_from.append(pipeline)
+        return _NothingFound()
+
+    record = record_run(golden, make, PipelineConfig(), repo)
+
+    assert [p.model_dump() for p in built_from] == [record.config]
