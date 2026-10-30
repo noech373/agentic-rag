@@ -60,12 +60,18 @@ def _run(score: float, **provenance: object) -> RunRecord:
     recall = {f"recall@{k}": score for k in (5, 8, 20, 50)}
     results = tuple(
         QuestionResult(
-            question_id=f"q{i}", category="factual", recall=recall, mrr=score, retrieved=()
+            question_id=f"q{i}",
+            category="factual",
+            recall=recall,
+            mrr=score,
+            judged=score,
+            retrieved=(),
         )
         for i in range(3)
     )
     run = RunRecord(
         golden_sha256="9f2c",
+        judgments_sha256="3d1e",
         git_sha="e87c5ad0000",
         dirty=False,
         config={"retriever": "vector"},
@@ -79,11 +85,16 @@ def recorded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> list[PipelineCo
     """Replace the retrieval with a fixed run of score 1; return the configs it was asked to run."""
     (tmp_path / "eval").mkdir()
     (tmp_path / "eval" / "golden.toml").write_text("")
+    (tmp_path / "eval" / "judgments.toml").write_text("")
     monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
     configs: list[PipelineConfig] = []
 
     def fake_record_run(
-        golden: Path, make_retriever: object, pipeline: PipelineConfig, repo: Path
+        golden: Path,
+        judgments: Path,
+        make_retriever: object,
+        pipeline: PipelineConfig,
+        repo: Path,
     ) -> RunRecord:
         configs.append(pipeline)
         return _run(1.0)
@@ -161,6 +172,13 @@ def test_eval_needs_the_golden_set(tmp_path: Path) -> None:
     result = runner.invoke(app, ["eval", "--golden", str(tmp_path / "nope.toml")])
 
     assert result.exit_code == 2
+
+
+def test_eval_needs_the_judgments(recorded: list[PipelineConfig], tmp_path: Path) -> None:
+    result = runner.invoke(app, ["eval", "--judgments", str(tmp_path / "judgment.toml")])
+
+    assert result.exit_code == 2
+    assert recorded == []
 
 
 def _saved(tmp_path: Path, name: str, run: RunRecord) -> str:

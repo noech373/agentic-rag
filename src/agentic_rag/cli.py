@@ -143,6 +143,9 @@ def evaluate(
     golden: Annotated[Path, typer.Option(exists=True, dir_okay=False, help="Golden set.")] = Path(
         "eval/golden.toml"
     ),
+    judgments: Annotated[
+        Path, typer.Option(exists=True, dir_okay=False, help="Rejected chunks, for judged@k.")
+    ] = Path("eval/judgments.toml"),
 ) -> None:
     """Score the retrieval on the tuning questions and save the run; see also `compare`."""
     from agentic_rag.config import get_settings
@@ -153,7 +156,9 @@ def evaluate(
     settings = get_settings()
     name = pipeline.stem if pipeline is not None else "baseline"
 
-    run = record.record_run(golden, lambda p: make_retriever(settings, p), config, Path())
+    run = record.record_run(
+        golden, judgments, lambda p: make_retriever(settings, p), config, Path()
+    )
     path = record.RESULTS_DIR / f"{name}.json"
     record.save_run(run, path)
     typer.echo(f"saved {path}\n")

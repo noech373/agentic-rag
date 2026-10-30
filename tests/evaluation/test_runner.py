@@ -1,6 +1,13 @@
 from agentic_rag.document import Chunk
 from agentic_rag.evaluation.golden import Evidence, GoldenSet, Question, Quote
-from agentic_rag.evaluation.runner import MRR_K, RECALL_KS, run_retriever, tuning_questions
+from agentic_rag.evaluation.runner import (
+    JUDGED_K,
+    MRR_K,
+    RECALL_KS,
+    QuestionResult,
+    run_retriever,
+    tuning_questions,
+)
 from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
@@ -65,7 +72,7 @@ def test_tuning_questions_skip_held_out_and_unanswerable() -> None:
 def test_the_retriever_is_called_once_per_question_with_the_deepest_k() -> None:
     retriever = _FakeRetriever([])
 
-    run_retriever([_question("a"), _question("b")], retriever)
+    run_retriever([_question("a"), _question("b")], retriever, {})
 
     assert retriever.calls == [("When to notify?", max(RECALL_KS))] * 2
 
@@ -75,7 +82,7 @@ def test_each_k_is_scored_on_the_same_ranking() -> None:
     hit = _retrieved(6, "Notify without undue delay.")
     retriever = _FakeRetriever([*filler, hit])
 
-    [result] = run_retriever([_question()], retriever)
+    [result] = run_retriever([_question()], retriever, {})
 
     assert result.recall == {"recall@5": 0, "recall@8": 1, "recall@20": 1, "recall@50": 1}
     assert result.mrr == 1 / 7
@@ -87,7 +94,7 @@ def test_the_mrr_ignores_chunks_beyond_its_k() -> None:
     filler = [_retrieved(i, f"unrelated {i}") for i in range(MRR_K)]
     retriever = _FakeRetriever([*filler, _retrieved(MRR_K, "Notify without undue delay.")])
 
-    [result] = run_retriever([_question()], retriever)
+    [result] = run_retriever([_question()], retriever, {})
 
     assert result.mrr == 0
 
@@ -95,6 +102,56 @@ def test_the_mrr_ignores_chunks_beyond_its_k() -> None:
 def test_the_retrieved_chunks_are_kept_by_document_and_position() -> None:
     retriever = _FakeRetriever([_retrieved(3, "x"), _retrieved(7, "y")])
 
-    [result] = run_retriever([_question()], retriever)
+    [result] = run_retriever([_question()], retriever, {})
 
     assert result.retrieved == ("gdpr#3", "gdpr#7")
+
+
+_REJECTED = (Quote(document="gdpr", quote="the purpose of this regulation"),)
+
+
+def test_judged_uses_the_rejections_of_its_own_question() -> None:
+    retriever = _FakeRetriever([_retrieved(0, "The purpose of this Regulation is to protect.")])
+
+    a, b = run_retriever([_question("a"), _question("b")], retriever, {"a": _REJECTED})
+
+    assert (a.judged, b.judged) == (1, 0)
+
+
+def test_judged_counts_useful_chunks_without_any_rejection() -> None:
+    retriever = _FakeRetriever([_retrieved(0, "Notify without undue delay."), _retrieved(1, "x")])
+
+    [result] = run_retriever([_question()], retriever, {})
+
+    assert result.judged == 0.5
+
+
+def test_judged_ignores_chunks_beyond_its_k() -> None:
+    filler = [_retrieved(i, f"unrelated {i}") for i in range(JUDGED_K)]
+    rejected = _retrieved(JUDGED_K, "The purpose of this Regulation is to protect.")
+    retriever = _FakeRetriever([*filler, rejected])
+
+    [result] = run_retriever([_question()], retriever, {"q": _REJECTED})
+
+    assert result.judged == 0
+
+
+def test_the_scores_of_a_question_name_every_metric() -> None:
+    result = QuestionResult(
+        question_id="q",
+        category="factual",
+        recall={"recall@5": 0.0, "recall@8": 0.5},
+        mrr=0.25,
+        judged=0.75,
+        retrieved=(),
+    )
+
+    assert result.scores() == {"recall@5": 0.0, "recall@8": 0.5, "mrr@8": 0.25, "judged@8": 0.75}
+
+
+def test_the_scores_are_not_saved_with_the_result() -> None:
+    result = QuestionResult(
+        question_id="q", category="factual", recall={}, mrr=0, judged=1, retrieved=()
+    )
+
+    assert "scores" not in result.model_dump()

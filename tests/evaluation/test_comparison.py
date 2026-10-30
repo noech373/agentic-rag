@@ -11,6 +11,7 @@ from agentic_rag.evaluation.runner import QuestionResult
 
 _BASELINE = RunRecord(
     golden_sha256="9f2c",
+    judgments_sha256="3d1e",
     git_sha="e87c5ad0000",
     dirty=False,
     config={"retriever": "vector"},
@@ -52,16 +53,32 @@ def test_a_dirty_run_is_not_for_the_readme(dirty_baseline: bool, dirty_candidate
     assert ("baseline" in warning) == dirty_baseline
 
 
-def test_every_difference_gets_its_own_warning() -> None:
-    candidate = _BASELINE.model_copy(update={"git_sha": "0842afe0000", "dirty": True})
+def test_runs_on_different_judgments_warn_about_judged() -> None:
+    candidate = _BASELINE.model_copy(update={"judgments_sha256": "77b0"})
 
-    assert len(check_comparable(_BASELINE, candidate)) == 2
+    [warning] = check_comparable(_BASELINE, candidate)
+
+    assert "different judgments" in warning
+    assert "judged@k" in warning
+
+
+def test_every_difference_gets_its_own_warning() -> None:
+    candidate = _BASELINE.model_copy(
+        update={"git_sha": "0842afe0000", "judgments_sha256": "77b0", "dirty": True}
+    )
+
+    assert len(check_comparable(_BASELINE, candidate)) == 3
 
 
 def _result(question_id: str, score: float) -> QuestionResult:
     recall = {f"recall@{k}": score for k in (5, 8, 20, 50)}
     return QuestionResult(
-        question_id=question_id, category="factual", recall=recall, mrr=score, retrieved=()
+        question_id=question_id,
+        category="factual",
+        recall=recall,
+        mrr=score,
+        judged=score,
+        retrieved=(),
     )
 
 
@@ -85,7 +102,7 @@ def test_one_row_per_metric_in_order() -> None:
     table = comparison_table(_run(0, 1), _run(1, 1), "baseline", "bm25")
 
     metrics = [m for m in _rows(table) if m != "metric"]
-    assert metrics == ["recall@5", "recall@8", "recall@20", "recall@50", "mrr"]
+    assert metrics == ["recall@5", "recall@8", "recall@20", "recall@50", "mrr@8", "judged@8"]
 
 
 def test_a_row_holds_both_means_and_the_difference() -> None:
@@ -114,13 +131,20 @@ def test_a_run_alone_shows_each_mean_with_its_interval() -> None:
 
     assert table.splitlines()[0] == "| metric | baseline [95% CI] |"
     assert _rows(table)["recall@8"] == ["0.50 [0.50, 0.50]"]
-    assert list(_rows(table))[1:] == ["recall@5", "recall@8", "recall@20", "recall@50", "mrr"]
+    assert list(_rows(table))[1:] == [
+        "recall@5",
+        "recall@8",
+        "recall@20",
+        "recall@50",
+        "mrr@8",
+        "judged@8",
+    ]
 
 
 def test_the_interval_of_a_run_alone_spans_its_scores() -> None:
     table = summary_table(_run(0, 1, 0, 1), "baseline")
 
-    [cell] = _rows(table)["mrr"]
+    [cell] = _rows(table)["mrr@8"]
     mean, interval = cell.split(" ", 1)
     low, high = (float(bound) for bound in interval.strip("[]").split(", "))
     assert mean == "0.50"

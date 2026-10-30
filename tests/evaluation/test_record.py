@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from agentic_rag.document import Chunk
 from agentic_rag.evaluation.record import (
     RunRecord,
     file_sha256,
@@ -17,12 +18,13 @@ from agentic_rag.evaluation.record import (
 )
 from agentic_rag.evaluation.runner import QuestionResult
 from agentic_rag.pipeline_config import PipelineConfig
-from agentic_rag.storage.base import RetrievedChunk
+from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 def _record() -> RunRecord:
     return RunRecord(
         golden_sha256="9f2c",
+        judgments_sha256="3d1e",
         git_sha="e87c5ad",
         dirty=True,
         config={"retriever": "vector", "k": 8, "rerank": False, "weight": 0.5},
@@ -32,6 +34,7 @@ def _record() -> RunRecord:
                 category="factual",
                 recall={"recall@8": 0.5},
                 mrr=0.25,
+                judged=0.5,
                 retrieved=("gdpr#12", "gdpr#13"),
             ),
         ),
@@ -204,49 +207,83 @@ class _NothingFound:
         return []
 
 
-def _repo_with_golden(tmp_path: Path) -> tuple[Path, Path]:
+_JUDGMENTS = 'kept = [{ document = "gdpr", quote = "the purpose of this regulation" }]\n'
+
+
+def _repo_with_golden(tmp_path: Path, judgments: str = "") -> tuple[Path, Path, Path]:
+    """A repo with a golden set and its judgments, both committed."""
     repo = _repo(tmp_path)
     golden = repo / "golden.toml"
     golden.write_text(_GOLDEN)
-    _git(repo, "add", "golden.toml")
+    judged = repo / "judgments.toml"
+    judged.write_text(judgments)
+    _git(repo, "add", "golden.toml", "judgments.toml")
     _git(repo, "commit", "--quiet", "-m", "golden set")
-    return repo, golden
+    return repo, golden, judged
 
 
 def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
-    repo, golden = _repo_with_golden(tmp_path)
+    repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert [r.question_id for r in record.results] == ["kept"]
 
 
 def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
-    repo, golden = _repo_with_golden(tmp_path)
+    repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert record.golden_sha256 == file_sha256(golden)
+    assert record.judgments_sha256 == file_sha256(judgments)
     assert record.git_sha == _git(repo, "rev-parse", "HEAD")
     assert not record.dirty
 
 
 def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> None:
-    repo, golden = _repo_with_golden(tmp_path)
+    repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
 
     assert record.config == {"retriever": "vector"}
 
 
 def test_the_retriever_is_built_from_the_recorded_config(tmp_path: Path) -> None:
-    repo, golden = _repo_with_golden(tmp_path)
+    repo, golden, judgments = _repo_with_golden(tmp_path)
     built_from: list[PipelineConfig] = []
 
     def make(pipeline: PipelineConfig) -> _NothingFound:
         built_from.append(pipeline)
         return _NothingFound()
 
-    record = record_run(golden, make, PipelineConfig(), repo)
+    record = record_run(golden, judgments, make, PipelineConfig(), repo)
 
     assert [p.model_dump() for p in built_from] == [record.config]
+
+
+class _RejectedFound:
+    def retrieve(self, query: str, k: int) -> list[RetrievedChunk]:
+        document = IndexedDocument(
+            id="gdpr",
+            title="GDPR",
+            short_title="GDPR",
+            source_url=None,
+            regulations=(),
+            groups=("public",),
+            sha256="0",
+            embedding_model="m",
+        )
+        chunk = Chunk(kind="text", text="The purpose of this Regulation is to protect.", path=())
+        return [RetrievedChunk(document=document, position=0, chunk=chunk, score=1.0)]
+
+
+@pytest.mark.parametrize(("judgments", "judged"), [("", 0), (_JUDGMENTS, 1)])
+def test_a_run_scores_judged_on_the_judgments_file(
+    tmp_path: Path, judgments: str, judged: float
+) -> None:
+    repo, golden, path = _repo_with_golden(tmp_path, judgments)
+
+    record = record_run(golden, path, lambda _: _RejectedFound(), PipelineConfig(), repo)
+
+    assert [r.judged for r in record.results] == [judged]
