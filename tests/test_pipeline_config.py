@@ -5,6 +5,8 @@ from pydantic import ValidationError
 
 from agentic_rag.pipeline_config import PipelineConfig, load_pipeline
 
+PIPELINES = Path(__file__).parents[1] / "pipelines"
+
 
 def _write(tmp_path: Path, text: str) -> Path:
     path = tmp_path / "variant.toml"
@@ -46,3 +48,14 @@ def test_the_config_cannot_be_changed_after_loading() -> None:
 
     with pytest.raises(ValidationError):
         config.retriever = "vector"  # pyright: ignore[reportAttributeAccessIssue]
+
+
+@pytest.mark.parametrize("path", sorted(PIPELINES.glob("*.toml")), ids=lambda path: path.stem)
+def test_every_pipeline_file_of_the_repo_loads(path: Path) -> None:
+    load_pipeline(path)
+
+
+def test_the_repo_has_a_pipeline_per_retriever_besides_the_baseline() -> None:
+    retrievers = {load_pipeline(path).retriever for path in PIPELINES.glob("*.toml")}
+
+    assert retrievers == {"bm25", "hybrid"}

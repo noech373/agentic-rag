@@ -16,6 +16,8 @@ from agentic_rag.generation.openai import OpenAIGenerator
 from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.rag import RAG
 from agentic_rag.retrieval.base import Retriever
+from agentic_rag.retrieval.bm25 import BM25Retriever
+from agentic_rag.retrieval.hybrid import HybridRetriever
 from agentic_rag.retrieval.vector import VectorRetriever
 from agentic_rag.storage.postgres import PostgresStore, database_url
 from agentic_rag.tracing import TracedRAG, TracedRetriever
@@ -34,6 +36,13 @@ def make_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
     match pipeline.retriever:
         case "vector":
             return VectorRetriever(make_store(settings), make_embedder(settings))
+        case "bm25":
+            return BM25Retriever(make_store(settings))
+        case "hybrid":
+            store = make_store(settings)
+            return HybridRetriever(
+                [VectorRetriever(store, make_embedder(settings)), BM25Retriever(store)]
+            )
 
 
 def make_rag(settings: Settings, pipeline: PipelineConfig, *, k: int = 8) -> RAG:

@@ -1,0 +1,2 @@
+# BM25 alone: what the lexical half of the hybrid search finds by itself.
+retriever = "bm25"
