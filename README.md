@@ -6,8 +6,8 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 (GDPR, AI Act, DORA, NIS2, ...), built with production practices in mind.
 
 > **Status:** work in progress. A baseline RAG works end to end (ingestion, vector search,
-> cited answers, tracing); the evaluation is under way (a golden set of 44 questions), and the
-> measured improvements follow.
+> cited answers, tracing), its retrieval is measured on a golden set of 104 questions, and the
+> improvements are being measured one by one (see [Results and findings](#results-and-findings)).
 
 ## Goals
 
@@ -110,22 +110,13 @@ under GDPR, NIS2 and DORA):
 uv run agentic-rag download   # fetch the corpus into data/corpus/ (~11 MB)
 ```
 
-The documents are not stored in this repository. [`corpus/manifest.toml`](corpus/manifest.toml)
-lists the download URL and the SHA-256 of each one: a file whose checksum differs is rejected, so
-every checkout ingests exactly the same bytes and the evaluation stays valid. Re-running the
-command only downloads what is missing or corrupted.
+The documents are not stored in this repository. [`corpus/manifest.toml`](corpus/manifest.toml) lists the download URL and the SHA-256 of each one: a file whose checksum differs is rejected, so every checkout ingests exactly the same bytes and the evaluation stays valid. Re-running the command only downloads what is missing or corrupted.
 
-EU legal acts are fetched from [Cellar](https://op.europa.eu/en/web/cellar), the Publications
-Office's repository for machine access. Each document keeps its own license: EU legal acts may be
-reused under [Commission Decision 2011/833/EU](https://data.europa.eu/eli/dec/2011/833/oj), the
-CNIL guide is published under [GPL-3.0](https://github.com/LINCnil/GDPR-Developer-Guide), and the
-EDPB, ENISA and ESAs documents under their publishers' reuse terms.
+EU legal acts are fetched from [Cellar](https://op.europa.eu/en/web/cellar), the Publications Office's repository for machine access. Each document keeps its own license: EU legal acts may be reused under [Commission Decision 2011/833/EU](https://data.europa.eu/eli/dec/2011/833/oj), the CNIL guide is published under [GPL-3.0](https://github.com/LINCnil/GDPR-Developer-Guide), and the EDPB, ENISA and ESAs documents under their publishers' reuse terms.
 
 ## Parsing
 
-Each document is split into blocks tagged with their place in the document, so that answers can
-cite it: *GDPR, Article 33(1)*, *EDPB Guidelines 9/2022, II. > A. > 1. Article 33 requirements,
-p. 10*.
+Each document is split into blocks tagged with their place in the document, so that answers can cite it: *GDPR, Article 33(1)*, *EDPB Guidelines 9/2022, II. > A. > 1. Article 33 requirements, p. 10*.
 
 - **EU legal acts**: a dedicated parser reads the structure from the identifiers of the
   Official Journal's XHTML (`art_33`, `033.001`).
@@ -184,7 +175,8 @@ Known limitations:
     (RRF): a chunk scores the sum of 1 / (60 + rank) over the rankings that have it. Only ranks count,
     since BM25 and cosine scores cannot be compared, so a chunk both retrievers find comes first. Each
     retriever returns the same 50 candidates whatever the number of sources asked for, so the top 8
-    the evaluation measures (from a top 50) is exactly the top 8 an answer gets.
+    the evaluation measures (from a top 50) is exactly the top 8 an answer gets. Measured, it does
+    worse than vector search alone on the golden set (see [Results and findings](#results-and-findings)).
 
 - **Storage**: one PostgreSQL database for the documents, chunks and vectors. The vector column has
   no fixed dimension and each document records its embedding model, so another model needs no
@@ -244,39 +236,120 @@ answers are sent to Langfuse: masking personal data is planned with the guardrai
 ## Evaluation
 
 Every later change (hybrid search, reranking, other chunking) is kept only if it improves a
-measure, so the measure comes first. [`eval/golden.toml`](eval/golden.toml) is the golden set: 44
+measure, so the measure comes first. [`eval/golden.toml`](eval/golden.toml) is the golden set: 104
 questions, each with the passages of the corpus that answer it.
 
 | Category | Questions | What it tests |
 |---|---|---|
-| factual | 17 | a precise fact in one text |
-| vague | 10 | a question as a user asks it, without the words of the article |
-| table | 8 | facts that only a table of a PDF states |
-| multi-document | 4 | an answer that needs two documents |
-| unanswerable | 5 | a question the corpus does not cover: the right answer is the refusal |
+| factual | 56 | a precise fact in one text |
+| vague | 26 | a question as a user asks it, without the words of the article |
+| table | 5 | facts that only a table of a PDF states |
+| multi-document | 9 | an answer that needs two documents |
+| unanswerable | 8 | a question the corpus does not cover: the right answer is the refusal |
 
 - **Passages, not chunk ids.** The evidence of a question is a short verbatim quote of the
   corpus. A retrieved chunk is relevant when it contains the quote whole (case, punctuation and
   spacing ignored), so the golden set stays valid when the parsing or the chunking changes, which is
   exactly what the later phases do. A fact can list several quotes (`any_of`) when documents state it
   in different words: a guideline that quotes the GDPR answers as well as the GDPR.
-- **Written two ways.** 25 questions were written while reading a passage, 19 blind, as a user
+- **Written two ways.** 40 questions were written while reading a passage, 64 blind, as a user
   would, without reading the corpus. Comparing their scores shows whether the first kind is too easy.
+- **A held-out fifth.** 21 questions (a fifth of each category) are never looked at while tuning,
+  to check at the end that the tuning did not just fit the other questions. Retrieval is tuned on the
+  77 others that have facts to find (unanswerable questions are left to the generation metrics).
 - **Checked by tests.** `tests/evaluation/test_golden.py` verifies the structure (unique ids,
   documents of the manifest, an unanswerable question has no evidence and expects the refusal) and
   that each quote is whole in a chunk of its document and not so generic that it matches many chunks
   (these two read the corpus: they are skipped until `download` and `convert` have run).
 
+Retrieval metrics, per question:
+
+- **recall@k** (the main one at k = 8, the number of sources the LLM gets): the share of the
+  question's facts that the first k chunks state. Also at 5, 20 and 50, to see whether a missed fact
+  is ranked too low or not found at all.
+- **MRR@10**: 1 / the rank of the first chunk that states a fact, 0 if none of the first 10 does.
+
 ```bash
-uv run pytest tests/evaluation/test_golden.py
+uv run agentic-rag eval --pipeline pipelines/hybrid.toml   # run, saved as eval/results/hybrid.json
+uv run agentic-rag compare eval/results/baseline.json eval/results/hybrid.json
 ```
 
-Still to do: the retrieval metrics (recall@k, MRR) and their runner, then the generation metrics
-(faithfulness, answer relevancy) with an LLM judge calibrated on human grades, thresholds in CI, and
-pooling (judging what several retrievers return) to find relevant chunks the quotes do not list. With
-44 questions the scores are a baseline, not a proof: the confidence interval at 95 % is about
-±14 points, so improvements will be compared question by question, and the set will grow to
-about 100 before the finer conclusions of Phase 4.
+A run records the commit, whether the tree had uncommitted changes, the hash of the golden set and
+the pipeline. `compare` refuses two runs on different golden sets, and two systems are compared
+question by question: the mean of the paired differences, with a 95 % bootstrap confidence interval.
+Pairing compares each question with itself, so the gap in difficulty between questions does not
+blur the comparison. With 77 questions, both a score and a difference are known to about ±8 points:
+smaller effects need more questions.
+
+Still to do: pooling (judging the chunks that several retrievers rank high, to find relevant ones
+the quotes do not list), the generation metrics (faithfulness, answer relevancy, correct refusals)
+with an LLM judge calibrated on human grades, and thresholds in CI.
+
+## Results and findings
+
+What each measured change did, how we read it and what we decided, in the order the project went.
+The numbers come from the runs saved in [`eval/results/`](eval/results/) and can be recomputed with
+`compare`. Unless stated otherwise: retrieval on the 77 tuning questions, differences against the
+previous system, **bold** when the 95 % interval excludes 0.
+
+**Current system:** vector search (entry 1). Hybrid search is available as a pipeline but not the
+default (entry 2).
+
+### 1. Baseline: vector search
+
+| recall@5 | recall@8 | recall@20 | recall@50 | MRR@10 |
+|---|---|---|---|---|
+| 0.59 | 0.72 [0.63, 0.80] | 0.82 | 0.90 | 0.57 [0.48, 0.66] |
+
+| recall@8 | factual (45) | vague (21) | multi-document (7) | table (4) | origin: passage (31) | origin: blind (46) |
+|---|---|---|---|---|---|---|
+| vector | 0.79 | 0.59 | 0.44 | 1.00 | 0.88 | 0.61 |
+
+Origin: written while reading the passage that answers it, or blind, before looking at the corpus.
+
+- **The missing facts are mostly ranked too low, not lost.** 28 % of the facts are not in the top 8,
+  but recall@50 is 0.90: for many questions the right chunk is retrieved, between rank 9 and 50. A
+  reranker, which reorders a short list with a finer model, targets exactly this gap.
+- **Blind questions are much harder** (0.61 against 0.88). Questions written while reading a passage
+  reuse its words, which makes them easy; the blind ones are closer to what users ask, so both are
+  reported.
+- **Multi-document questions** (0.44) need two texts in the same 8 chunks. With 7 questions (and
+  4 tables), these categories are indications, not results.
+
+### 2. BM25 and hybrid search: not adopted
+
+| | vector | bm25 | hybrid (RRF) | hybrid − vector |
+|---|---|---|---|---|
+| recall@8 | 0.72 | 0.44 | 0.56 | **−0.16 [−0.24, −0.07]** |
+| recall@50 | 0.90 | 0.65 | 0.87 | −0.03 [−0.08, +0.02] |
+| MRR@10 | 0.57 | 0.34 | 0.47 | **−0.10 [−0.18, −0.02]** |
+| recall@8, factual (45) | 0.79 | 0.56 | 0.68 | |
+| recall@8, vague (21) | 0.59 | 0.20 | 0.26 | |
+
+- **BM25 is weak on this golden set, by design.** It only finds the words of the question, and the
+  rule of the golden set is that a question names its text but not the wording of the article. On
+  vague questions, worded as a user would, it finds 0.20 of the facts.
+- **Fusing it in hurts more than it helps**: 20 questions lose recall@8, 7 gain. With RRF's usual
+  constant (60) and 50 candidates per retriever, a chunk ranked middling by both (14th and 11th:
+  1/74 + 1/71 ≈ 0.028) beats a chunk only vector search ranks first (1/61 ≈ 0.016). For instance the
+  AI Act recital on disclosing a chatbot is 1st in vector search and 12th in the hybrid ranking.
+- **No setting fixes it.** Re-fusing the saved rankings offline (checked to reproduce the hybrid
+  run exactly), we tried 150 settings: the RRF constant (1 to 60), the candidates per retriever
+  (8 to 50) and a weight on BM25 (0 to 1). With equal weights, the best still loses
+  (−0.073 [−0.145, −0.002]). The best overall gives BM25 a quarter of the weight, with a constant of
+  1 and 10 candidates: +0.022 [0.000, +0.050], 3 questions gained and none lost, MRR unchanged. That
+  is the best of 150 tries on the same questions, so it overstates the gain; checking it on the 21
+  held-out questions could not detect 2 points.
+
+**Decision:** vector search stays the default, and hybrid search stays as a pipeline to compare
+later bricks with. BM25 is kept to find candidates for pooling.
+
+**What this does not show:** that BM25 is useless. It fails on paraphrased questions, while users
+of a compliance assistant also type exact terms ("Article 23", "TLPT", "ICT third-party service
+provider"), where word matching is known to help. Next: pooling, since relevant chunks the hybrid
+ranking brings up but the quotes do not list currently count as misses; then a category of
+questions in exact legal terms. The rule is set before running it: hybrid search becomes the
+default if it gains significantly on that category without losing significantly on the others.
 
 ## Development
 
