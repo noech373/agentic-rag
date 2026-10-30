@@ -64,3 +64,9 @@ class VectorSearch(Protocol):
     ) -> list[RetrievedChunk]:
         """The `k` chunks nearest to `embedding` among those of `embedding_model`, best first."""
         ...
+
+
+class KeywordSearch(Protocol):
+    def keyword_search(self, query: str, *, k: int) -> list[RetrievedChunk]:
+        """The `k` chunks that best match the words of `query`, best first; none without one."""
+        ...
