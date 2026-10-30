@@ -336,7 +336,7 @@ Origin: written while reading the passage that answers it, or blind, before look
 - **No setting fixes it.** Re-fusing the saved rankings offline (checked to reproduce the hybrid
   run exactly), we tried 150 settings: the RRF constant (1 to 60), the candidates per retriever
   (8 to 50) and a weight on BM25 (0 to 1). With equal weights, the best still loses
-  (−0.073 [−0.145, −0.002]). The best overall gives BM25 a quarter of the weight, with a constant of
+  (−0.073 [−0.137, −0.005]). The best overall gives BM25 a quarter of the weight, with a constant of
   1 and 10 candidates: +0.022 [0.000, +0.050], 3 questions gained and none lost, MRR unchanged. That
   is the best of 150 tries on the same questions, so it overstates the gain; checking it on the 21
   held-out questions could not detect 2 points.
