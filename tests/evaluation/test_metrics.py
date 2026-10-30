@@ -2,7 +2,7 @@ import pytest
 
 from agentic_rag.document import Chunk
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
-from agentic_rag.evaluation.metrics import mrr_at_k, recall_at_k
+from agentic_rag.evaluation.metrics import judged_at_k, mrr_at_k, recall_at_k
 
 
 def _chunk(text: str) -> Chunk:
@@ -132,3 +132,74 @@ def test_mrr_of_a_question_without_facts_is_undefined() -> None:
 
     with pytest.raises(ValueError, match="no facts"):
         mrr_at_k(question, [_chunk("anything")], k=1)
+
+
+_PURPOSE = (Quote(document="gdpr", quote="the purpose of this regulation"),)
+
+
+def test_judged_counts_useful_and_rejected_chunks() -> None:
+    chunks = [
+        _chunk("Notify the supervisory authority without undue delay."),
+        _chunk("The purpose of this Regulation is to protect natural persons."),
+        _chunk("Unrelated text."),
+        _chunk("Other unrelated text."),
+    ]
+
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, chunks, k=4) == 0.5
+
+
+def test_judged_is_zero_without_any_judgment_in_the_top_k() -> None:
+    chunks = [_chunk("Unrelated text."), _chunk("Other unrelated text.")]
+
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, chunks, k=2) == 0
+
+
+def test_judged_without_rejections_counts_useful_chunks_only() -> None:
+    chunks = [_chunk("Notify the supervisory authority without undue delay."), _chunk("Unrelated.")]
+
+    assert judged_at_k(_question(_NOTIFY), (), chunks, k=2) == 0.5
+
+
+def test_judged_ignores_chunks_after_k() -> None:
+    chunks = [
+        _chunk("Unrelated text."),
+        _chunk("The purpose of this Regulation is to protect natural persons."),
+    ]
+
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, chunks, k=1) == 0
+
+
+def test_judged_counts_once_a_chunk_both_useful_and_rejected() -> None:
+    chunks = [
+        _chunk(
+            "The purpose of this Regulation: notify the supervisory authority without undue delay."
+        )
+    ]
+
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, chunks, k=1) == 1
+
+
+def test_judged_divides_by_the_chunks_received_when_fewer_than_k() -> None:
+    chunks = [
+        _chunk("Notify the supervisory authority without undue delay."),
+        _chunk("Unrelated text."),
+    ]
+
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, chunks, k=8) == 0.5
+
+
+def test_judged_is_one_when_no_chunk_is_received() -> None:
+    assert judged_at_k(_question(_NOTIFY), _PURPOSE, [], k=8) == 1
+
+
+def test_judged_of_a_question_without_facts_is_undefined() -> None:
+    question = Question(
+        id="refused",
+        category="unanswerable",
+        origin="blind",
+        question="?",
+        answer="!",
+    )
+
+    with pytest.raises(ValueError, match="no facts"):
+        judged_at_k(question, _PURPOSE, [_chunk("anything")], k=1)

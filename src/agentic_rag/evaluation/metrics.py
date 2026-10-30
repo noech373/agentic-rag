@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from agentic_rag.document import Chunk
-from agentic_rag.evaluation.golden import Question, contains, normalize
+from agentic_rag.evaluation.golden import Question, Quote, contains, normalize
 
 
 def recall_at_k(question: Question, chunks: Sequence[Chunk], k: int) -> float:
@@ -32,3 +32,29 @@ def mrr_at_k(question: Question, chunks: Sequence[Chunk], k: int) -> float:
         if any(contains(text, quote) for quote in quotes):
             return 1 / rank
     return 0
+
+
+def judged_at_k(
+    question: Question, rejected: Sequence[Quote], chunks: Sequence[Chunk], k: int
+) -> float:
+    """The share of the first `k` chunks judged, useful or rejected: 1 if no chunk was retrieved.
+
+    Divided by the chunks retrieved, not by `k`: a missing chunk is not an unjudged one.
+    """
+    if not question.evidence:
+        raise ValueError(f"{question.id} has no facts: its judged rate is undefined")
+
+    top = chunks[:k]
+    if not top:
+        return 1
+
+    quotes = [quote.quote for evidence in question.evidence for quote in evidence.any_of]
+    quotes += [quote.quote for quote in rejected]
+
+    judged = 0
+    for chunk in top:
+        text = normalize(chunk.text)
+        if any(contains(text, quote) for quote in quotes):
+            judged += 1
+
+    return judged / len(top)
