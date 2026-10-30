@@ -3,10 +3,13 @@ from pathlib import Path
 import pytest
 from pydantic import SecretStr
 
+from agentic_rag import factory
 from agentic_rag.config import LangfuseSettings, OpenAISettings, PostgresSettings, Settings
 from agentic_rag.factory import make_rag, make_retriever
 from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.rag import RAG
+from agentic_rag.retrieval.bm25 import BM25Retriever
+from agentic_rag.retrieval.hybrid import HybridRetriever
 from agentic_rag.retrieval.vector import VectorRetriever
 
 
@@ -25,6 +28,28 @@ def test_the_vector_pipeline_builds_a_vector_retriever(settings: Settings) -> No
     retriever = make_retriever(settings, PipelineConfig(retriever="vector"))
 
     assert isinstance(retriever, VectorRetriever)
+
+
+def test_the_bm25_pipeline_builds_a_bm25_retriever_without_openai(
+    settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_embedder(settings: Settings) -> None:
+        raise AssertionError("BM25 needs no embedding")
+
+    monkeypatch.setattr(factory, "make_embedder", no_embedder)
+
+    assert isinstance(make_retriever(settings, PipelineConfig(retriever="bm25")), BM25Retriever)
+
+
+def test_the_hybrid_pipeline_fuses_vector_then_bm25_on_one_store(settings: Settings) -> None:
+    """Vector first: it wins the ties of the fusion, being the better retriever alone."""
+    retriever = make_retriever(settings, PipelineConfig(retriever="hybrid"))
+
+    assert isinstance(retriever, HybridRetriever)
+    vector, bm25 = retriever._retrievers  # pyright: ignore[reportPrivateUsage]
+    assert isinstance(vector, VectorRetriever)
+    assert isinstance(bm25, BM25Retriever)
+    assert vector._search is bm25._search  # pyright: ignore[reportPrivateUsage]
 
 
 def test_the_rag_gets_the_retriever_of_its_pipeline(settings: Settings) -> None:

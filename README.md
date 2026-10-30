@@ -27,7 +27,7 @@ An agentic RAG (retrieval-augmented generation) assistant for EU regulatory comp
 | 1 | Ingestion: layout-aware parsing (PDF tables, HTML, Markdown), structure-aware chunking, embeddings, incremental updates | Done |
 | 2 | Baseline RAG: vector search, cited answers, "I don't know", tracing | Done |
 | 3 | Evaluation: golden dataset, retrieval and generation metrics, CI quality gates | In progress |
-| 4 | Measured improvements: hybrid search (BM25 + vectors), reranking, contextual retrieval | Planned |
+| 4 | Measured improvements: hybrid search (BM25 + vectors), reranking, contextual retrieval | In progress |
 | 5 | Guardrails: input and output checks, prompt-injection defense | Planned |
 | 6 | Production readiness: streaming API, user feedback, resilience, access control, more document sources | Planned |
 | 7 | Agentic RAG with LangGraph: query routing, question decomposition, self-correction | Planned |
@@ -72,7 +72,7 @@ Browse the database with Adminer at <http://localhost:8080/?pgsql=postgres&usern
 
 ```text
 ingestion   manifest > download > parse (by format) > chunk > embed > store
-question    embed > vector search (top k) > prompt with numbered sources > LLM > answer citing [n]
+question    retrieve (vectors, BM25, or both fused) > prompt with numbered sources > LLM > answer citing [n]
 ```
 
 ```text
@@ -80,18 +80,20 @@ src/agentic_rag/
 ├── document.py     domain types: Division, Block, Chunk
 ├── ingestion/      corpus download, parsers/ (EUR-Lex, PDF, Markdown), chunking, pipeline
 ├── embeddings/     base.py (Embedder), openai.py
-├── storage/        base.py (ChunkStore, VectorSearch), postgres.py
-├── retrieval/      base.py (Retriever), vector.py
+├── storage/        base.py (ChunkStore, VectorSearch, KeywordSearch), postgres.py
+├── retrieval/      base.py (Retriever), vector.py, bm25.py, hybrid.py
 ├── generation/     base.py (Generator, Answer), prompt.py, openai.py
 ├── rag.py          retrieve, then generate
 ├── tracing.py      Langfuse wrappers around the RAG and its retriever
-├── factory.py      the one place that picks the implementations, from the settings
+├── pipeline_config.py  which bricks a pipeline is built from, read from pipelines/<name>.toml
+├── factory.py      the one place that picks the implementations, from the settings and the pipeline
 └── cli.py, config.py
+pipelines/          one TOML file per variant of the RAG (the defaults are the baseline)
 ```
 
 Each replaceable part has a package: `base.py` holds its interface, and each implementation is a
-module next to it. A BM25 retriever, another embedding model or another database is a new module and
-one line in `factory.py`; the rest of the code only knows the interfaces. The tests mirror this tree.
+module next to it. A reranker, another embedding model or another database is a new module and
+one case in `factory.py`; the rest of the code only knows the interfaces. The tests mirror this tree.
 
 ## Corpus
 
@@ -173,6 +175,17 @@ Known limitations:
 
 ## Retrieval and answers
 
+- **Three retrievers**, picked by the pipeline file (see [Pipelines](#pipelines)):
+  - **vector** (the baseline): the chunks whose embedding is nearest to the question's (cosine).
+  - **bm25**: the chunks sharing the most words with the question, rare words weighing more, with
+    [pg_textsearch](https://github.com/timescale/pg_textsearch) (English stemming and stop words).
+    It finds the exact terms that embeddings blur, such as a defined term or an article's wording.
+  - **hybrid**: both, fused by [reciprocal rank fusion](https://doi.org/10.1145/1571941.1572114)
+    (RRF): a chunk scores the sum of 1 / (60 + rank) over the rankings that have it. Only ranks count,
+    since BM25 and cosine scores cannot be compared, so a chunk both retrievers find comes first. Each
+    retriever returns the same 50 candidates whatever the number of sources asked for, so the top 8
+    the evaluation measures (from a top 50) is exactly the top 8 an answer gets.
+
 - **Storage**: one PostgreSQL database for the documents, chunks and vectors. The vector column has
   no fixed dimension and each document records its embedding model, so another model needs no
   migration and a search only compares vectors of one model. Search is exact (cosine distance): on
@@ -185,8 +198,29 @@ Known limitations:
   available sources."* otherwise. The CLI lists the cited sources with their links. OpenAI is asked
   not to keep the responses (`store=False`).
 
-Known limitations, to be measured by the evaluation: vector search only (BM25 and reranking are
-planned), a fixed number of sources, and no access control on the documents yet.
+Known limitations, to be measured by the evaluation: no reranking yet, a fixed number of sources,
+and no access control on the documents yet.
+
+## Pipelines
+
+A pipeline is the recipe of one variant of the RAG: which bricks answer a question. Each variant is a
+TOML file in [`pipelines/`](pipelines/), so comparing two systems needs no code change:
+
+```toml
+# pipelines/hybrid.toml
+retriever = "hybrid"
+```
+
+```bash
+uv run agentic-rag ask --pipeline pipelines/hybrid.toml "Who must test the ICT business continuity plans?"
+uv run agentic-rag eval --pipeline pipelines/hybrid.toml   # saved as eval/results/hybrid.json
+```
+
+Without `--pipeline`, the defaults are the baseline (vector search). A misspelled key is refused
+rather than silently running the baseline under another name, and the validated pipeline, defaults
+included, is saved with each evaluation run, so a result always says which system produced it. The
+file holds only what a brick needs: fields appear with the bricks (reranker, guardrails, LLM), while
+secrets and infrastructure stay in `.env`.
 
 ## Tracing
 

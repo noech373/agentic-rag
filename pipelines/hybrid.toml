@@ -1,0 +1,2 @@
+# Vector search and BM25, fused by their ranks (RRF).
+retriever = "hybrid"

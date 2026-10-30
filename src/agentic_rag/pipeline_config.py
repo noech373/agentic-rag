@@ -14,7 +14,7 @@ class PipelineConfig(BaseModel):
     # extra="forbid": a misspelled key would otherwise run the baseline under another name
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    retriever: Literal["vector"] = "vector"
+    retriever: Literal["vector", "bm25", "hybrid"] = "vector"
 
 
 def load_pipeline(path: Path) -> PipelineConfig:
