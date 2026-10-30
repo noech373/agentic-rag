@@ -5,11 +5,13 @@ from collections.abc import Sequence
 from pydantic import BaseModel, ConfigDict
 
 from agentic_rag.evaluation.golden import Category, GoldenSet, Question
-from agentic_rag.evaluation.metrics import mrr_at_k, recall_at_k
+from agentic_rag.evaluation.judgments import Judgments
+from agentic_rag.evaluation.metrics import judged_at_k, mrr_at_k, recall_at_k
 from agentic_rag.retrieval.base import Retriever
 
 RECALL_KS = (5, 8, 20, 50)
-MRR_K = 10
+MRR_K = 8  # as the recall: ranks 9 and up are neither given to the LLM nor judged
+JUDGED_K = 8  # the main metric's k: the top that pooling judges
 
 
 class QuestionResult(BaseModel):
@@ -19,7 +21,12 @@ class QuestionResult(BaseModel):
     category: Category
     recall: dict[str, float]
     mrr: float
+    judged: float
     retrieved: tuple[str, ...]  # "document_id#position", best first, to inspect and pool
+
+    def scores(self) -> dict[str, float]:
+        """Every metric of the question, by name: what is averaged and compared."""
+        return {**self.recall, f"mrr@{MRR_K}": self.mrr, f"judged@{JUDGED_K}": self.judged}
 
 
 def tuning_questions(golden_set: GoldenSet) -> tuple[Question, ...]:
@@ -27,9 +34,11 @@ def tuning_questions(golden_set: GoldenSet) -> tuple[Question, ...]:
     return tuple(q for q in golden_set.questions if not q.holdout and q.evidence)
 
 
-def run_retriever(questions: Sequence[Question], retriever: Retriever) -> list[QuestionResult]:
+def run_retriever(
+    questions: Sequence[Question], retriever: Retriever, judgments: Judgments
+) -> list[QuestionResult]:
     """Retrieve once per question, deep enough for the largest k, and score every k on it."""
-    depth = max((*RECALL_KS, MRR_K))
+    depth = max((*RECALL_KS, MRR_K, JUDGED_K))
     results: list[QuestionResult] = []
     for question in questions:
         retrieved = retriever.retrieve(question.question, depth)
@@ -40,6 +49,7 @@ def run_retriever(questions: Sequence[Question], retriever: Retriever) -> list[Q
                 category=question.category,
                 recall={f"recall@{k}": recall_at_k(question, chunks, k) for k in RECALL_KS},
                 mrr=mrr_at_k(question, chunks, MRR_K),
+                judged=judged_at_k(question, judgments.get(question.id, ()), chunks, JUDGED_K),
                 retrieved=tuple(f"{r.document.id}#{r.position}" for r in retrieved),
             )
         )

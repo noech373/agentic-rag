@@ -13,21 +13,26 @@ from agentic_rag.evaluation.runner import QuestionResult
 
 
 def _result(
-    recall_at_8: float, mrr: float, id: str = "q", category: Category = "factual"
+    recall_at_8: float,
+    mrr: float,
+    id: str = "q",
+    category: Category = "factual",
+    judged: float = 1.0,
 ) -> QuestionResult:
     return QuestionResult(
         question_id=id,
         category=category,
         recall={"recall@8": recall_at_8},
         mrr=mrr,
+        judged=judged,
         retrieved=(),
     )
 
 
 def test_the_mean_is_taken_per_metric() -> None:
-    results = [_result(1.0, 1.0, "a"), _result(0.5, 0.0, "b")]
+    results = [_result(1.0, 1.0, "a", judged=1.0), _result(0.5, 0.0, "b", judged=0.5)]
 
-    assert mean_scores(results) == {"recall@8": 0.75, "mrr": 0.5}
+    assert mean_scores(results) == {"recall@8": 0.75, "mrr@8": 0.5, "judged@8": 0.75}
 
 
 def test_every_question_weighs_the_same_whatever_its_number_of_facts() -> None:
@@ -50,8 +55,8 @@ def test_the_means_are_taken_within_each_category() -> None:
     ]
 
     assert mean_scores_by_category(results) == {
-        "factual": {"recall@8": 0.75, "mrr": 0.75},
-        "table": {"recall@8": 0.0, "mrr": 0.0},
+        "factual": {"recall@8": 0.75, "mrr@8": 0.75, "judged@8": 1.0},
+        "table": {"recall@8": 0.0, "mrr@8": 0.0, "judged@8": 1.0},
     }
 
 
@@ -106,7 +111,7 @@ def test_the_difference_is_taken_question_by_question() -> None:
     candidate = [_result(1.0, 0.5, "a"), _result(0.5, 1.0, "b")]
 
     assert paired_differences(baseline, candidate, "recall@8") == [0.5, -0.5]
-    assert paired_differences(baseline, candidate, "mrr") == [0.5, 0.0]
+    assert paired_differences(baseline, candidate, "mrr@8") == [0.5, 0.0]
 
 
 def test_questions_are_paired_by_id_not_by_position() -> None:
@@ -118,13 +123,13 @@ def test_questions_are_paired_by_id_not_by_position() -> None:
 
 def test_runs_on_different_questions_cannot_be_paired() -> None:
     with pytest.raises(ValueError, match="same questions"):
-        paired_differences([_result(1.0, 1.0, "a")], [_result(1.0, 1.0, "b")], "mrr")
+        paired_differences([_result(1.0, 1.0, "a")], [_result(1.0, 1.0, "b")], "mrr@8")
 
 
 def test_a_run_compared_with_itself_has_no_difference_at_all() -> None:
     run = [_result(0.5, 0.25, "a"), _result(1.0, 1.0, "b")]
 
-    differences = paired_differences(run, run, "mrr")
+    differences = paired_differences(run, run, "mrr@8")
 
     assert differences == [0.0, 0.0]
     assert bootstrap_ci(differences) == (0.0, 0.0)

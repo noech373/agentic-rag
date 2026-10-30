@@ -19,6 +19,8 @@ def check_comparable(baseline: RunRecord, candidate: RunRecord) -> list[str]:
             f"the runs come from different commits ({baseline.git_sha[:7]}, "
             f"{candidate.git_sha[:7]}): rerun the baseline so that only the config differs"
         )
+    if baseline.judgments_sha256 != candidate.judgments_sha256:
+        warnings.append("the runs used different judgments: their judged@k cannot be compared")
     for name, record in (("baseline", baseline), ("candidate", candidate)):
         if record.dirty:
             warnings.append(f"the {name} ran on uncommitted changes: not for the README")
@@ -30,7 +32,7 @@ def summary_table(run: RunRecord, name: str) -> str:
     means = mean_scores(run.results)
     lines = [f"| metric | {name} [95% CI] |", "|---|---|"]
     for metric, mean in means.items():
-        low, high = bootstrap_ci([{**r.recall, "mrr": r.mrr}[metric] for r in run.results])
+        low, high = bootstrap_ci([r.scores()[metric] for r in run.results])
         lines.append(f"| {metric} | {mean:.2f} [{low:.2f}, {high:.2f}] |")
     lines += ["", f"{len(run.results)} questions."]
     return "\n".join(lines)

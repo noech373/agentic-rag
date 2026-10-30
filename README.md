@@ -267,16 +267,22 @@ Retrieval metrics, per question:
 - **recall@k** (the main one at k = 8, the number of sources the LLM gets): the share of the
   question's facts that the first k chunks state. Also at 5, 20 and 50, to see whether a missed fact
   is ranked too low or not found at all.
-- **MRR@10**: 1 / the rank of the first chunk that states a fact, 0 if none of the first 10 does.
+- **MRR@8**: 1 / the rank of the first chunk that states a fact, 0 if none of the first 8 does
+  (MRR@10 until the judged@8 runs: ranks 9 and 10 are neither given to the LLM nor judged).
+- **judged@8**: the share of the first 8 chunks that have a judgment: they state a fact, or
+  `eval/judgments.toml` rejects them for this question. The recall counts an unjudged chunk as
+  useless, so a low judged@8 warns that the recall may be underestimated. Divided by the chunks
+  retrieved when fewer than 8, as ir-measures' Judged does.
 
 ```bash
 uv run agentic-rag eval --pipeline pipelines/hybrid.toml   # run, saved as eval/results/hybrid.json
 uv run agentic-rag compare eval/results/baseline.json eval/results/hybrid.json
 ```
 
-A run records the commit, whether the tree had uncommitted changes, the hash of the golden set and
-the pipeline. `compare` refuses two runs on different golden sets, and two systems are compared
-question by question: the mean of the paired differences, with a 95 % bootstrap confidence interval.
+A run records the commit, whether the tree had uncommitted changes, the hashes of the golden set and
+of the judgments, and the pipeline. `compare` refuses two runs on different golden sets (and warns
+on different judgments), and two systems are compared question by question: the mean of the paired
+differences, with a 95 % bootstrap confidence interval.
 Pairing compares each question with itself, so the gap in difficulty between questions does not
 blur the comparison. With 77 questions, both a score and a difference are known to about ±8 points:
 smaller effects need more questions.

@@ -11,7 +11,7 @@ from agentic_rag.evaluation.runner import QuestionResult
 
 def mean_scores(results: Sequence[QuestionResult]) -> dict[str, float]:
     """The mean of each metric over the questions, each question weighing the same."""
-    scores = [{**r.recall, "mrr": r.mrr} for r in results]
+    scores = [r.scores() for r in results]
     if not scores:
         raise ValueError("no results to average")
     return {metric: fmean(s[metric] for s in scores) for metric in scores[0]}
@@ -48,7 +48,7 @@ def bootstrap_ci(
 
 
 def _scores_by_question(results: Sequence[QuestionResult], metric: str) -> dict[str, float]:
-    return {r.question_id: {**r.recall, "mrr": r.mrr}[metric] for r in results}
+    return {r.question_id: r.scores()[metric] for r in results}
 
 
 def paired_differences(
