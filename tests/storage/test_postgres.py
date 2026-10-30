@@ -1,4 +1,5 @@
 import math
+import os
 from collections.abc import Iterator, Sequence
 
 import pytest
@@ -59,6 +60,8 @@ def engine() -> Iterator[Engine]:
             connection.execute(text(f"CREATE DATABASE {_TEST_DATABASE}"))
     except OperationalError:
         admin.dispose()
+        if os.environ.get("CI"):  # set by GitHub Actions: a skip there would pass without testing
+            pytest.fail("Postgres not reachable in CI")
         pytest.skip("Postgres not reachable: run `docker compose up -d`")
 
     engine = create_engine(database_url(settings, _TEST_DATABASE))
