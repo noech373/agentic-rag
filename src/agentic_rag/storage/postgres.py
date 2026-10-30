@@ -8,13 +8,31 @@ user may see (`groups`), and cite a chunk ("GDPR Art. 33(1)", with a link) from 
 from collections.abc import Collection, Sequence
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import URL, Engine, ForeignKey, Index, Text, delete, insert, select, text
+from sqlalchemy import (
+    URL,
+    Engine,
+    Float,
+    ForeignKey,
+    Index,
+    Text,
+    delete,
+    func,
+    insert,
+    select,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from agentic_rag.config import PostgresSettings
 from agentic_rag.document import Chunk
-from agentic_rag.storage.base import ChunkStore, IndexedDocument, RetrievedChunk, VectorSearch
+from agentic_rag.storage.base import (
+    ChunkStore,
+    IndexedDocument,
+    KeywordSearch,
+    RetrievedChunk,
+    VectorSearch,
+)
 
 BM25_INDEX = "chunks_text_bm25_idx"  # queries name it: text <@> to_bm25query(:query, BM25_INDEX)
 
@@ -72,7 +90,7 @@ def database_url(settings: PostgresSettings, database: str | None = None) -> URL
     )
 
 
-class PostgresStore(ChunkStore, VectorSearch):
+class PostgresStore(ChunkStore, KeywordSearch, VectorSearch):
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
         self._sessions = sessionmaker(engine)
@@ -133,15 +151,35 @@ class PostgresStore(ChunkStore, VectorSearch):
         )
         with self._sessions() as session:
             return [
-                RetrievedChunk(
-                    document=_document(document),
-                    position=chunk.position,
-                    chunk=Chunk.model_validate(chunk, from_attributes=True),
-                    score=1 - distance,  # cosine similarity
-                )
+                _retrieved(chunk, document, score=1 - distance)  # cosine similarity
                 for chunk, document, distance in session.execute(statement)
+            ]
+
+    def keyword_search(self, query: str, *, k: int) -> list[RetrievedChunk]:
+        # pg_textsearch scores are negative, best first, and 0 for chunks without a query term
+        score = ChunkRow.text.op("<@>", return_type=Float())(func.to_bm25query(query, BM25_INDEX))
+        statement = (
+            select(ChunkRow, DocumentRow, score)
+            .join(DocumentRow)
+            .where(score < 0)
+            .order_by(score, ChunkRow.document_id, ChunkRow.position)
+            .limit(k)
+        )
+        with self._sessions() as session:
+            return [
+                _retrieved(chunk, document, score=-bm25)
+                for chunk, document, bm25 in session.execute(statement)
             ]
 
 
 def _document(row: DocumentRow) -> IndexedDocument:
     return IndexedDocument.model_validate(row, from_attributes=True)
+
+
+def _retrieved(chunk: ChunkRow, document: DocumentRow, *, score: float) -> RetrievedChunk:
+    return RetrievedChunk(
+        document=_document(document),
+        position=chunk.position,
+        chunk=Chunk.model_validate(chunk, from_attributes=True),
+        score=score,
+    )

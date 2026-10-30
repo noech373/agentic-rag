@@ -417,6 +417,66 @@ def test_bm25_sees_inserted_and_deleted_chunks_at_once(
     assert _ranked(engine, "breach") == []
 
 
+# --- Keyword search: BM25 through the store ---
+
+
+def _keyword(store: PostgresStore, query: str, k: int = 10) -> list[tuple[str, int]]:
+    """(document id, position) of the results, best first."""
+    return [(result.document.id, result.position) for result in store.keyword_search(query, k=k)]
+
+
+@pytest.mark.integration
+def test_keyword_search_ranks_by_bm25_with_positive_scores(store: PostgresStore) -> None:
+    _texts(
+        store,
+        "personal data processing",
+        "breach data security",
+        "personal data controller",
+    )
+
+    results = store.keyword_search("personal breach", k=10)
+
+    assert [result.position for result in results] == [1, 0, 2]
+    scores = [result.score for result in results]
+    assert all(score > 0 for score in scores)  # higher is more relevant, as for vector search
+    assert scores == sorted(scores, reverse=True)
+
+
+@pytest.mark.integration
+def test_keyword_search_leaves_out_chunks_without_a_query_term(store: PostgresStore) -> None:
+    _texts(store, "The data subject has the right to erasure.", "A personal data breach.")
+
+    assert _keyword(store, "breach") == [("gdpr", 1)]
+    assert _keyword(store, "unrelated words") == []
+
+
+@pytest.mark.integration
+def test_keyword_search_returns_at_most_k_chunks(store: PostgresStore) -> None:
+    _texts(store, *["A personal data breach."] * 5)
+
+    assert len(_keyword(store, "breach", k=3)) == 3
+
+
+@pytest.mark.integration
+def test_keyword_search_breaks_ties_in_document_order(store: PostgresStore) -> None:
+    """Equal scores in a stable order: two runs of the same evaluation retrieve the same chunks."""
+    _save(store, _document("nis2"), _chunk("A personal data breach."))
+    _texts(store, *["A personal data breach."] * 2)
+
+    assert _keyword(store, "breach") == [("gdpr", 0), ("gdpr", 1), ("nis2", 0)]
+
+
+@pytest.mark.integration
+def test_keyword_search_reads_chunks_back_unchanged(store: PostgresStore) -> None:
+    chunk = _chunk("The controller shall notify the authority of a personal data breach.")
+    _save(store, _document(), chunk)
+
+    [result] = store.keyword_search("breach", k=10)
+
+    assert result.document == _document()
+    assert result.chunk == chunk
+
+
 @pytest.mark.integration
 def test_the_short_bm25_syntax_fails_with_a_bound_parameter(
     store: PostgresStore, engine: Engine
