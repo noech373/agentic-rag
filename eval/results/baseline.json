@@ -1,6 +1,7 @@
 {
   "golden_sha256": "9133df26e1a71f11fc7f6c1afd33c3cc53fb3a2cf7099d44495192adb467edf6",
-  "git_sha": "ae597bdc4224f2c3c440505b3243aed566706dff",
+  "judgments_sha256": "46ccc802015bd1bcebbd3d8d9af6605e75fc9186c693abe337a3e513ad47db97",
+  "git_sha": "c20b96374475466dfa9ce5dc01ec27f794340c3b",
   "dirty": false,
   "config": {
     "retriever": "vector"
@@ -16,6 +17,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-16#1",
         "edpb-guidelines-2021-01#31",
@@ -79,6 +81,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.375,
       "retrieved": [
         "cnil-developer-guide-15#0",
         "cnil-developer-guide-15#2",
@@ -142,6 +145,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "gdpr#46",
         "cnil-developer-guide-15#1",
@@ -205,6 +209,7 @@
         "recall@50": 0.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "cnil-developer-guide-01#2",
         "data-act#29",
@@ -268,6 +273,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "gdpr#183",
         "gdpr#31",
@@ -310,8 +316,8 @@
         "data-act#70",
         "gdpr#38",
         "gdpr#189",
-        "gdpr#154",
         "gdpr#182",
+        "gdpr#154",
         "cnil-developer-guide-13#0",
         "ai-act#285",
         "gdpr#200",
@@ -331,6 +337,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "gdpr#184",
         "gdpr#37",
@@ -394,6 +401,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "gdpr#197",
         "gdpr#65",
@@ -457,6 +465,7 @@
         "recall@50": 0.75
       },
       "mrr": 0.25,
+      "judged": 0.25,
       "retrieved": [
         "gdpr#65",
         "data-act#38",
@@ -520,6 +529,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "gdpr#218",
         "gdpr#89",
@@ -583,6 +593,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "edpb-guidelines-2022-09#43",
         "edpb-guidelines-2022-09#42",
@@ -646,6 +657,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "enisa-nis2-implementation-guidance#223",
         "ai-act#129",
@@ -709,6 +721,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "gdpr#220",
         "edpb-guidelines-2022-09#28",
@@ -772,6 +785,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.25,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2021-01#59",
         "edpb-guidelines-2021-01#58",
@@ -835,6 +849,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "gdpr#221",
         "gdpr#223",
@@ -898,6 +913,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "edpb-guidelines-2021-01#40",
         "gdpr#66",
@@ -961,6 +977,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2022-09#53",
         "dora#92",
@@ -1024,6 +1041,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "cnil-developer-guide-02#0",
         "gdpr#96",
@@ -1086,7 +1104,8 @@
         "recall@20": 1.0,
         "recall@50": 1.0
       },
-      "mrr": 0.1111111111111111,
+      "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "edpb-guidelines-2022-09#53",
         "edpb-guidelines-2022-09#43",
@@ -1150,6 +1169,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2022-09#14",
         "ai-act#337",
@@ -1213,6 +1233,7 @@
         "recall@50": 0.6666666666666666
       },
       "mrr": 0.14285714285714285,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2021-01#9",
         "edpb-guidelines-2022-09#14",
@@ -1236,9 +1257,9 @@
         "gdpr#38",
         "cnil-developer-guide-14#0",
         "edpb-guidelines-2021-01#14",
+        "edpb-guidelines-2021-01#31",
         "edpb-guidelines-2021-01#35",
         "edpb-guidelines-2021-01#82",
-        "edpb-guidelines-2021-01#31",
         "gdpr#30",
         "edpb-guidelines-2021-01#41",
         "edpb-guidelines-2021-01#40",
@@ -1246,8 +1267,8 @@
         "cnil-developer-guide-01#1",
         "gdpr#189",
         "edpb-guidelines-2022-09#59",
-        "nis2#203",
         "edpb-guidelines-2022-09#57",
+        "nis2#203",
         "gdpr#281",
         "gdpr#88",
         "cnil-developer-guide-12#1",
@@ -1257,8 +1278,8 @@
         "data-act#6",
         "data-act#37",
         "edpb-guidelines-2021-01#3",
-        "edpb-guidelines-2021-01#72",
         "edpb-guidelines-2022-09#51",
+        "edpb-guidelines-2021-01#72",
         "cnil-developer-guide-12#5",
         "data-act#71",
         "gdpr#57",
@@ -1276,6 +1297,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.2,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2022-09#14",
         "ai-act#337",
@@ -1305,8 +1327,8 @@
         "edpb-guidelines-2022-09#15",
         "edpb-guidelines-2021-01#35",
         "edpb-guidelines-2022-09#33",
-        "edpb-guidelines-2022-09#30",
         "ai-act#335",
+        "edpb-guidelines-2022-09#30",
         "edpb-guidelines-2022-09#16",
         "edpb-guidelines-2021-01#10",
         "edpb-guidelines-2022-09#20",
@@ -1339,6 +1361,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "gdpr#150",
         "edpb-guidelines-2022-09#14",
@@ -1402,6 +1425,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "edpb-guidelines-2022-09#40",
         "edpb-guidelines-2022-09#28",
@@ -1465,6 +1489,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.25,
+      "judged": 0.125,
       "retrieved": [
         "edpb-guidelines-2022-09#58",
         "edpb-guidelines-2022-09#59",
@@ -1528,6 +1553,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-12#4",
         "edpb-guidelines-2021-01#81",
@@ -1591,6 +1617,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.375,
       "retrieved": [
         "edpb-guidelines-2021-01#18",
         "edpb-guidelines-2021-01#16",
@@ -1654,6 +1681,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "cnil-developer-guide-00#1",
         "cnil-developer-guide-00#0",
@@ -1717,6 +1745,7 @@
         "recall@50": 0.3333333333333333
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-00#1",
         "cnil-developer-guide-12#5",
@@ -1780,6 +1809,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-16#2",
         "cnil-developer-guide-15#6",
@@ -1843,6 +1873,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-16#3",
         "cnil-developer-guide-16#2",
@@ -1906,6 +1937,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-15#6",
         "cnil-developer-guide-16#1",
@@ -1969,6 +2001,7 @@
         "recall@50": 0.6666666666666666
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-05#2",
         "data-act#169",
@@ -2032,6 +2065,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-11#3",
         "ai-act#206",
@@ -2095,6 +2129,7 @@
         "recall@50": 0.5
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-11#3",
         "edpb-guidelines-2021-01#39",
@@ -2158,6 +2193,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.375,
       "retrieved": [
         "cnil-developer-guide-01#4",
         "cnil-developer-guide-01#3",
@@ -2221,6 +2257,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "ai-act#131",
         "ai-act#262",
@@ -2284,6 +2321,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.375,
       "retrieved": [
         "ai-act#60",
         "ai-act#56",
@@ -2347,6 +2385,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.375,
       "retrieved": [
         "ai-act#56",
         "ai-act#60",
@@ -2410,6 +2449,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "ai-act#124",
         "ai-act#360",
@@ -2473,6 +2513,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.25,
       "retrieved": [
         "ai-act#70",
         "ai-act#66",
@@ -2536,6 +2577,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "ai-act#204",
         "ai-act#122",
@@ -2599,6 +2641,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.25,
       "retrieved": [
         "ai-act#373",
         "ai-act#209",
@@ -2662,6 +2705,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.125,
       "retrieved": [
         "ai-act#218",
         "ai-act#208",
@@ -2725,6 +2769,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "ai-act#267",
         "ai-act#100",
@@ -2787,7 +2832,8 @@
         "recall@20": 0.75,
         "recall@50": 0.75
       },
-      "mrr": 0.1,
+      "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "enisa-nis2-implementation-guidance#10",
         "esas-dora-incident-reporting#103",
@@ -2838,7 +2884,7 @@
         "ai-act#377",
         "enisa-nis2-implementation-guidance#89",
         "dora#101",
-        "nis2#91"
+        "esas-dora-incident-reporting#6"
       ]
     },
     {
@@ -2851,6 +2897,7 @@
         "recall@50": 0.3333333333333333
       },
       "mrr": 0.125,
+      "judged": 0.125,
       "retrieved": [
         "enisa-nis2-implementation-guidance#10",
         "dora#38",
@@ -2914,6 +2961,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.14285714285714285,
+      "judged": 0.125,
       "retrieved": [
         "cnil-developer-guide-03#0",
         "cnil-developer-guide-05#2",
@@ -2977,6 +3025,7 @@
         "recall@50": 0.3333333333333333
       },
       "mrr": 0.25,
+      "judged": 0.125,
       "retrieved": [
         "dora#30",
         "dora#28",
@@ -3040,6 +3089,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.2,
+      "judged": 0.125,
       "retrieved": [
         "enisa-nis2-implementation-guidance#10",
         "enisa-nis2-implementation-guidance#12",
@@ -3103,6 +3153,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "nis2#201",
         "nis2#129",
@@ -3166,6 +3217,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.25,
       "retrieved": [
         "enisa-nis2-implementation-guidance#89",
         "enisa-nis2-implementation-guidance#90",
@@ -3229,6 +3281,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.125,
       "retrieved": [
         "enisa-nis2-implementation-guidance#217",
         "enisa-nis2-implementation-guidance#215",
@@ -3292,6 +3345,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.375,
       "retrieved": [
         "enisa-nis2-implementation-guidance#136",
         "enisa-nis2-implementation-guidance#139",
@@ -3308,16 +3362,16 @@
         "enisa-nis2-implementation-guidance#90",
         "enisa-nis2-implementation-guidance#225",
         "enisa-nis2-implementation-guidance#12",
-        "enisa-nis2-implementation-guidance#134",
         "enisa-nis2-implementation-guidance#36",
+        "enisa-nis2-implementation-guidance#134",
         "enisa-nis2-implementation-guidance#0",
         "enisa-nis2-implementation-guidance#49",
         "enisa-nis2-implementation-guidance#21",
         "enisa-nis2-implementation-guidance#131",
         "enisa-nis2-implementation-guidance#89",
         "enisa-nis2-implementation-guidance#55",
-        "enisa-nis2-implementation-guidance#40",
         "enisa-nis2-implementation-guidance#109",
+        "enisa-nis2-implementation-guidance#40",
         "enisa-nis2-implementation-guidance#19",
         "enisa-nis2-implementation-guidance#26",
         "enisa-nis2-implementation-guidance#24",
@@ -3355,6 +3409,7 @@
         "recall@50": 0.3333333333333333
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "enisa-nis2-implementation-guidance#76",
         "enisa-nis2-implementation-guidance#79",
@@ -3418,6 +3473,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "edpb-guidelines-2021-01#34",
         "dora#55",
@@ -3481,6 +3537,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.25,
       "retrieved": [
         "dora#50",
         "dora#141",
@@ -3544,6 +3601,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "esas-dora-incident-reporting#48",
         "esas-dora-incident-reporting#101",
@@ -3607,6 +3665,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.125,
       "retrieved": [
         "esas-dora-incident-reporting#101",
         "esas-dora-incident-reporting#61",
@@ -3670,6 +3729,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.125,
       "retrieved": [
         "esas-dora-incident-reporting#48",
         "esas-dora-incident-reporting#70",
@@ -3733,6 +3793,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.25,
+      "judged": 0.125,
       "retrieved": [
         "esas-dora-incident-reporting#101",
         "dora#65",
@@ -3796,6 +3857,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.14285714285714285,
+      "judged": 0.125,
       "retrieved": [
         "dora#65",
         "dora#30",
@@ -3859,6 +3921,7 @@
         "recall@50": 0.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "esas-dora-incident-reporting#101",
         "nis2#108",
@@ -3921,7 +3984,8 @@
         "recall@20": 0.6666666666666666,
         "recall@50": 0.6666666666666666
       },
-      "mrr": 0.1111111111111111,
+      "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "dora#88",
         "dora#165",
@@ -3985,6 +4049,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "dora#72",
         "dora#157",
@@ -4048,6 +4113,7 @@
         "recall@50": 0.3333333333333333
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "data-act#94",
         "data-act#81",
@@ -4111,6 +4177,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.0,
+      "judged": 0.0,
       "retrieved": [
         "data-act#29",
         "data-act#14",
@@ -4174,6 +4241,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "data-act#14",
         "ai-act#218",
@@ -4237,6 +4305,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.16666666666666666,
+      "judged": 0.125,
       "retrieved": [
         "data-act#29",
         "ai-act#104",
@@ -4300,6 +4369,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.3333333333333333,
+      "judged": 0.25,
       "retrieved": [
         "data-act#56",
         "data-act#73",
@@ -4363,6 +4433,7 @@
         "recall@50": 0.75
       },
       "mrr": 0.5,
+      "judged": 0.25,
       "retrieved": [
         "data-act#29",
         "data-act#48",
@@ -4426,6 +4497,7 @@
         "recall@50": 1.0
       },
       "mrr": 0.5,
+      "judged": 0.25,
       "retrieved": [
         "data-act#60",
         "data-act#57",
@@ -4489,6 +4561,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "data-act#160",
         "data-act#161",
@@ -4552,6 +4625,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "data-act#160",
         "data-act#158",
@@ -4615,6 +4689,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.125,
       "retrieved": [
         "data-act#91",
         "data-act#85",
@@ -4678,6 +4753,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "data-act#101",
         "data-act#151",
@@ -4741,6 +4817,7 @@
         "recall@50": 1.0
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "data-act#165",
         "data-act#98",
@@ -4804,6 +4881,7 @@
         "recall@50": 0.5
       },
       "mrr": 1.0,
+      "judged": 0.25,
       "retrieved": [
         "gdpr#209",
         "gdpr#211",
