@@ -1,5 +1,6 @@
 # Local infrastructure for development. Values come from .env (see .env.example).
 #   docker compose up -d     build if needed and start
+#   docker compose up -d --wait postgres   start Postgres and wait until it accepts connections
 #   docker compose down      stop (the data is kept in the named volume)
 #   docker compose down -v   stop and delete the data
 name: agentic-rag # fixed project name, so containers and volumes don't depend on the folder name
@@ -16,6 +17,13 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql
     shm_size: 256mb
+    # Over TCP: during its first start, the image runs a temporary server on the Unix socket
+    # only, which a socket check would wrongly report as ready.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
   # Web UI to browse the database: http://localhost:8080
   adminer:
