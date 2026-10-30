@@ -1,0 +1,13 @@
+# Judgments: for each golden question, passages of retrieved chunks judged not to state any of
+# its facts. With golden.toml's facts, they tell judged chunks from unjudged ones (judged@k).
+#
+# A key is a question id of golden.toml; its value lists verbatim quotes, as in golden.toml:
+# a chunk that contains one of them whole (ignoring case, punctuation and spacing) is rejected
+# for this question only. A chunk that also states a fact counts as useful.
+# A question without rejected chunks has no key.
+#
+# chatbot-disclose-ai = [
+#   { document = "ai-act", quote = "Given the major impact that AI can have on society" },
+# ]
+#
+# Check: uv run pytest tests/evaluation/test_judgments.py
