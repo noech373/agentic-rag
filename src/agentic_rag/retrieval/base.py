@@ -10,5 +10,6 @@ from agentic_rag.storage.base import RetrievedChunk
 
 class Retriever(Protocol):
     def retrieve(self, query: str, k: int) -> list[RetrievedChunk]:
-        """The `k` chunks most relevant to `query`, best first."""
+        """At most `k` chunks, the most relevant to `query`, best first: fewer if fewer
+        are relevant."""
         ...
