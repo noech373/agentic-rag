@@ -48,13 +48,13 @@ def judged_at_k(
     if not top:
         return 1
 
+    judged = sum(is_judged(question, rejected, chunk) for chunk in top)
+    return judged / len(top)
+
+
+def is_judged(question: Question, rejected: Sequence[Quote], chunk: Chunk) -> bool:
+    """Whether the chunk states one of the question's facts or contains one of its rejections."""
     quotes = [quote.quote for evidence in question.evidence for quote in evidence.any_of]
     quotes += [quote.quote for quote in rejected]
-
-    judged = 0
-    for chunk in top:
-        text = normalize(chunk.text)
-        if any(contains(text, quote) for quote in quotes):
-            judged += 1
-
-    return judged / len(top)
+    text = normalize(chunk.text)
+    return any(contains(text, quote) for quote in quotes)
