@@ -276,6 +276,12 @@ def test_the_sample_is_the_same_whatever_the_order_of_the_verdicts() -> None:
     assert review_sample(rejected, sample=5) == review_sample(list(reversed(rejected)), sample=5)
 
 
+def test_the_review_checks_a_hundred_rejections_by_default() -> None:
+    rejected = [_judgment("q", f"gdpr#{i}") for i in range(150)]
+
+    assert len(review_sample(rejected)) == 100
+
+
 def test_the_sample_takes_all_rejections_when_there_are_fewer() -> None:
     rejected = [_judgment("q", "gdpr#1"), _judgment("q", "gdpr#2")]
 
