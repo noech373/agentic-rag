@@ -12,6 +12,7 @@ from sqlalchemy import create_engine
 from agentic_rag.config import LangfuseSettings, Settings
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.embeddings.openai import OpenAIEmbedder
+from agentic_rag.evaluation.relevance_judge import OpenAIRelevanceJudge, RelevanceJudge
 from agentic_rag.generation.openai import OpenAIGenerator
 from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.rag import RAG
@@ -52,6 +53,10 @@ def make_rag(settings: Settings, pipeline: PipelineConfig, *, k: int = 8) -> RAG
         return RAG(retriever, generator, k=k)
     langfuse = _langfuse(settings.langfuse)
     return TracedRAG(TracedRetriever(retriever, langfuse), generator, langfuse, k=k)
+
+
+def make_relevance_judge(settings: Settings) -> RelevanceJudge:
+    return OpenAIRelevanceJudge(_openai(settings), settings.openai.chat_model)
 
 
 def _openai(settings: Settings) -> OpenAI:
