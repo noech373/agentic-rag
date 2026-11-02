@@ -1,10 +1,20 @@
+from pathlib import Path
+
 import pytest
 
 from agentic_rag.document import Chunk
 from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
-from agentic_rag.evaluation.pooling import chunks_to_judge, pool
+from agentic_rag.evaluation.pooling import (
+    PoolJudgment,
+    chunks_to_judge,
+    judge_pool,
+    load_pool_judgments,
+    not_yet_judged,
+    pool,
+)
 from agentic_rag.evaluation.record import RunRecord
+from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
 from agentic_rag.storage.base import IndexedDocument, StoredChunk
 
@@ -146,3 +156,92 @@ def test_runs_on_different_golden_sets_cannot_be_pooled() -> None:
 
     with pytest.raises(IncomparableRunsError, match="golden"):
         chunks_to_judge([_question("q")], runs, {}, _index(_stored("gdpr#1")))
+
+
+class _FakeJudge:
+    """Relevant when the chunk says "relevant"; fails on the chunk at position `fail_at`."""
+
+    model = "fake-judge"
+
+    def __init__(self, fail_at: int | None = None) -> None:
+        self.fail_at = fail_at
+
+    def judge(self, question: Question, chunk: StoredChunk) -> Verdict:
+        if chunk.position == self.fail_at:
+            raise RuntimeError("API down")
+        if "relevant" in chunk.chunk.text:
+            return Verdict(reason="States it.", facts=(StatedFact(fact=1, quote="relevant"),))
+        return Verdict(reason="Same topic only.", facts=())
+
+
+def _verdict_of(judgments: list[PoolJudgment], key: str) -> bool:
+    [judgment] = [j for j in judgments if j.chunk == key]
+    return judgment.verdict.relevant
+
+
+def test_each_pair_gets_one_verdict_saved_to_the_file(tmp_path: Path) -> None:
+    path = tmp_path / "pooling" / "llm.jsonl"
+    to_judge = [
+        (_question("q"), _stored("gdpr#1", "relevant text")),
+        (_question("q"), _stored("gdpr#2")),
+    ]
+
+    judged = judge_pool(to_judge, _FakeJudge(), path, workers=2)
+
+    saved = load_pool_judgments(path)
+    assert sorted(saved, key=lambda j: j.chunk) == sorted(judged, key=lambda j: j.chunk)
+    assert {(j.question_id, j.chunk, j.model) for j in saved} == {
+        ("q", "gdpr#1", "fake-judge"),
+        ("q", "gdpr#2", "fake-judge"),
+    }
+    assert _verdict_of(saved, "gdpr#1")
+    assert not _verdict_of(saved, "gdpr#2")
+
+
+def test_verdicts_are_appended_to_those_already_saved(tmp_path: Path) -> None:
+    path = tmp_path / "llm.jsonl"
+
+    judge_pool([(_question("q"), _stored("gdpr#1"))], _FakeJudge(), path)
+    judge_pool([(_question("q"), _stored("gdpr#2"))], _FakeJudge(), path)
+
+    assert [j.chunk for j in load_pool_judgments(path)] == ["gdpr#1", "gdpr#2"]
+
+
+def test_a_failed_call_keeps_the_verdicts_received_before_and_raises(tmp_path: Path) -> None:
+    path = tmp_path / "llm.jsonl"
+    to_judge = [(_question("q"), _stored(f"gdpr#{i}")) for i in (1, 2, 3)]
+
+    with pytest.raises(RuntimeError, match="API down"):
+        judge_pool(to_judge, _FakeJudge(fail_at=2), path, workers=1)
+
+    assert [j.chunk for j in load_pool_judgments(path)] == ["gdpr#1"]
+
+
+def test_nothing_is_saved_before_the_first_pooling(tmp_path: Path) -> None:
+    assert load_pool_judgments(tmp_path / "llm.jsonl") == []
+
+
+def test_pairs_the_llm_already_judged_are_not_judged_again() -> None:
+    done = [
+        PoolJudgment(
+            question_id="q1", chunk="gdpr#1", model="m", verdict=Verdict(reason="", facts=())
+        )
+    ]
+    to_judge = [
+        (_question("q1"), _stored("gdpr#1")),
+        (_question("q1"), _stored("gdpr#2")),
+        (_question("q2"), _stored("gdpr#1")),  # same chunk, other question: still to judge
+    ]
+
+    assert _pairs(not_yet_judged(to_judge, done)) == [("q1", "gdpr#2"), ("q2", "gdpr#1")]
+
+
+def test_resuming_after_a_failure_judges_only_what_is_missing(tmp_path: Path) -> None:
+    path = tmp_path / "llm.jsonl"
+    to_judge = [(_question("q"), _stored(f"gdpr#{i}")) for i in (1, 2, 3)]
+    with pytest.raises(RuntimeError):
+        judge_pool(to_judge, _FakeJudge(fail_at=2), path, workers=1)
+
+    judge_pool(not_yet_judged(to_judge, load_pool_judgments(path)), _FakeJudge(), path)
+
+    assert sorted(j.chunk for j in load_pool_judgments(path)) == ["gdpr#1", "gdpr#2", "gdpr#3"]
