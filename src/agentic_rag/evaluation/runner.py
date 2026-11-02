@@ -50,7 +50,7 @@ def run_retriever(
                 recall={f"recall@{k}": recall_at_k(question, chunks, k) for k in RECALL_KS},
                 mrr=mrr_at_k(question, chunks, MRR_K),
                 judged=judged_at_k(question, judgments.get(question.id, ()), chunks, JUDGED_K),
-                retrieved=tuple(f"{r.document.id}#{r.position}" for r in retrieved),
+                retrieved=tuple(r.key for r in retrieved),
             )
         )
     return results

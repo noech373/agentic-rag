@@ -487,3 +487,20 @@ def test_the_short_bm25_syntax_fails_with_a_bound_parameter(
 
     with pytest.raises(ProgrammingError, match="no BM25 index found"), Session(engine) as session:
         session.execute(select(ChunkRow.position).order_by(score))
+
+
+@pytest.mark.integration
+def test_all_chunks_are_read_in_document_then_position_order(store: PostgresStore) -> None:
+    _save(store, _document("nis2"), _chunk("NIS2 first."))
+    _save(store, _document("gdpr"), _chunk("GDPR first."), _chunk("GDPR second."))
+
+    chunks = store.all_chunks()
+
+    assert [c.key for c in chunks] == ["gdpr#0", "gdpr#1", "nis2#0"]
+    assert chunks[1].chunk == _chunk("GDPR second.")
+    assert chunks[1].document == _document("gdpr")
+
+
+@pytest.mark.integration
+def test_an_empty_store_has_no_chunks(store: PostgresStore) -> None:
+    assert store.all_chunks() == []
