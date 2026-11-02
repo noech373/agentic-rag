@@ -27,10 +27,12 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from agentic_rag.config import PostgresSettings
 from agentic_rag.document import Chunk
 from agentic_rag.storage.base import (
+    ChunkReader,
     ChunkStore,
     IndexedDocument,
     KeywordSearch,
     RetrievedChunk,
+    StoredChunk,
     VectorSearch,
 )
 
@@ -90,7 +92,7 @@ def database_url(settings: PostgresSettings, database: str | None = None) -> URL
     )
 
 
-class PostgresStore(ChunkStore, KeywordSearch, VectorSearch):
+class PostgresStore(ChunkReader, ChunkStore, KeywordSearch, VectorSearch):
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
         self._sessions = sessionmaker(engine)
@@ -169,6 +171,22 @@ class PostgresStore(ChunkStore, KeywordSearch, VectorSearch):
             return [
                 _retrieved(chunk, document, score=-bm25)
                 for chunk, document, bm25 in session.execute(statement)
+            ]
+
+    def all_chunks(self) -> list[StoredChunk]:
+        statement = (
+            select(ChunkRow, DocumentRow)
+            .join(DocumentRow)
+            .order_by(ChunkRow.document_id, ChunkRow.position)
+        )
+        with self._sessions() as session:
+            return [
+                StoredChunk(
+                    document=_document(document),
+                    position=chunk.position,
+                    chunk=Chunk.model_validate(chunk, from_attributes=True),
+                )
+                for chunk, document in session.execute(statement)
             ]
 
 

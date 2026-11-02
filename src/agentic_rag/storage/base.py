@@ -28,12 +28,20 @@ class IndexedDocument(BaseModel):
     embedding_model: str  # of all its chunks: a query is only compared with vectors of its model
 
 
-class RetrievedChunk(BaseModel):
+class StoredChunk(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     document: IndexedDocument
     position: int  # in the document, 0-based
     chunk: Chunk
+
+    @property
+    def key(self) -> str:
+        """How runs and judgments name the chunk: "gdpr#12"."""
+        return f"{self.document.id}#{self.position}"
+
+
+class RetrievedChunk(StoredChunk):
     score: float  # higher is more relevant; only comparable within one retriever
 
 
@@ -69,4 +77,10 @@ class VectorSearch(Protocol):
 class KeywordSearch(Protocol):
     def keyword_search(self, query: str, *, k: int) -> list[RetrievedChunk]:
         """The `k` chunks that best match the words of `query`, best first; none without one."""
+        ...
+
+
+class ChunkReader(Protocol):
+    def all_chunks(self) -> list[StoredChunk]:
+        """Every stored chunk, in document then position order: to judge chunks offline."""
         ...
