@@ -1,13 +1,19 @@
+import tomllib
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
 
 from agentic_rag.cli import _load_pipeline, app  # pyright: ignore[reportPrivateUsage]
+from agentic_rag.document import Chunk
 from agentic_rag.evaluation import record
-from agentic_rag.evaluation.record import RunRecord, load_run, save_run
+from agentic_rag.evaluation.pooling import POOLING_DIR, load_pool_judgments
+from agentic_rag.evaluation.record import RunRecord, file_sha256, load_run, save_run
+from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
 from agentic_rag.pipeline_config import PipelineConfig
+from agentic_rag.storage.base import IndexedDocument, StoredChunk
 
 runner = CliRunner()
 
@@ -237,3 +243,125 @@ def test_compare_needs_existing_files(tmp_path: Path) -> None:
     result = runner.invoke(app, ["compare", str(tmp_path / "a.json"), str(tmp_path / "b.json")])
 
     assert result.exit_code == 2
+
+
+_POOL_GOLDEN = """
+[[questions]]
+id = "q0"
+category = "factual"
+origin = "blind"
+question = "When to notify?"
+answer = "Without undue delay."
+[[questions.evidence]]
+any_of = [{ document = "gdpr", quote = "without undue delay" }]
+"""
+
+
+class _PoolStore:
+    def all_chunks(self) -> list[StoredChunk]:
+        document = IndexedDocument(
+            id="gdpr",
+            title="GDPR",
+            short_title="GDPR",
+            source_url=None,
+            regulations=(),
+            groups=("public",),
+            sha256="0",
+            embedding_model="m",
+        )
+        texts = ["Notify without undue delay.", "A relevant passage.", "Unrelated."]
+        return [
+            StoredChunk(document=document, position=i, chunk=Chunk(kind="text", text=t, path=()))
+            for i, t in enumerate(texts)
+        ]
+
+
+class _PoolJudge:
+    model = "gpt-test"
+
+    def judge(self, question: object, chunk: StoredChunk) -> Verdict:
+        facts = (StatedFact(fact=1, quote="x"),) if "relevant" in chunk.chunk.text else ()
+        return Verdict(reason="Because.", facts=facts)
+
+
+def _offline[T](value: T) -> Callable[[object], T]:
+    """A factory that ignores the settings and returns `value`."""
+    return lambda _settings: value
+
+
+@pytest.fixture
+def pooled(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """A golden set, its judgments, an offline store and judge; returns the golden set's path."""
+    golden = tmp_path / "eval" / "golden.toml"
+    golden.parent.mkdir()
+    golden.write_text(_POOL_GOLDEN)
+    (tmp_path / "eval" / "judgments.toml").write_text("")
+    monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
+    monkeypatch.setattr("agentic_rag.factory.make_store", _offline(_PoolStore()))
+    monkeypatch.setattr("agentic_rag.factory.make_relevance_judge", _offline(_PoolJudge()))
+    return golden
+
+
+def _pool_run(golden: Path) -> RunRecord:
+    run = _run(0.0, golden_sha256=file_sha256(golden))
+    retrieved = ("gdpr#0", "gdpr#1", "gdpr#2")
+    q0 = run.results[0].model_copy(update={"question_id": "q0", "retrieved": retrieved})
+    return run.model_copy(update={"results": (q0,)})
+
+
+def test_pool_judges_the_unjudged_chunks_and_writes_the_review(
+    pooled: Path, tmp_path: Path
+) -> None:
+    run = _saved(tmp_path, "baseline", _pool_run(pooled))
+
+    result = runner.invoke(app, ["pool", run])
+
+    assert result.exit_code == 0, result.output
+    assert "2 pairs to judge, 0 judged before" in result.stdout  # gdpr#0 states the fact
+    assert "2 judged now" in result.stdout
+    assert "review of 2 chunks (1 found relevant by the LLM, 1 sampled rejections)" in result.stdout
+    assert len(load_pool_judgments(POOLING_DIR / "llm.jsonl")) == 2
+    review = tomllib.loads((POOLING_DIR / "review.toml").read_text())
+    assert {entry["chunk"] for entry in review["chunks"]} == {"gdpr#1", "gdpr#2"}
+
+
+def test_pool_with_a_limit_stops_before_the_review_and_resumes(
+    pooled: Path, tmp_path: Path
+) -> None:
+    run = _saved(tmp_path, "baseline", _pool_run(pooled))
+
+    first = runner.invoke(app, ["pool", run, "--limit", "1"])
+
+    assert first.exit_code == 0, first.output
+    assert "1 judged now" in first.stdout
+    assert "1 pairs left" in first.stdout
+    assert not (POOLING_DIR / "review.toml").exists()
+
+    second = runner.invoke(app, ["pool", run])
+
+    assert "1 pairs to judge, 1 judged before" in second.stdout
+    assert len(load_pool_judgments(POOLING_DIR / "llm.jsonl")) == 2
+    assert (POOLING_DIR / "review.toml").is_file()
+
+
+def test_pool_never_overwrites_a_review(pooled: Path, tmp_path: Path) -> None:
+    run = _saved(tmp_path, "baseline", _pool_run(pooled))
+    POOLING_DIR.mkdir(parents=True)
+    (POOLING_DIR / "review.toml").write_text("# my review\n")
+
+    result = runner.invoke(app, ["pool", run])
+
+    assert result.exit_code == 1
+    assert "exists" in result.stderr
+    assert (POOLING_DIR / "review.toml").read_text() == "# my review\n"
+    assert not (POOLING_DIR / "llm.jsonl").exists()  # nothing was judged
+
+
+def test_pool_refuses_runs_on_another_golden_set(pooled: Path, tmp_path: Path) -> None:
+    run = _saved(tmp_path, "bm25", _run(0.0, golden_sha256="1b7a"))
+
+    result = runner.invoke(app, ["pool", run])
+
+    assert result.exit_code == 2
+    assert "another golden set" in result.output
+    assert not POOLING_DIR.exists()

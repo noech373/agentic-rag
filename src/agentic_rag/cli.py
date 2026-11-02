@@ -185,6 +185,69 @@ def compare(baseline: RunArgument, candidate: RunArgument) -> None:
         typer.echo(f"\nwarning: {warning}", err=True)
 
 
+@app.command("pool")
+def pool_runs(
+    runs: Annotated[list[Path], typer.Argument(exists=True, dir_okay=False, help="Saved runs.")],
+    golden: Annotated[Path, typer.Option(exists=True, dir_okay=False, help="Golden set.")] = Path(
+        "eval/golden.toml"
+    ),
+    judgments: Annotated[
+        Path, typer.Option(exists=True, dir_okay=False, help="Rejected chunks.")
+    ] = Path("eval/judgments.toml"),
+    limit: Annotated[int | None, typer.Option(help="Judge at most this many chunks.")] = None,
+) -> None:
+    """Pre-judge the unjudged top chunks of the runs with the LLM, then write the review to fill in.
+
+    Run again to resume after a stop.
+    """
+    from agentic_rag.config import get_settings
+    from agentic_rag.evaluation import pooling
+    from agentic_rag.evaluation.golden import load_golden_set
+    from agentic_rag.evaluation.judgments import load_judgments
+    from agentic_rag.evaluation.record import file_sha256
+    from agentic_rag.evaluation.runner import tuning_questions
+    from agentic_rag.factory import make_relevance_judge, make_store
+
+    records = [_load_run(path, "RUNS") for path in runs]
+    golden_sha256 = file_sha256(golden)
+    stale = [
+        path.name
+        for path, run in zip(runs, records, strict=True)
+        if run.golden_sha256 != golden_sha256
+    ]
+    if stale:
+        raise typer.BadParameter(f"on another golden set: {', '.join(stale)}", param_hint="RUNS")
+    llm_path = pooling.POOLING_DIR / "llm.jsonl"
+    review_path = pooling.POOLING_DIR / "review.toml"
+    if review_path.exists():  # before spending anything on the LLM
+        typer.echo(f"{review_path} exists: it may hold a review, rename or delete it", err=True)
+        raise typer.Exit(code=1)
+
+    settings = get_settings()
+    questions = tuning_questions(load_golden_set(golden))
+    chunks = {chunk.key: chunk for chunk in make_store(settings).all_chunks()}
+    done = pooling.load_pool_judgments(llm_path)
+    pending = pooling.not_yet_judged(
+        pooling.chunks_to_judge(questions, records, load_judgments(judgments), chunks), done
+    )
+    typer.echo(f"{len(pending)} pairs to judge, {len(done)} judged before")
+
+    batch = pending[:limit]
+    judged = pooling.judge_pool(batch, make_relevance_judge(settings), llm_path)
+    typer.echo(f"{len(judged)} judged now, saved in {llm_path}")
+    if len(batch) < len(pending):
+        typer.echo(f"{len(pending) - len(batch)} pairs left: run again to finish before the review")
+        return
+
+    entries = pooling.review_sample([*done, *judged])
+    pooling.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
+    relevant = sum(entry.verdict.relevant for entry in entries)
+    typer.echo(
+        f"review of {len(entries)} chunks ({relevant} found relevant by the LLM, "
+        f"{len(entries) - relevant} sampled rejections) saved in {review_path}"
+    )
+
+
 def _load_run(path: Path, hint: str) -> RunRecord:
     try:
         return load_run(path)
