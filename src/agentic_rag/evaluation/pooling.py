@@ -25,10 +25,9 @@ from agentic_rag.evaluation.runner import JUDGED_K
 from agentic_rag.generation.prompt import citation
 from agentic_rag.storage.base import StoredChunk
 
+POOLING_DIR = Path("eval/pooling")  # llm.jsonl and review.toml
 POOL_DEPTH = JUDGED_K  # the top that judged@k checks
-REVIEW_SAMPLE = (
-    50  # rejections checked by hand: the share of missed relevant chunks to about ±7 points
-)
+REVIEW_SAMPLE = 100  # rejections checked by hand: at most 4 misses keep the upper bound under 10 %
 
 
 class PoolJudgment(BaseModel):
