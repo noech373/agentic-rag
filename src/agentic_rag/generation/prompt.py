@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from agentic_rag.document import Division, DivisionKind
 from agentic_rag.generation.base import NO_ANSWER
-from agentic_rag.storage.base import RetrievedChunk
+from agentic_rag.storage.base import RetrievedChunk, StoredChunk
 
 INSTRUCTIONS = f"""\
 You answer questions about EU regulatory compliance for compliance officers and engineers.
@@ -34,7 +34,7 @@ def build_input(question: str, sources: Sequence[RetrievedChunk]) -> str:
     return "\n\n".join([*parts, f"<question>\n{question}\n</question>"])
 
 
-def citation(source: RetrievedChunk) -> str:
+def citation(source: StoredChunk) -> str:
     """How the answer refers to a source: "GDPR, Article 33(1)", "EDPB Guidelines 9/2022, p. 10".
 
     The most precise legal unit (article and paragraph, recital, annex, point), or else the last
@@ -69,7 +69,7 @@ def _label(division: Division, *, titled: bool = False) -> str:
     return label or (division.title or "")
 
 
-def _with_page(source: RetrievedChunk, parts: list[str | None]) -> str:
+def _with_page(source: StoredChunk, parts: list[str | None]) -> str:
     if source.chunk.page is not None:
         parts.append(f"p. {source.chunk.page}")
     return ", ".join(part for part in parts if part)
