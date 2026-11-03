@@ -8,11 +8,14 @@ from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
 from agentic_rag.evaluation.pooling import (
     PoolJudgment,
+    ReviewEntry,
     chunks_to_judge,
     judge_pool,
     load_pool_judgments,
+    load_review,
     not_yet_judged,
     pool,
+    review_errors,
     review_sample,
     write_review,
 )
@@ -327,7 +330,6 @@ def test_the_review_shows_what_to_judge_and_not_the_llm_verdict(tmp_path: Path) 
         "verdict": "",
         "fact": 0,
         "quote": "",
-        "note": "",
     }
     assert "Because" not in path.read_text(encoding="utf-8")  # the LLM's reason
 
@@ -381,3 +383,97 @@ def test_an_existing_review_is_never_overwritten(tmp_path: Path) -> None:
         _write(path)
 
     assert path.read_text(encoding="utf-8") == "# my review, half done\n"
+
+
+_TEXT = "Article 33. The controller shall notify the supervisory authority without undue delay."
+
+
+def _entry(verdict: str, fact: object = 0, quote: object = "") -> ReviewEntry:
+    return ReviewEntry.model_validate(
+        {
+            "question_id": "q",
+            "chunk": "gdpr#1",
+            "question": "?",
+            "answer": "!",
+            "facts": [_FACT, "the right to lodge a complaint"],
+            "location": "GDPR",
+            "text": _TEXT,
+            "verdict": verdict,
+            "fact": fact,
+            "quote": quote,
+        }
+    )
+
+
+def test_a_filled_review_loads_back(tmp_path: Path) -> None:
+    path = tmp_path / "review.toml"
+    _write(path)
+    filled = path.read_text(encoding="utf-8").replace('verdict = ""', 'verdict = "rejected"')
+    path.write_text(filled, encoding="utf-8")
+
+    [entry] = load_review(path)
+
+    assert (entry.question_id, entry.chunk, entry.verdict) == ("q", "gdpr#1", "rejected")
+    assert entry.stated == ()
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        _entry("rejected"),
+        _entry("relevant", 1, "shall notify the supervisory authority"),
+        _entry("relevant", 1, "SHALL notify,\nthe supervisory   authority"),  # spacing, case
+        _entry("new_fact", 0, "Article 33. The controller shall"),
+    ],
+)
+def test_a_well_filled_entry_has_no_error(entry: ReviewEntry) -> None:
+    assert review_errors([entry]) == []
+
+
+def test_a_chunk_may_state_several_facts() -> None:
+    quotes = ["shall notify the supervisory", "Article 33. The controller"]
+    entry = _entry("relevant", [1, 2], quotes)
+
+    assert review_errors([entry]) == []
+    assert entry.stated == (
+        StatedFact(fact=1, quote="shall notify the supervisory"),
+        StatedFact(fact=2, quote="Article 33. The controller"),
+    )
+
+
+@pytest.mark.parametrize(
+    ("entry", "error"),
+    [
+        (_entry(""), "no verdict"),
+        (_entry("rejected", 1, "shall notify the supervisory"), "a rejection has no fact"),
+        (_entry("relevant", 3, "shall notify the supervisory"), "facts 1 to 2"),
+        (_entry("relevant", 1, "shall inform the supervisory"), "not in the chunk"),
+        (_entry("relevant", 1, "shall notify"), "2 words, not 4 to 25"),
+        (_entry("relevant", 1, ""), "0 words"),
+        (_entry("relevant", [1, 2], ["shall notify the supervisory"]), "2 facts but 1 quotes"),
+        (_entry("relevant", [1, 1], ["shall notify the supervisory"] * 2), "given twice"),
+        (_entry("new_fact", 1, "Article 33. The controller shall"), "keeps fact = 0"),
+    ],
+)
+def test_a_badly_filled_entry_is_reported(entry: ReviewEntry, error: str) -> None:
+    [message] = review_errors([entry])
+
+    assert message.startswith("q / gdpr#1: ")
+    assert error in message
+
+
+def test_every_error_is_reported_at_once() -> None:
+    other = _entry("relevant", 9, "shall notify").model_copy(update={"chunk": "gdpr#2"})
+
+    errors = review_errors([_entry(""), other])
+
+    assert len(errors) == 3  # no verdict; fact 9 out of range and too short a quote
+
+
+def test_a_chunk_reviewed_twice_is_reported() -> None:
+    assert review_errors([_entry("rejected"), _entry("rejected")]) == ["q / gdpr#1: reviewed twice"]
+
+
+def test_an_unknown_verdict_does_not_load() -> None:
+    with pytest.raises(ValueError, match="verdict"):
+        _entry("relevant!")
