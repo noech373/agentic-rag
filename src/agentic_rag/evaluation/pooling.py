@@ -9,18 +9,20 @@ A person then checks, blind, all those it found relevant and a random sample of 
 
 import json
 import random
+import tomllib
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from agentic_rag.evaluation.comparison import IncomparableRunsError
-from agentic_rag.evaluation.golden import Question
+from agentic_rag.evaluation.golden import Question, contains, normalize
 from agentic_rag.evaluation.judgments import Judgments
 from agentic_rag.evaluation.metrics import is_judged
 from agentic_rag.evaluation.record import RunRecord
-from agentic_rag.evaluation.relevance_judge import RelevanceJudge, Verdict
+from agentic_rag.evaluation.relevance_judge import RelevanceJudge, StatedFact, Verdict
 from agentic_rag.evaluation.runner import JUDGED_K
 from agentic_rag.generation.prompt import citation
 from agentic_rag.storage.base import StoredChunk
@@ -28,6 +30,7 @@ from agentic_rag.storage.base import StoredChunk
 POOLING_DIR = Path("eval/pooling")  # llm.jsonl and review.toml
 POOL_DEPTH = JUDGED_K  # the top that judged@k checks
 REVIEW_SAMPLE = 100  # rejections checked by hand: at most 4 misses keep the upper bound under 10 %
+QUOTE_WORDS = (4, 25)  # a quote's length, as asked of the LLM
 
 
 class PoolJudgment(BaseModel):
@@ -148,11 +151,11 @@ _REVIEW_HEADER = """\
 # Set `verdict` to:
 # - "relevant" if the chunk, read alone, states one of the `facts` (in any words; a recital
 #   counts): set `fact` to its number in `facts` (1 for the first) and `quote` to the words of
-#   the chunk that state it, copied exactly (4 to 25 words);
+#   the chunk that state it, copied exactly (4 to 25 words); if it states several facts, give
+#   lists in the same order: `fact = [1, 3]` and `quote = ["…", "…"]`;
 # - "new_fact" if it states something a good answer needs that no fact lists (the question
-#   misses a fact): keep `fact = 0`, put its words in `quote` and what is missing in `note`;
+#   misses a fact): keep `fact = 0` and put its words in `quote`;
 # - "rejected" otherwise (same topic only, a reference without the fact, or a mere extra).
-# `note` is free.
 """
 
 
@@ -184,7 +187,6 @@ def write_review(
                     'verdict = ""',
                     "fact = 0",
                     'quote = ""',
-                    'note = ""',
                 ]
             )
         )
@@ -207,3 +209,75 @@ def _multiline(value: str) -> str:
     if "'''" in value or controls:
         return _string(value)
     return f"'''\n{value}'''"
+
+
+class ReviewEntry(BaseModel):
+    """One `[[chunks]]` of review.toml, as the person filled it."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    question_id: str
+    chunk: str
+    question: str
+    answer: str
+    facts: tuple[str, ...]
+    location: str
+    text: str
+    verdict: Literal["", "relevant", "new_fact", "rejected"]  # "": not judged yet
+    fact: int | tuple[int, ...]  # 0: none; a tuple when the chunk states several facts
+    quote: str | tuple[str, ...]
+
+    @property
+    def stated(self) -> tuple[StatedFact, ...]:
+        """The facts the person found in the chunk, each with its quote; empty if none."""
+        facts = self.fact if isinstance(self.fact, tuple) else (self.fact,)
+        quotes = self.quote if isinstance(self.quote, tuple) else (self.quote,)
+        return tuple(StatedFact(fact=f, quote=q) for f, q in zip(facts, quotes, strict=True) if f)
+
+
+def load_review(path: Path) -> list[ReviewEntry]:
+    with path.open("rb") as f:
+        return TypeAdapter(list[ReviewEntry]).validate_python(tomllib.load(f)["chunks"])
+
+
+def review_errors(entries: Sequence[ReviewEntry]) -> list[str]:
+    """Every value the person must fix before the review is used, one message each."""
+    errors: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for entry in entries:
+        where = f"{entry.question_id} / {entry.chunk}"
+        if (entry.question_id, entry.chunk) in seen:
+            errors.append(f"{where}: reviewed twice")
+        seen.add((entry.question_id, entry.chunk))
+        errors.extend(f"{where}: {error}" for error in _entry_errors(entry))
+    return errors
+
+
+def _entry_errors(entry: ReviewEntry) -> list[str]:
+    facts = entry.fact if isinstance(entry.fact, tuple) else (entry.fact,)
+    quotes = entry.quote if isinstance(entry.quote, tuple) else (entry.quote,)
+    if entry.verdict == "":
+        return ["no verdict"]
+    if len(facts) != len(quotes):
+        return [f"{len(facts)} facts but {len(quotes)} quotes"]
+    if entry.verdict == "rejected":
+        return [] if facts == (0,) and quotes == ("",) else ["a rejection has no fact nor quote"]
+    if entry.verdict == "new_fact":
+        errors = [] if facts == (0,) else ["a new fact keeps fact = 0"]
+        return errors + _quote_errors(entry.text, quotes[0])
+    errors = [] if len(set(facts)) == len(facts) else ["a fact is given twice"]
+    for fact, quote in zip(facts, quotes, strict=True):
+        if not 1 <= fact <= len(entry.facts):
+            errors.append(f"fact {fact}: the question has facts 1 to {len(entry.facts)}")
+        errors += [f"fact {fact}: {error}" for error in _quote_errors(entry.text, quote)]
+    return errors
+
+
+def _quote_errors(text: str, quote: str) -> list[str]:
+    """A quote must be in the chunk (case, punctuation and spacing aside) and of 4 to 25 words."""
+    words = len(normalize(quote).split())
+    low, high = QUOTE_WORDS
+    errors = [] if low <= words <= high else [f"the quote has {words} words, not {low} to {high}"]
+    if words and not contains(normalize(text), quote):
+        errors.append("the quote is not in the chunk")
+    return errors
