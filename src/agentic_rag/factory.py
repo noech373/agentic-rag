@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from agentic_rag.config import LangfuseSettings, Settings
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.embeddings.openai import OpenAIEmbedder
-from agentic_rag.evaluation.relevance_judge import OpenAIRelevanceJudge, RelevanceJudge
+from agentic_rag.evaluation.pooling.judge import OpenAIRelevanceJudge, RelevanceJudge
 from agentic_rag.generation.openai import OpenAIGenerator
 from agentic_rag.pipeline_config import PipelineConfig
 from agentic_rag.rag import RAG

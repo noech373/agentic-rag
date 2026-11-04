@@ -9,7 +9,12 @@ from pydantic import TypeAdapter
 
 from agentic_rag.evaluation.golden import Question, Quote, contains, normalize
 from agentic_rag.evaluation.judgments import Judgments
-from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry, agreement, toml_string
+from agentic_rag.evaluation.pooling.selection import (
+    PoolJudgment,
+    ReviewEntry,
+    agreement,
+    toml_string,
+)
 
 REJECTION_WORDS = 12  # enough to tell a chunk from the others, short enough to read
 

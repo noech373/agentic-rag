@@ -6,7 +6,8 @@ import pytest
 from agentic_rag.document import Chunk, IndexedDocument, StoredChunk
 from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
-from agentic_rag.evaluation.pooling import (
+from agentic_rag.evaluation.pooling.judge import StatedFact, Verdict
+from agentic_rag.evaluation.pooling.selection import (
     MAX_FALSE_REJECTIONS,
     PoolJudgment,
     Proportion,
@@ -23,7 +24,6 @@ from agentic_rag.evaluation.pooling import (
     write_review,
 )
 from agentic_rag.evaluation.record import RunRecord
-from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
 
 _FACT = "notify the supervisory authority without undue delay"

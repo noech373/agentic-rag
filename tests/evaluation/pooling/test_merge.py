@@ -3,7 +3,8 @@ import tomllib
 import pytest
 
 from agentic_rag.evaluation.golden import Evidence, GoldenSet, Question, Quote, contains, normalize
-from agentic_rag.evaluation.pool_merge import (
+from agentic_rag.evaluation.pooling.judge import StatedFact, Verdict
+from agentic_rag.evaluation.pooling.merge import (
     NewWording,
     add_rejections,
     add_wordings,
@@ -12,8 +13,7 @@ from agentic_rag.evaluation.pool_merge import (
     rejection_quotes,
     stating_a_fact,
 )
-from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry
-from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
+from agentic_rag.evaluation.pooling.selection import PoolJudgment, ReviewEntry
 
 _GOLDEN = """\
 # A comment to keep.

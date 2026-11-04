@@ -201,9 +201,9 @@ def pool_runs(
     Run again to resume after a stop.
     """
     from agentic_rag.config import get_settings
-    from agentic_rag.evaluation import pooling
     from agentic_rag.evaluation.golden import load_golden_set
     from agentic_rag.evaluation.judgments import load_judgments
+    from agentic_rag.evaluation.pooling import selection
     from agentic_rag.evaluation.record import file_sha256
     from agentic_rag.evaluation.runner import tuning_questions
     from agentic_rag.factory import make_relevance_judge, make_store
@@ -217,8 +217,8 @@ def pool_runs(
     ]
     if stale:
         raise typer.BadParameter(f"on another golden set: {', '.join(stale)}", param_hint="RUNS")
-    llm_path = pooling.POOLING_DIR / "llm.jsonl"
-    review_path = pooling.POOLING_DIR / "review.toml"
+    llm_path = selection.POOLING_DIR / "llm.jsonl"
+    review_path = selection.POOLING_DIR / "review.toml"
     if review_path.exists():  # before spending anything on the LLM
         typer.echo(f"{review_path} exists: it may hold a review, rename or delete it", err=True)
         raise typer.Exit(code=1)
@@ -226,21 +226,21 @@ def pool_runs(
     settings = get_settings()
     questions = tuning_questions(load_golden_set(golden))
     chunks = {chunk.key: chunk for chunk in make_store(settings).all_chunks()}
-    done = pooling.load_pool_judgments(llm_path)
-    pending = pooling.not_yet_judged(
-        pooling.chunks_to_judge(questions, records, load_judgments(judgments), chunks), done
+    done = selection.load_pool_judgments(llm_path)
+    pending = selection.not_yet_judged(
+        selection.chunks_to_judge(questions, records, load_judgments(judgments), chunks), done
     )
     typer.echo(f"{len(pending)} pairs to judge, {len(done)} judged before")
 
     batch = pending[:limit]
-    judged = pooling.judge_pool(batch, make_relevance_judge(settings), llm_path)
+    judged = selection.judge_pool(batch, make_relevance_judge(settings), llm_path)
     typer.echo(f"{len(judged)} judged now, saved in {llm_path}")
     if len(batch) < len(pending):
         typer.echo(f"{len(pending) - len(batch)} pairs left: run again to finish before the review")
         return
 
-    entries = pooling.review_sample([*done, *judged])
-    pooling.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
+    entries = selection.review_sample([*done, *judged])
+    selection.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
     relevant = sum(entry.verdict.relevant for entry in entries)
     typer.echo(
         f"review of {len(entries)} chunks ({relevant} found relevant by the LLM, "
@@ -261,17 +261,17 @@ def merge_pool(
     import tomllib
 
     from agentic_rag.config import get_settings
-    from agentic_rag.evaluation import pool_merge, pooling
     from agentic_rag.evaluation.golden import GoldenSet
+    from agentic_rag.evaluation.pooling import merge, selection
     from agentic_rag.factory import make_store
 
-    review = pooling.load_review(pooling.POOLING_DIR / "review.toml")
-    if errors := pooling.review_errors(review):
+    review = selection.load_review(selection.POOLING_DIR / "review.toml")
+    if errors := selection.review_errors(review):
         typer.echo("\n".join(errors), err=True)
         raise typer.Exit(code=1)
 
-    llm = pooling.load_pool_judgments(pooling.POOLING_DIR / "llm.jsonl")
-    agreement = pooling.agreement(llm, review)
+    llm = selection.load_pool_judgments(selection.POOLING_DIR / "llm.jsonl")
+    agreement = selection.agreement(llm, review)
     false_rejections = agreement.false_rejections
     typer.echo(
         f"false rejections: {false_rejections.k}/{false_rejections.n}, "
@@ -279,16 +279,16 @@ def merge_pool(
         + ("kept" if agreement.rejections_kept else "NOT kept, only the reviewed ones count")
     )
 
-    wordings = pool_merge.new_wordings(review)
-    new_golden = pool_merge.add_wordings(golden.read_text(encoding="utf-8"), wordings)
+    wordings = merge.new_wordings(review)
+    new_golden = merge.add_wordings(golden.read_text(encoding="utf-8"), wordings)
     questions = GoldenSet.model_validate(tomllib.loads(new_golden)).questions
 
     texts = {c.key: c.chunk.text for c in make_store(get_settings()).all_chunks()}
-    candidates = pool_merge.rejection_candidates(llm, review)
-    useful = pool_merge.stating_a_fact(candidates, {q.id: q for q in questions}, texts)
+    candidates = merge.rejection_candidates(llm, review)
+    useful = merge.stating_a_fact(candidates, {q.id: q for q in questions}, texts)
     rejected = [pair for pair in candidates if pair not in useful]
-    new_judgments = pool_merge.add_rejections(
-        judgments.read_text(encoding="utf-8"), pool_merge.rejection_quotes(rejected, texts)
+    new_judgments = merge.add_rejections(
+        judgments.read_text(encoding="utf-8"), merge.rejection_quotes(rejected, texts)
     )
 
     golden.write_text(new_golden, encoding="utf-8")  # last: a failure above leaves both files as is
