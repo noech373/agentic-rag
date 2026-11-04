@@ -2,9 +2,17 @@ import tomllib
 
 import pytest
 
-from agentic_rag.evaluation.golden import GoldenSet
-from agentic_rag.evaluation.pool_merge import NewWording, add_wordings, new_wordings
-from agentic_rag.evaluation.pooling import ReviewEntry
+from agentic_rag.evaluation.golden import GoldenSet, Quote, contains, normalize
+from agentic_rag.evaluation.pool_merge import (
+    NewWording,
+    add_rejections,
+    add_wordings,
+    new_wordings,
+    rejected_pairs,
+    rejection_quotes,
+)
+from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry
+from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 
 _GOLDEN = """\
 # A comment to keep.
@@ -142,3 +150,141 @@ def test_only_the_relevant_chunks_give_wordings() -> None:
         NewWording("first", 1, "cnil-developer-guide-12", "for fact one"),
         NewWording("first", 2, "cnil-developer-guide-12", "for fact two"),
     ]
+
+
+def _llm(key: str, *, relevant: bool = False, question: str = "first") -> PoolJudgment:
+    facts = (StatedFact(fact=1, quote="q"),) if relevant else ()
+    return PoolJudgment(
+        question_id=question, chunk=key, model="m", verdict=Verdict(reason="r", facts=facts)
+    )
+
+
+def _pairs_with_false_rejections(errors: int) -> list[tuple[str, str]]:
+    llm = [_llm(f"gdpr#{i}") for i in range(100)] + [_llm("gdpr#100")]  # gdpr#100: unchecked
+    text = "the chunk says this"
+    review = [
+        _entry(f"gdpr#{i}", "relevant", 1, text).model_copy(update={"text": text})
+        if i < errors
+        else _entry(f"gdpr#{i}", "rejected")
+        for i in range(100)
+    ]
+    return rejected_pairs(llm, review)
+
+
+def test_the_rule_passed_all_unchecked_rejections_count() -> None:
+    pairs = _pairs_with_false_rejections(4)
+
+    assert ("first", "gdpr#100") in pairs
+    assert ("first", "gdpr#3") not in pairs  # found relevant by the person
+    assert len(pairs) == 97
+
+
+def test_the_rule_failed_only_the_checked_rejections_count() -> None:
+    pairs = _pairs_with_false_rejections(5)
+
+    assert ("first", "gdpr#100") not in pairs
+    assert len(pairs) == 95
+
+
+def test_the_person_overrules_the_llm() -> None:
+    text = "the chunk says this"
+    llm = [_llm("gdpr#1", relevant=True), _llm("gdpr#2")]
+    review = [
+        _entry("gdpr#1", "rejected"),
+        _entry("gdpr#2", "relevant", 1, text).model_copy(update={"text": text}),
+    ]
+
+    assert rejected_pairs(llm, review) == [("first", "gdpr#1")]
+
+
+def test_an_unchecked_relevant_verdict_and_a_new_fact_are_not_rejected() -> None:
+    text = "the chunk says this"
+    llm = [_llm("gdpr#1", relevant=True), _llm("gdpr#2")]
+    review = [_entry("gdpr#2", "new_fact", 0, text).model_copy(update={"text": text})]
+
+    assert rejected_pairs(llm, review) == []
+
+
+_WORDS = " ".join(f"word{i}" for i in range(30))
+
+
+def test_the_quote_comes_from_its_chunk_as_written() -> None:
+    texts = {
+        "gdpr#1": "The Controller, shall\nnotify the authority of the breach at once, it says."
+    }
+
+    judgments = rejection_quotes([("q", "gdpr#1")], texts)
+
+    assert judgments == {
+        "q": (
+            Quote(
+                document="gdpr",
+                quote="The Controller, shall notify the authority of the breach at once, it",
+            ),
+        )
+    }
+
+
+def test_the_quote_is_in_no_other_chunk() -> None:
+    shared = "| Topic | Summary of the responses received | Analysis of the authorities | Changes |"
+    texts = {
+        "esas#1": f"{shared} first row of the table with its own words here",
+        "esas#2": f"{shared} second row of the table with its own words here",
+    }
+
+    [quote] = rejection_quotes([("q", "esas#1")], texts)["q"]
+
+    assert contains(normalize(texts["esas#1"]), quote.quote)
+    assert not contains(normalize(texts["esas#2"]), quote.quote)
+
+
+def test_a_short_chunk_is_quoted_whole() -> None:
+    [quote] = rejection_quotes([("q", "gdpr#1")], {"gdpr#1": "Too short."})["q"]
+
+    assert quote.quote == "Too short"
+
+
+def test_a_chunk_without_its_own_words_is_an_error() -> None:
+    with pytest.raises(ValueError, match="gdpr#1: no 12 words"):
+        rejection_quotes([("q", "gdpr#1")], {"gdpr#1": _WORDS, "gdpr#2": _WORDS})
+
+
+def test_the_rejections_are_grouped_by_question() -> None:
+    texts = {"gdpr#1": "the first chunk here", "gdpr#2": "the second chunk here"}
+
+    judgments = rejection_quotes(
+        [("a", "gdpr#1"), ("a", "gdpr#2"), ("b", "gdpr#1")],
+        texts,
+    )
+
+    assert [q.quote for q in judgments["a"]] == ["the first chunk here", "the second chunk here"]
+    assert [q.quote for q in judgments["b"]] == ["the first chunk here"]
+
+
+_HEADER = "# Judgments: a comment to keep.\n#\n# Another one.\n"
+_REJECTED = Quote(document="gdpr", quote='a "quoted" passage to reject')
+
+
+def test_the_rejections_are_written_after_the_comments() -> None:
+    text = add_rejections(_HEADER, {"q": (_REJECTED,)})
+
+    assert text.startswith(_HEADER)
+    assert tomllib.loads(text) == {
+        "q": [{"document": "gdpr", "quote": 'a "quoted" passage to reject'}]
+    }
+
+
+def test_the_questions_are_sorted_and_existing_rejections_kept() -> None:
+    other = Quote(document="dora", quote="another passage to reject")
+    once = add_rejections(_HEADER, {"z": (_REJECTED,)})
+
+    text = add_rejections(once, {"a": (other,), "z": (other,)})
+
+    assert list(tomllib.loads(text)) == ["a", "z"]
+    assert len(tomllib.loads(text)["z"]) == 2
+
+
+def test_merging_the_rejections_twice_changes_nothing() -> None:
+    once = add_rejections(_HEADER, {"q": (_REJECTED,)})
+
+    assert add_rejections(once, {"q": (_REJECTED,)}) == once
