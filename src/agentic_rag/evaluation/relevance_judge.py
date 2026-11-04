@@ -5,9 +5,9 @@ from typing import Protocol
 from openai import OpenAI
 from pydantic import BaseModel, ConfigDict
 
+from agentic_rag.citation import citation
 from agentic_rag.document import StoredChunk
 from agentic_rag.evaluation.golden import Question, contains, normalize
-from agentic_rag.generation.prompt import citation
 
 INSTRUCTIONS = """\
 You judge whether a passage of an EU regulatory document states a fact needed to answer a question.

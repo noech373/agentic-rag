@@ -116,9 +116,9 @@ def ask(
     pipeline: PipelineOption = None,
 ) -> None:
     """Answer a question from the ingested corpus, citing the sources."""
+    from agentic_rag.citation import citation
     from agentic_rag.config import get_settings
     from agentic_rag.factory import make_rag
-    from agentic_rag.generation.prompt import citation
 
     if not question.strip():
         raise typer.BadParameter("the question is empty")

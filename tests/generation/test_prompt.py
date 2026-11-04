@@ -1,6 +1,6 @@
 from agentic_rag.document import Chunk, Division, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER
-from agentic_rag.generation.prompt import INSTRUCTIONS, build_input, citation
+from agentic_rag.generation.prompt import INSTRUCTIONS, build_input
 
 _CHAPTER_IV = Division(kind="chapter", number="IV", title="Controller and processor")
 _SECTION_2 = Division(kind="section", number="2", title="Security of personal data")
@@ -25,57 +25,6 @@ def _source(
     )
     chunk = Chunk(kind="text", text=text, path=path, page=page)
     return RetrievedChunk(document=document, position=0, chunk=chunk, score=1.0)
-
-
-# --- Citations ---
-
-
-def test_an_article_is_cited_without_its_chapter_and_section() -> None:
-    assert citation(_source(_CHAPTER_IV, _SECTION_2, _ARTICLE_33)) == "GDPR, Article 33"
-
-
-def test_a_paragraph_is_cited_after_its_article() -> None:
-    paragraph = Division(kind="paragraph", number="1")
-
-    assert citation(_source(_CHAPTER_IV, _ARTICLE_33, paragraph)) == "GDPR, Article 33(1)"
-
-
-def test_recitals_and_annexes_are_cited_by_number() -> None:
-    recital = Division(kind="recital", number="85")
-    annex = Division(kind="annex", number="III", title="High-risk AI systems")
-
-    assert citation(_source(recital)) == "GDPR, Recital 85"
-    assert citation(_source(annex, short_title="AI Act")) == "AI Act, Annex III"
-
-
-def test_a_guideline_is_cited_by_its_last_heading_and_page() -> None:
-    path = (
-        Division(kind="heading", title="II. Article 33 - Notification"),
-        Division(kind="heading", title="1. Article 33 requirements"),
-    )
-
-    assert (
-        citation(_source(*path, page=10, short_title="EDPB Guidelines 9/2022"))
-        == "EDPB Guidelines 9/2022, 1. Article 33 requirements, p. 10"
-    )
-
-
-def test_headings_below_a_point_do_not_replace_it() -> None:
-    path = (
-        Division(kind="heading", title="3 INCIDENT HANDLING"),
-        Division(kind="point", number="3.2.4"),
-        Division(kind="heading", title="GUIDANCE"),
-    )
-
-    assert citation(_source(*path, page=30, short_title="ENISA")) == "ENISA, Point 3.2.4, p. 30"
-
-
-def test_a_chunk_without_path_is_cited_by_its_document() -> None:
-    assert citation(_source()) == "GDPR"
-    assert citation(_source(page=1)) == "GDPR, p. 1"
-
-
-# --- Prompt ---
 
 
 def test_the_instructions_give_the_exact_no_answer_sentence() -> None:
