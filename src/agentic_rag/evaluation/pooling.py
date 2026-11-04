@@ -179,12 +179,12 @@ def write_review(
             "\n".join(
                 [
                     "[[chunks]]",
-                    f"question_id = {_string(question.id)}",
-                    f"chunk = {_string(chunk.key)}",
-                    f"question = {_string(question.question)}",
-                    f"answer = {_string(question.answer)}",
-                    "facts = [\n" + "".join(f"  {_string(f)},\n" for f in facts) + "]",
-                    f"location = {_string(citation(chunk))}",
+                    f"question_id = {toml_string(question.id)}",
+                    f"chunk = {toml_string(chunk.key)}",
+                    f"question = {toml_string(question.question)}",
+                    f"answer = {toml_string(question.answer)}",
+                    "facts = [\n" + "".join(f"  {toml_string(f)},\n" for f in facts) + "]",
+                    f"location = {toml_string(citation(chunk))}",
                     f"text = {_multiline(chunk.chunk.text)}",
                     'verdict = ""',
                     "fact = 0",
@@ -200,7 +200,7 @@ def write_review(
         raise FileExistsError(f"{path} exists: it may hold a review, rename or delete it") from None
 
 
-def _string(value: str) -> str:
+def toml_string(value: str) -> str:
     """A TOML basic string: JSON's escapes are valid TOML ones (DEL is the one TOML adds)."""
     return json.dumps(value, ensure_ascii=False).replace("\x7f", "\\u007f")
 
@@ -209,7 +209,7 @@ def _multiline(value: str) -> str:
     """A TOML literal string, kept as written for reading, unless it cannot hold the text."""
     controls = any((c < " " and c not in "\t\n") or c == "\x7f" for c in value)
     if "'''" in value or controls:
-        return _string(value)
+        return toml_string(value)
     return f"'''\n{value}'''"
 
 
