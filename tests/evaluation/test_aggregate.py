@@ -7,6 +7,7 @@ from agentic_rag.evaluation.aggregate import (
     mean_scores,
     mean_scores_by_category,
     paired_differences,
+    wilson_interval,
 )
 from agentic_rag.evaluation.golden import Category
 from agentic_rag.evaluation.runner import QuestionResult
@@ -133,3 +134,40 @@ def test_a_run_compared_with_itself_has_no_difference_at_all() -> None:
 
     assert differences == [0.0, 0.0]
     assert bootstrap_ci(differences) == (0.0, 0.0)
+
+
+@pytest.mark.parametrize(
+    ("k", "n", "high"),
+    [(0, 100, 0.037), (2, 100, 0.070), (4, 100, 0.098), (5, 100, 0.112)],
+)
+def test_the_wilson_bounds_behind_the_pooling_rule(k: int, n: int, high: float) -> None:
+    assert wilson_interval(k, n)[1] == pytest.approx(high, abs=0.0005)
+
+
+def test_the_wilson_interval_of_the_judge_trial() -> None:
+    low, high = wilson_interval(2, 30)  # 2 relevant out of 30 pairs, 2026-11-02
+
+    assert (low, high) == (pytest.approx(0.0185, abs=0.0001), pytest.approx(0.2133, abs=0.0001))
+
+
+def test_no_error_still_leaves_room_for_some() -> None:
+    low, high = wilson_interval(0, 100)
+
+    assert low == 0
+    assert high > 0
+
+
+def test_the_wilson_interval_is_symmetric() -> None:
+    low, high = wilson_interval(3, 40)
+
+    assert wilson_interval(37, 40) == (pytest.approx(1 - high), pytest.approx(1 - low))
+
+
+def test_no_observation_tells_nothing() -> None:
+    assert wilson_interval(0, 0) == (0.0, 1.0)
+
+
+@pytest.mark.parametrize(("k", "n"), [(-1, 10), (11, 10)])
+def test_an_impossible_count_is_refused(k: int, n: int) -> None:
+    with pytest.raises(ValueError, match="successes"):
+        wilson_interval(k, n)
