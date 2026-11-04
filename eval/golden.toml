@@ -76,35 +76,45 @@ answer = "Processing is lawful only if at least one of six bases applies (Articl
 any_of = [
   { document = "gdpr", quote = "the data subject has given consent to the processing of his or her personal data for one or more specific purposes" },
   { document = "cnil-developer-guide-15", quote = "the data subject has given his or her explicit consent to the processing" },
+  { document = "cnil-developer-guide-15", quote = "not part of a contractual relationship with the user, then **the legal basis of consent or legitimate interest** may be invoked." },
+  { document = "gdpr", quote = "personal data should be processed on the basis of the consent of the data subject concerned or some other legitimate basis" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing is necessary for the performance of a contract to which the data subject is party" },
   { document = "cnil-developer-guide-15", quote = "the processing is necessary for the performance or preparation of a contract between the data subject and the body" },
+  { document = "cnil-developer-guide-15", quote = "then **contract should be appropriate**" },
+  { document = "gdpr", quote = "the necessity for the performance of a contract to which the data subject is party" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing is necessary for compliance with a legal obligation to which the controller is subject" },
   { document = "cnil-developer-guide-15", quote = "The legal obligation: the processing is imposed by regulatory texts" },
+  { document = "cnil-developer-guide-15", quote = "the legal obligation and the public interest mission will be the most relevant" },
+  { document = "gdpr", quote = "the necessity for compliance with the legal obligation to which the controller is subject" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing is necessary in order to protect the vital interests of the data subject or of another natural person" },
   { document = "cnil-developer-guide-15", quote = "protect of vital interests may be used as a legal basis" },
+  { document = "gdpr", quote = "regarded to be lawful where it is necessary to protect an interest which is essential for the life of the data subject" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing is necessary for the performance of a task carried out in the public interest" },
+  { document = "cnil-developer-guide-15", quote = "the public interest mission will be the most relevant in most cases" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing is necessary for the purposes of the legitimate interests pursued by the controller or by a third party" },
   { document = "cnil-developer-guide-15", quote = "the organization has a \"legitimate\" interest in carrying out the processing" },
+  { document = "cnil-developer-guide-15", quote = "**the legal basis of consent or legitimate interest** may be invoked" },
+  { document = "gdpr", quote = "The legitimate interests of a controller, including those of a controller to which the personal data may be disclosed, or of a third party" },
 ]
 
 [[questions]]
@@ -160,6 +170,7 @@ answer = "Probably not. Consent must be freely given (Article 4(11)). When asses
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "any freely given, specific, informed and unambiguous indication of the data subject's wishes" },
+  { document = "gdpr", quote = "Consent should be given by a clear affirmative act establishing a freely given, specific, informed and unambiguous indication of the data subject's agreement" },
 ]
 
 [[questions.evidence]]
@@ -251,6 +262,7 @@ answer = "Yes, in practice. The CNIL recommends providing a functionality to era
 any_of = [
   { document = "cnil-developer-guide-13", quote = "Provide a functionality to erase all data relating to a person." },
   { document = "gdpr", quote = "the right to obtain from the controller the erasure of personal data concerning him or her without undue delay" },
+  { document = "gdpr", quote = "a data subject should have the right to have his or her personal data erased and no longer processed" },
 ]
 
 [[questions.evidence]]
@@ -281,21 +293,25 @@ answer = "A DPIA must be carried out before the processing when a type of proces
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "prior to the processing, carry out an assessment of the impact of the envisaged processing operations on the protection of personal data" },
+  { document = "gdpr", quote = "a data protection impact assessment should be carried out by the controller prior to the processing" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "a systematic and extensive evaluation of personal aspects relating to natural persons which is based on automated processing, including profiling" },
+  { document = "gdpr", quote = "following any systematic and extensive evaluation of personal aspects relating to natural persons based on profiling those data" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing on a large scale of special categories of data referred to in Article 9(1)" },
+  { document = "gdpr", quote = "following the processing of special categories of personal data, biometric data, or data on criminal convictions and offences" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "a systematic monitoring of a publicly accessible area on a large scale" },
+  { document = "gdpr", quote = "A data protection impact assessment is equally required for monitoring publicly accessible areas on a large scale" },
 ]
 
 [[questions]]
@@ -406,12 +422,14 @@ any_of = [
 any_of = [
   { document = "gdpr", quote = "require regular and systematic monitoring of data subjects on a large scale" },
   { document = "gdpr", quote = "require regular and systematic monitoring of the data subjects on a large scale" },
+  { document = "cnil-developer-guide-00", quote = "conduct regular and systematic monitoring on a large scale" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "processing on a large scale of special categories of data pursuant to Article 9 and personal data relating to criminal convictions" },
   { document = "gdpr", quote = "consist of processing on a large scale of special categories of personal data and data relating to criminal convictions and offences" },
+  { document = "cnil-developer-guide-00", quote = "applications process so-called \"sensitive\" data (see examples) on a large scale" },
 ]
 
 [[questions.evidence]]
@@ -465,6 +483,7 @@ answer = "Only if it does not create a conflict of interests. The data protectio
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "The data protection officer may fulfil other tasks and duties." },
+  { document = "edpb-guidelines-2022-09", quote = "sets a number of mandatory tasks for the DPO, but does not prevent further tasks being allocated by the controller, if appropriate" },
 ]
 
 [[questions.evidence]]
@@ -502,6 +521,7 @@ answer = "There are two tiers. Up to EUR 10 million or, for an undertaking, up t
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "up to 10 000 000 EUR, or in the case of an undertaking, up to 2 % of the total worldwide annual turnover" },
+  { document = "edpb-guidelines-2022-09", quote = "up to 10,000,000 EUR or up to 2 % if the total worldwide annual turnover of an undertaking under Article 83(4)(a)" },
 ]
 
 [[questions.evidence]]
@@ -529,11 +549,13 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "up to 10 000 000 EUR, or in the case of an undertaking, up to 2 % of the total worldwide annual turnover" },
+  { document = "edpb-guidelines-2022-09", quote = "up to 10,000,000 EUR or up to 2 % if the total worldwide annual turnover of an undertaking under Article 83(4)(a)" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "the right to obtain from the controller confirmation as to whether or not personal data concerning him or her are being processed" },
+  { document = "gdpr", quote = "their right to obtain confirmation and communication of personal data concerning them which are being processed" },
 ]
 
 [[questions.evidence]]
@@ -606,11 +628,14 @@ answer = "Yes. First, communication to data subjects is only required when the b
 any_of = [
   { document = "gdpr", quote = "those that render the personal data unintelligible to any person who is not authorised to access it, such as encryption" },
   { document = "edpb-guidelines-2022-09", quote = "Article 34(3) GDPR states three conditions that, if met, do not require notification to individuals" },
+  { document = "edpb-guidelines-2022-09", quote = "the data are in principle unintelligible. Thus, the breach is unlikely to adversely affect individuals and therefore would not require communication to those individuals" },
+  { document = "edpb-guidelines-2022-09", quote = "if personal data have been made essentially unintelligible to unauthorised parties and where the data are a copy or a backup exists" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject" },
+  { document = "edpb-guidelines-2022-09", quote = "Communication of a breach to the individual is only triggered where it is likely to result in a high risk" },
 ]
 
 [[questions]]
@@ -624,12 +649,19 @@ answer = "Yes for the supervisory authority: a breach must be notified unless it
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "Yes, report to the supervisory authority if there are likely consequences to individuals" },
   { document = "gdpr", quote = "unless the personal data breach is unlikely to result in a risk to the rights and freedoms of natural persons" },
+  { document = "cnil-developer-guide-12", quote = "the organization must report the violation to the local data protection agency within **72 hours** if it is likely to pose a risk" },
+  { document = "edpb-guidelines-2021-01", quote = "It should be documented in accordance with Article 33 (5) and notified to the SA in accordance with Article 33 (1)." },
+  { document = "edpb-guidelines-2021-01", quote = "the relevant SA(s) should also be involved in the form of a data breach notification" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "if the severity of the likely consequences to individuals is high" },
   { document = "gdpr", quote = "high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject" },
+  { document = "cnil-developer-guide-12", quote = "If these risks are high, the organization must also inform the persons concerned as soon as possible" },
+  { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons, the data subjects should definitely be informed about it" },
+  { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
+  { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk." },
 ]
 
 [[questions]]
@@ -648,11 +680,15 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk" },
+  { document = "cnil-developer-guide-12", quote = "If these risks are high, the organization must also inform the persons concerned as soon as possible" },
+  { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "forcing password resets of the affected accounts" },
+  { document = "edpb-guidelines-2021-01", quote = "forced password resets of the compromised accounts" },
+  { document = "edpb-guidelines-2021-01", quote = "the controller forced a password change for the compromised accounts" },
 ]
 
 [[questions.evidence]]
@@ -921,6 +957,7 @@ any_of = [
   { document = "cnil-developer-guide-07", quote = "you can reduce its sensitivity by using pseudomisation or even anonymisation methods" },
   { document = "cnil-developer-guide-01", quote = "the GDPR considers that pseudonymization makes it possible to reduce the risks for data subjects" },
   { document = "gdpr", quote = "The application of pseudonymisation to personal data can reduce the risks to the data subjects concerned" },
+  { document = "edpb-guidelines-2022-09", quote = "can also reduce the likelihood of individuals being identified in the event of a breach" },
 ]
 
 [[questions.evidence]]
@@ -1027,6 +1064,7 @@ answer = "No: for the high-risk systems in points 2 to 8 of Annex III, which inc
 [[questions.evidence]]
 any_of = [
   { document = "ai-act", quote = "intended to be used for the recruitment or selection of natural persons, in particular to place targeted job advertisements" },
+  { document = "ai-act", quote = "AI systems used in employment, workers management and access to self-employment, in particular for the recruitment and selection of persons" },
 ]
 
 [[questions.evidence]]
@@ -1496,11 +1534,13 @@ answer = "Assets in the employee's custody, such as their laptop, must be deposi
 [[questions.evidence]]
 any_of = [
   { document = "enisa-nis2-implementation-guidance", quote = "deposited, returned or deleted upon termination of employment and shall document the deposit, return and deletion of those assets" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Identify and document all assets to be returned upon termination or change of employment." },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "enisa-nis2-implementation-guidance", quote = "ensure that access rights are modified accordingly upon termination or change of employment" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Revoke access to network and information systems in a timely manner upon termination or role change." },
 ]
 
 [[questions]]
@@ -1639,6 +1679,8 @@ answer = "The bank must: financial entities report major ICT-related incidents t
 any_of = [
   { document = "dora", quote = "Financial entities shall report major ICT-related incidents to the relevant competent authority" },
   { document = "esas-dora-incident-reporting", quote = "FEs shall report major ICT-related incidents to the relevant competent authority" },
+  { document = "dora", quote = "ICT-related incident reporting should be harmonised through the introduction of a requirement for all financial entities to report directly to their relevant competent authorities." },
+  { document = "esas-dora-incident-reporting", quote = "the financial entity affected by the major ICT-related incident and required to report the major incident to their competent authority" },
 ]
 
 [[questions.evidence]]
@@ -1692,11 +1734,13 @@ answer = "A Legal Entity Identifier (LEI): a unique 20-character alphanumeric co
 [[questions.evidence]]
 any_of = [
   { document = "esas-dora-incident-reporting", quote = "the identification code is to be a Legal Entity Identifier (LEI), which is a unique 20 alphanumeric character code" },
+  { document = "esas-dora-incident-reporting", quote = "Unique 20 alphanumeric character code, based on ISO 17442-1:2020" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "esas-dora-incident-reporting", quote = "Where a third-party provider submits a report for a financial entity, they can use an identification code" },
+  { document = "esas-dora-incident-reporting", quote = "allowing TPPs reporting for FEs to provide an LEI code or any other identification code" },
 ]
 
 [[questions]]
@@ -1741,26 +1785,31 @@ answer = "Before entering into a contractual arrangement on the use of ICT servi
 [[questions.evidence]]
 any_of = [
   { document = "dora", quote = "assess whether the contractual arrangement covers the use of ICT services supporting a critical or important function" },
+  { document = "dora", quote = "focusing on elements such as the criticality or importance of the services supported by the envisaged ICT contract" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "dora", quote = "assess if supervisory conditions for contracting are met" },
+  { document = "dora", quote = "the necessary supervisory approvals or other conditions" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "dora", quote = "identify and assess all relevant risks in relation to the contractual arrangement" },
+  { document = "dora", quote = "the possible concentration risk entailed" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "dora", quote = "undertake all due diligence on prospective ICT third-party service providers" },
+  { document = "dora", quote = "applying due diligence in the process of selection and assessment of ICT third-party service providers" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "dora", quote = "identify and assess conflicts of interest that the contractual arrangement may cause" },
+  { document = "dora", quote = "assessing potential conflicts of interest" },
 ]
 
 [[questions]]
@@ -1804,6 +1853,9 @@ answer = "No, not by itself: critical ICT third-party service providers are desi
 any_of = [
   { document = "dora", quote = "designate the ICT third-party service providers that are critical for financial entities" },
   { document = "dora", quote = "an ICT third-party service provider designated as critical in accordance with Article 31" },
+  { document = "dora", quote = "After designating an ICT third-party service provider as critical, the ESAs, through the Joint Committee, shall notify" },
+  { document = "dora", quote = "which, through the Joint Committee, shall decide whether to designate that ICT third-party service provider as critical" },
+  { document = "dora", quote = "There should therefore be a designation mechanism to take into account the dimension and nature of the financial sector’s reliance" },
 ]
 
 [[questions.evidence]]
@@ -1870,6 +1922,7 @@ answer = "Generally yes. If the thermostat or its app doesn't already give you d
 [[questions.evidence]]
 any_of = [
   { document = "data-act", quote = "shall make readily available data, as well as the relevant metadata necessary to interpret and use those data, accessible to the user" },
+  { document = "data-act", quote = "The data represent the digitisation of user actions and events and should accordingly be accessible to the user." },
 ]
 
 [[questions]]
@@ -2072,6 +2125,7 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "data-act", quote = "information on available procedures for switching and porting to the data processing service" },
+  { document = "data-act", quote = "That information should include procedures for initiating switching from the data processing service" },
 ]
 
 [[questions]]
