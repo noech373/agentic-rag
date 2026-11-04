@@ -2627,8 +2627,8 @@ text = '''
 130. After becoming aware of the breach, the controller forced a password change for the compromised accounts, blocked sending emails to the attacker's email account, notified the service provider of the email used by the attacker regarding his or her actions, removed the rules set by the attacker and refined the alerts of the monitoring system in order to give an alert as soon as an automatic rule is created. Alternatively, the controller could remove the right for users to set forwarding rules, needing the IT service team to do it only on request or it could introduce a policy that users should check and report on the rules set on their accounts once per week or more often, in areas handling financial data.
 131. The fact that a breach could happen and go undetected for so long and the fact that, in a longer time, social engineering could have been used for altering more data, highlighted significant problems in the controller's IT security system. These should be addressed without delay, like emphasizing automation reviews and change controls, incident detection and response measures. Controllers handling sensitive data, financial information, etc. have a larger responsibility in terms of providing adequate data security.'''
 verdict = "relevant"
-fact = 2
-quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated"
+fact = [2, 3]
+quote = ["likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated", "the controller forced a password change for the compromised accounts"]
 
 [[chunks]]
 question_id = "marketplace-credentials-breach"
