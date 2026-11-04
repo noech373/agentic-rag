@@ -287,9 +287,19 @@ Pairing compares each question with itself, so the gap in difficulty between que
 blur the comparison. With 77 questions, both a score and a difference are known to about ±8 points:
 smaller effects need more questions.
 
-Still to do: pooling (judging the chunks that several retrievers rank high, to find relevant ones
-the quotes do not list), the generation metrics (faithfulness, answer relevancy, correct refusals)
-with an LLM judge calibrated on human grades, and thresholds in CI.
+**Pooling** finds the relevant chunks the quotes do not list. `pool` takes the first 8 chunks of
+several runs that nothing judges yet and has an LLM pre-judge them, each verdict with the facts it
+found and their words. A person then checks, blind, all the chunks it found relevant and 100 of its
+rejections drawn at random. `merge-pool` pours the result into the golden set and the judgments.
+
+```bash
+uv run agentic-rag pool eval/results/baseline.json eval/results/bm25.json eval/results/hybrid.json
+# fill in eval/pooling/review.toml, then:
+uv run agentic-rag merge-pool
+```
+
+Still to do: the generation metrics (faithfulness, answer relevancy, correct refusals) with an LLM
+judge calibrated on human grades, and thresholds in CI.
 
 ## Results and findings
 
@@ -299,7 +309,7 @@ The numbers come from the runs saved in [`eval/results/`](eval/results/) and can
 previous system, **bold** when the 95 % interval excludes 0.
 
 **Current system:** vector search (entry 1). Hybrid search is available as a pipeline but not the
-default (entry 2).
+default (entry 2). Entries keep the numbers of their time: entry 3 corrects those of 1 and 2.
 
 ### 1. Baseline: vector search
 
@@ -356,6 +366,58 @@ provider"), where word matching is known to help. Next: pooling, since relevant 
 ranking brings up but the quotes do not list currently count as misses; then a category of
 questions in exact legal terms. The rule is set before running it: hybrid search becomes the
 default if it gains significantly on that category without losing significantly on the others.
+
+### 3. Pooling: most of the unread chunks were not relevant
+
+Before this entry, only 16 % of the baseline's top 8 had been judged (judged@8), so its recall could
+hide relevant chunks the quotes did not list. We pooled the top 8 of the vector, BM25 and hybrid runs:
+1092 (question, chunk) pairs that nothing judged. `gpt-6-luna` pre-judged them all (55 relevant, 1037
+rejected); one person checked, blind, those 55 and 100 random rejections.
+
+| The LLM against the person | count | 95 % interval (Wilson) |
+|---|---|---|
+| rejections the person found relevant | 0 / 100 | 0 to 3.7 % |
+| "relevant" verdicts the person confirmed | 37 / 55 (67 %) | 54 to 78 % |
+| facts missing from the golden set | 0 | |
+
+**The rule was set before opening the review:** keep the LLM's unchecked rejections if the upper
+bound of its false rejections is at most 10 %. It passed. So the golden set gained 54 wordings from
+the 37 confirmed chunks, and the judgments 1054 rejections (118 checked by hand, 936 kept by the rule).
+
+| | recall@8 before | after | gain | MRR@8 before | after |
+|---|---|---|---|---|---|
+| vector | 0.72 | 0.75 [0.68, 0.83] | **+0.04 [+0.01, +0.08]** | 0.57 | 0.63 |
+| bm25 | 0.44 | 0.48 | **+0.04 [+0.01, +0.07]** | 0.33 | 0.37 |
+| hybrid | 0.56 | 0.61 | **+0.05 [+0.02, +0.10]** | 0.46 | 0.53 |
+
+| recall@8, after | factual (45) | vague (21) | multi-document (7) | table (4) |
+|---|---|---|---|---|
+| vector | 0.82 | 0.67 | 0.44 | 1.00 |
+| hybrid | 0.73 | 0.34 | 0.44 | 1.00 |
+
+- **The recall was underestimated, but not by much.** Only 3.4 % of the pooled pairs are relevant,
+  on 20 of the 77 questions. The low judged@8 mostly meant "not read yet".
+- **It does not rescue hybrid search**, which entry 2 left as an open question. It gains slightly more
+  than vector search, but still loses **−0.14 [−0.22, −0.06]** on recall@8 and
+  **−0.10 [−0.19, −0.02]** on MRR@8, with 20 questions lost and 6 gained.
+- **The LLM over-detects, which is the right error here.** It missed nothing in the sample, and its
+  false "relevant" verdicts (often the right topic in the wrong regulation) cost only reading time,
+  since all of them are checked. It would not do as a judge on its own.
+- **A chunk can state several facts** (one DORA recital states all five of its question). The review
+  first allowed one per chunk, which would have undercounted the recall, so it now takes a list.
+
+**Decision:** the LLM's rejections are kept, and vector search stays the default.
+
+**What this does not show:**
+- judged@8 is now 1.00, but only because the pool is these three runs' top 8. A new brick will bring
+  up unread chunks and lower it, so each one needs its own pooling round.
+- Ranks 9 to 50 were not pooled, so recall@20 and recall@50 stay underestimated.
+- There is one reviewer, so no measure of agreement between people. The agreement on which facts a
+  chunk states (29 of 37) is not blind: facts were added to 9 chunks after the review.
+- At worst, about 35 of the 936 unchecked rejections could be relevant chunks.
+- The 21 held-out questions are not pooled, to keep them untouched.
+
+Next: a category of questions in exact legal terms, with the rule of entry 2, and the reranker.
 
 ## Development
 
