@@ -1,6 +1,5 @@
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER, Answer
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 def _sources(count: int) -> tuple[RetrievedChunk, ...]:

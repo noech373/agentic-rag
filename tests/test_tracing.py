@@ -8,11 +8,10 @@ from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import StatusCode
 
-from agentic_rag.document import Chunk, Division
+from agentic_rag.document import Chunk, Division, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER, Answer, GenerationError, Generator
 from agentic_rag.rag import RAG
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 from agentic_rag.tracing import TracedRAG, TracedRetriever
 
 _EXPORTER = InMemorySpanExporter()

@@ -1,8 +1,9 @@
 """Dense retrieval: the chunks whose embedding is nearest to the question's."""
 
+from agentic_rag.document import RetrievedChunk
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.storage.base import RetrievedChunk, VectorSearch
+from agentic_rag.storage.base import VectorSearch
 
 
 class VectorRetriever(Retriever):

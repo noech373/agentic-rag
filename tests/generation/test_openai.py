@@ -5,11 +5,10 @@ import httpx
 import pytest
 from openai import OpenAI
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import GenerationError
 from agentic_rag.generation.openai import OpenAIGenerator
 from agentic_rag.generation.prompt import INSTRUCTIONS, build_input
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 class _FakeOpenAI:

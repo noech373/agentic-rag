@@ -1,9 +1,8 @@
 import pytest
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.retrieval.base import Retriever
 from agentic_rag.retrieval.hybrid import CANDIDATES, HybridRetriever, reciprocal_rank_fusion
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 def _result(name: str, score: float = 1.0) -> RetrievedChunk:

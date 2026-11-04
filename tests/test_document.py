@@ -1,5 +1,4 @@
-from agentic_rag.document import Chunk
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk, StoredChunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk, StoredChunk
 
 _DOCUMENT = IndexedDocument(
     id="gdpr",

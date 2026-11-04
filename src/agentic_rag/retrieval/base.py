@@ -5,7 +5,7 @@ The RAG depends only on `Retriever`: BM25, hybrid search or a reranker is one ne
 
 from typing import Protocol
 
-from agentic_rag.storage.base import RetrievedChunk
+from agentic_rag.document import RetrievedChunk
 
 
 class Retriever(Protocol):

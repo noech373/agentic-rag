@@ -77,7 +77,7 @@ question    retrieve (vectors, BM25, or both fused) > prompt with numbered sourc
 
 ```text
 src/agentic_rag/
-├── document.py     domain types: Division, Block, Chunk
+├── document.py     domain types: Division, Block, Chunk, StoredChunk, RetrievedChunk
 ├── ingestion/      corpus download, parsers/ (EUR-Lex, PDF, Markdown), chunking, pipeline
 ├── embeddings/     base.py (Embedder), openai.py
 ├── storage/        base.py (ChunkStore, VectorSearch, KeywordSearch), postgres.py

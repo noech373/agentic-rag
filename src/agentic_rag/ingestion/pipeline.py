@@ -11,14 +11,14 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Literal
 
-from agentic_rag.document import Block, Chunk
+from agentic_rag.document import Block, Chunk, IndexedDocument
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.ingestion.chunking import chunk_blocks
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, DocumentFormat, SourceDocument
 from agentic_rag.ingestion.parsers.eurlex import parse_eurlex
 from agentic_rag.ingestion.parsers.markdown import parse_markdown
 from agentic_rag.ingestion.parsers.pdf import parse_pdf
-from agentic_rag.storage.base import ChunkStore, IndexedDocument
+from agentic_rag.storage.base import ChunkStore
 
 type Parser = Callable[[bytes], list[Block]]
 type Chunker = Callable[[Sequence[Block]], list[Chunk]]

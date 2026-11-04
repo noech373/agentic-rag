@@ -1,7 +1,6 @@
-from agentic_rag.document import Chunk, Division
+from agentic_rag.document import Chunk, Division, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER
 from agentic_rag.generation.prompt import INSTRUCTIONS, build_input, citation
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 _CHAPTER_IV = Division(kind="chapter", number="IV", title="Controller and processor")
 _SECTION_2 = Division(kind="section", number="2", title="Security of personal data")
