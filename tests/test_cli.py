@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 from agentic_rag.cli import _load_pipeline, app  # pyright: ignore[reportPrivateUsage]
 from agentic_rag.document import Chunk
 from agentic_rag.evaluation import record
-from agentic_rag.evaluation.pooling import POOLING_DIR, load_pool_judgments
+from agentic_rag.evaluation.pooling import POOLING_DIR, PoolJudgment, load_pool_judgments
 from agentic_rag.evaluation.record import RunRecord, file_sha256, load_run, save_run
 from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
@@ -365,3 +365,84 @@ def test_pool_refuses_runs_on_another_golden_set(pooled: Path, tmp_path: Path) -
     assert result.exit_code == 2
     assert "another golden set" in result.output
     assert not POOLING_DIR.exists()
+
+
+_REVIEW_FACT = "the controller shall notify the authority"
+
+
+def _review_entry(key: str, verdict: str, fact: int, quote: str) -> str:
+    return f"""
+[[chunks]]
+question_id = "q0"
+chunk = "{key}"
+question = "?"
+answer = "!"
+facts = ["a"]
+location = "GDPR"
+text = "{_REVIEW_FACT} of a breach, says this chunk {key}."
+verdict = "{verdict}"
+fact = {fact}
+quote = "{quote}"
+"""
+
+
+@pytest.fixture
+def merged(pooled: Path) -> Path:
+    """A filled review of gdpr#1 and gdpr#2, the LLM's verdicts on them and on gdpr#3."""
+    pooled.write_text(
+        _POOL_GOLDEN.replace(
+            'any_of = [{ document = "gdpr", quote = "without undue delay" }]',
+            'any_of = [\n  { document = "gdpr", quote = "without undue delay" },\n]',
+        )
+    )
+    POOLING_DIR.mkdir(parents=True)
+    (POOLING_DIR / "review.toml").write_text(
+        _review_entry("gdpr#1", "relevant", 1, _REVIEW_FACT)
+        + _review_entry("gdpr#2", "rejected", 0, "")
+    )
+    verdicts = [
+        PoolJudgment(
+            question_id="q0",
+            chunk=key,
+            model="m",
+            verdict=Verdict(reason="r", facts=(StatedFact(fact=1, quote="x"),) if relevant else ()),
+        )
+        for key, relevant in (("gdpr#1", True), ("gdpr#2", True), ("gdpr#3", False))
+    ]
+    (POOLING_DIR / "llm.jsonl").write_text("".join(v.model_dump_json() + "\n" for v in verdicts))
+    return pooled
+
+
+def test_merge_pool_writes_the_wordings_and_the_rejections(merged: Path, tmp_path: Path) -> None:
+    result = runner.invoke(app, ["merge-pool"])
+
+    assert result.exit_code == 0, result.output
+    assert "false rejections: 0/0" in result.stdout
+    assert "1 wordings for the golden set" in result.stdout
+    assert _REVIEW_FACT in merged.read_text()
+    assert "run the evaluations again" in result.stdout
+    rejected = tomllib.loads((tmp_path / "eval" / "judgments.toml").read_text())
+    assert [quote["document"] for quote in rejected["q0"]] == ["gdpr"]
+
+
+def test_merge_pool_twice_changes_nothing(merged: Path, tmp_path: Path) -> None:
+    runner.invoke(app, ["merge-pool"])
+    golden = merged.read_text()
+    judgments = (tmp_path / "eval" / "judgments.toml").read_text()
+
+    result = runner.invoke(app, ["merge-pool"])
+
+    assert result.exit_code == 0, result.output
+    assert merged.read_text() == golden
+    assert (tmp_path / "eval" / "judgments.toml").read_text() == judgments
+
+
+def test_merge_pool_refuses_an_unfinished_review(merged: Path) -> None:
+    before = merged.read_text()
+    (POOLING_DIR / "review.toml").write_text(_review_entry("gdpr#1", "", 0, ""))
+
+    result = runner.invoke(app, ["merge-pool"])
+
+    assert result.exit_code == 1
+    assert "q0 / gdpr#1: no verdict" in result.stderr
+    assert merged.read_text() == before

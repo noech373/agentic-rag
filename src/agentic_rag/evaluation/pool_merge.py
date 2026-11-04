@@ -7,7 +7,7 @@ from typing import NamedTuple
 
 from pydantic import TypeAdapter
 
-from agentic_rag.evaluation.golden import Quote, contains, normalize
+from agentic_rag.evaluation.golden import Question, Quote, contains, normalize
 from agentic_rag.evaluation.judgments import Judgments
 from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry, agreement, toml_string
 
@@ -74,11 +74,12 @@ def _add_wording(golden: str, wording: NewWording) -> str:
     return golden[: fact.end(1)] + line + golden[fact.end(1) :]
 
 
-def rejected_pairs(
+def rejection_candidates(
     llm: Sequence[PoolJudgment], review: Sequence[ReviewEntry]
 ) -> list[tuple[str, str]]:
-    """The (question, chunk) pairs to count as rejected, in the order of the LLM's verdicts.
+    """The (question, chunk) pairs that may be rejected, in the order of the LLM's verdicts.
 
+    Candidates only: `stating_a_fact` then takes out those that state a fact of their question.
     The person's verdict comes first. The LLM's rejections nobody checked count only if the rule
     keeps them. A "new_fact" is no rejection: the chunk waits for the fact to be added by hand.
     """
@@ -93,6 +94,24 @@ def rejected_pairs(
         ):
             pairs.append(pair)
     return pairs
+
+
+def stating_a_fact(
+    pairs: Sequence[tuple[str, str]], questions: Mapping[str, Question], texts: Mapping[str, str]
+) -> list[tuple[str, str]]:
+    """The pairs whose chunk contains a wording of its question: they count as useful anyway.
+
+    A wording from a relevant chunk may also be in a chunk rejected unread.
+    """
+    return [
+        (question_id, key)
+        for question_id, key in pairs
+        if any(
+            contains(normalize(texts[key]), quote.quote)
+            for evidence in questions[question_id].evidence
+            for quote in evidence.any_of
+        )
+    ]
 
 
 def rejection_quotes(pairs: Sequence[tuple[str, str]], texts: Mapping[str, str]) -> Judgments:

@@ -248,6 +248,60 @@ def pool_runs(
     )
 
 
+@app.command("merge-pool")
+def merge_pool(
+    golden: Annotated[Path, typer.Option(exists=True, dir_okay=False, help="Golden set.")] = Path(
+        "eval/golden.toml"
+    ),
+    judgments: Annotated[
+        Path, typer.Option(exists=True, dir_okay=False, help="Rejected chunks.")
+    ] = Path("eval/judgments.toml"),
+) -> None:
+    """Merge the filled review into the golden set and the judgments; twice changes nothing."""
+    import tomllib
+
+    from agentic_rag.config import get_settings
+    from agentic_rag.evaluation import pool_merge, pooling
+    from agentic_rag.evaluation.golden import GoldenSet
+    from agentic_rag.factory import make_store
+
+    review = pooling.load_review(pooling.POOLING_DIR / "review.toml")
+    if errors := pooling.review_errors(review):
+        typer.echo("\n".join(errors), err=True)
+        raise typer.Exit(code=1)
+
+    llm = pooling.load_pool_judgments(pooling.POOLING_DIR / "llm.jsonl")
+    agreement = pooling.agreement(llm, review)
+    false_rejections = agreement.false_rejections
+    typer.echo(
+        f"false rejections: {false_rejections.k}/{false_rejections.n}, "
+        f"upper bound {false_rejections.high:.1%}: unchecked rejections "
+        + ("kept" if agreement.rejections_kept else "NOT kept, only the reviewed ones count")
+    )
+
+    wordings = pool_merge.new_wordings(review)
+    new_golden = pool_merge.add_wordings(golden.read_text(encoding="utf-8"), wordings)
+    questions = GoldenSet.model_validate(tomllib.loads(new_golden)).questions
+
+    texts = {c.key: c.chunk.text for c in make_store(get_settings()).all_chunks()}
+    candidates = pool_merge.rejection_candidates(llm, review)
+    useful = pool_merge.stating_a_fact(candidates, {q.id: q for q in questions}, texts)
+    rejected = [pair for pair in candidates if pair not in useful]
+    new_judgments = pool_merge.add_rejections(
+        judgments.read_text(encoding="utf-8"), pool_merge.rejection_quotes(rejected, texts)
+    )
+
+    golden.write_text(new_golden, encoding="utf-8")  # last: a failure above leaves both files as is
+    judgments.write_text(new_judgments, encoding="utf-8")
+    typer.echo(f"{len(wordings)} wordings for the golden set, {len(rejected)} rejections")
+    for question_id, key in useful:
+        typer.echo(f"rejected by the LLM but states a fact, counted useful: {question_id} / {key}")
+    for entry in review:
+        if entry.verdict == "new_fact":
+            typer.echo(f"new fact to add by hand: {entry.question_id} / {entry.chunk}")
+    typer.echo("the golden set changed: run the evaluations again")
+
+
 def _load_run(path: Path, hint: str) -> RunRecord:
     try:
         return load_run(path)

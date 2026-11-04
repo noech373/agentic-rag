@@ -2,14 +2,15 @@ import tomllib
 
 import pytest
 
-from agentic_rag.evaluation.golden import GoldenSet, Quote, contains, normalize
+from agentic_rag.evaluation.golden import Evidence, GoldenSet, Question, Quote, contains, normalize
 from agentic_rag.evaluation.pool_merge import (
     NewWording,
     add_rejections,
     add_wordings,
     new_wordings,
-    rejected_pairs,
+    rejection_candidates,
     rejection_quotes,
+    stating_a_fact,
 )
 from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry
 from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
@@ -168,22 +169,22 @@ def _pairs_with_false_rejections(errors: int) -> list[tuple[str, str]]:
         else _entry(f"gdpr#{i}", "rejected")
         for i in range(100)
     ]
-    return rejected_pairs(llm, review)
+    return rejection_candidates(llm, review)
 
 
 def test_the_rule_passed_all_unchecked_rejections_count() -> None:
-    pairs = _pairs_with_false_rejections(4)
+    candidates = _pairs_with_false_rejections(4)
 
-    assert ("first", "gdpr#100") in pairs
-    assert ("first", "gdpr#3") not in pairs  # found relevant by the person
-    assert len(pairs) == 97
+    assert ("first", "gdpr#100") in candidates
+    assert ("first", "gdpr#3") not in candidates  # found relevant by the person
+    assert len(candidates) == 97
 
 
 def test_the_rule_failed_only_the_checked_rejections_count() -> None:
-    pairs = _pairs_with_false_rejections(5)
+    candidates = _pairs_with_false_rejections(5)
 
-    assert ("first", "gdpr#100") not in pairs
-    assert len(pairs) == 95
+    assert ("first", "gdpr#100") not in candidates
+    assert len(candidates) == 95
 
 
 def test_the_person_overrules_the_llm() -> None:
@@ -194,7 +195,7 @@ def test_the_person_overrules_the_llm() -> None:
         _entry("gdpr#2", "relevant", 1, text).model_copy(update={"text": text}),
     ]
 
-    assert rejected_pairs(llm, review) == [("first", "gdpr#1")]
+    assert rejection_candidates(llm, review) == [("first", "gdpr#1")]
 
 
 def test_an_unchecked_relevant_verdict_and_a_new_fact_are_not_rejected() -> None:
@@ -202,7 +203,7 @@ def test_an_unchecked_relevant_verdict_and_a_new_fact_are_not_rejected() -> None
     llm = [_llm("gdpr#1", relevant=True), _llm("gdpr#2")]
     review = [_entry("gdpr#2", "new_fact", 0, text).model_copy(update={"text": text})]
 
-    assert rejected_pairs(llm, review) == []
+    assert rejection_candidates(llm, review) == []
 
 
 _WORDS = " ".join(f"word{i}" for i in range(30))
@@ -288,3 +289,24 @@ def test_merging_the_rejections_twice_changes_nothing() -> None:
     once = add_rejections(_HEADER, {"q": (_REJECTED,)})
 
     assert add_rejections(once, {"q": (_REJECTED,)}) == once
+
+
+def test_a_rejected_chunk_with_a_wording_of_its_question_is_found() -> None:
+    question = Question(
+        id="q",
+        category="factual",
+        origin="blind",
+        question="?",
+        answer="!",
+        evidence=(Evidence(any_of=(Quote(document="gdpr", quote="a wording of the fact"),)),),
+    )
+    other = question.model_copy(update={"id": "other", "evidence": ()})
+    texts = {"gdpr#1": "It says A wording, of the fact.", "gdpr#2": "Nothing of the kind."}
+
+    useful = stating_a_fact(
+        [("q", "gdpr#1"), ("q", "gdpr#2"), ("other", "gdpr#1")],
+        {"q": question, "other": other},
+        texts,
+    )
+
+    assert useful == [("q", "gdpr#1")]
