@@ -367,6 +367,7 @@ provider"), where word matching is known to help. Next: pooling, since relevant 
 ranking brings up but the quotes do not list currently count as misses; then a category of
 questions in exact legal terms. The rule is set before running it: hybrid search becomes the
 default if it gains significantly on that category without losing significantly on the others.
+(Entry 3 explains why this rule was dropped.)
 
 ### 3. Pooling: most of the unread chunks were not relevant
 
@@ -418,7 +419,17 @@ the 37 confirmed chunks, and the judgments 1054 rejections (118 checked by hand,
 - At worst, about 35 of the 936 unchecked rejections could be relevant chunks.
 - The 21 held-out questions are not pooled, to keep them untouched.
 
-Next: a category of questions in exact legal terms, with the rule of entry 2, and the reranker.
+**A rule corrected before use.** The rule of entry 2 can no longer pass, whatever the exact-term
+questions show: after pooling, hybrid search already loses significantly on factual questions
+(−0.085 [−0.178, −0.015] on recall@8) and vague ones (−0.333 [−0.520, −0.147]). The only open
+question is whether to send just the exact-term queries to word matching, a routing decision. So
+that category of questions moves to just before the routing work.
+
+**What this leaves open:** the golden set still has no question in exact legal terms, so later
+bricks are measured without them and will have to be rerun once it does. Article numbers also need
+care: they are in a chunk's path, not its text, so neither retriever sees them.
+
+Next: the reranker.
 
 ## Development
 
