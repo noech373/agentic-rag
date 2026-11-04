@@ -13,7 +13,8 @@ from agentic_rag.evaluation.pooling.merge import (
     rejection_quotes,
     stating_a_fact,
 )
-from agentic_rag.evaluation.pooling.selection import PoolJudgment, ReviewEntry
+from agentic_rag.evaluation.pooling.review import ReviewEntry
+from agentic_rag.evaluation.pooling.selection import PoolJudgment
 
 _GOLDEN = """\
 # A comment to keep.
