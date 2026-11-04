@@ -7,9 +7,9 @@ traced by Langfuse's OpenAI integration, nested under these observations.
 
 from langfuse import Langfuse, propagate_attributes
 
+from agentic_rag.citation import citation
 from agentic_rag.document import RetrievedChunk
 from agentic_rag.generation.base import Answer, Generator
-from agentic_rag.generation.prompt import citation
 from agentic_rag.rag import RAG
 from agentic_rag.retrieval.base import Retriever
 

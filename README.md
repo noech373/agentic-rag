@@ -83,6 +83,7 @@ src/agentic_rag/
 ├── storage/        base.py (ChunkStore, VectorSearch, KeywordSearch), postgres.py
 ├── retrieval/      base.py (Retriever), vector.py, bm25.py, hybrid.py
 ├── generation/     base.py (Generator, Answer), prompt.py, openai.py
+├── citation.py     how a chunk is referred to: "GDPR, Article 33(1)"
 ├── rag.py          retrieve, then generate
 ├── tracing.py      Langfuse wrappers around the RAG and its retriever
 ├── pipeline_config.py  which bricks a pipeline is built from, read from pipelines/<name>.toml
