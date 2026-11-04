@@ -1,11 +1,17 @@
-"""Merge a finished pooling review into the golden set, keeping the file's comments and layout."""
+"""Merge a finished pooling review into golden.toml and judgments.toml, keeping their comments."""
 
 import re
-from collections.abc import Sequence
+import tomllib
+from collections.abc import Mapping, Sequence
 from typing import NamedTuple
 
-from agentic_rag.evaluation.golden import normalize
-from agentic_rag.evaluation.pooling import ReviewEntry, toml_string
+from pydantic import TypeAdapter
+
+from agentic_rag.evaluation.golden import Quote, contains, normalize
+from agentic_rag.evaluation.judgments import Judgments
+from agentic_rag.evaluation.pooling import PoolJudgment, ReviewEntry, agreement, toml_string
+
+REJECTION_WORDS = 12  # enough to tell a chunk from the others, short enough to read
 
 
 class NewWording(NamedTuple):
@@ -66,3 +72,76 @@ def _add_wording(golden: str, wording: NewWording) -> str:
         f"quote = {toml_string(wording.quote)} }},\n"
     )
     return golden[: fact.end(1)] + line + golden[fact.end(1) :]
+
+
+def rejected_pairs(
+    llm: Sequence[PoolJudgment], review: Sequence[ReviewEntry]
+) -> list[tuple[str, str]]:
+    """The (question, chunk) pairs to count as rejected, in the order of the LLM's verdicts.
+
+    The person's verdict comes first. The LLM's rejections nobody checked count only if the rule
+    keeps them. A "new_fact" is no rejection: the chunk waits for the fact to be added by hand.
+    """
+    reviewed = {(entry.question_id, entry.chunk): entry.verdict for entry in review}
+    keep_unchecked = agreement(llm, review).rejections_kept
+    pairs: list[tuple[str, str]] = []
+    for judgment in llm:
+        pair = (judgment.question_id, judgment.chunk)
+        verdict = reviewed.get(pair)
+        if verdict == "rejected" or (
+            verdict is None and keep_unchecked and not judgment.verdict.relevant
+        ):
+            pairs.append(pair)
+    return pairs
+
+
+def rejection_quotes(pairs: Sequence[tuple[str, str]], texts: Mapping[str, str]) -> Judgments:
+    """For each question, a quote of each of its rejected chunks; `texts`: every chunk, by key."""
+    normalized = [normalize(text) for text in texts.values()]
+    quotes = {key: _own_quote(key, texts[key], normalized) for key in {key for _, key in pairs}}
+    judgments: dict[str, tuple[Quote, ...]] = {}
+    for question_id, key in pairs:
+        judgments[question_id] = (*judgments.get(question_id, ()), quotes[key])
+    return judgments
+
+
+def _own_quote(key: str, text: str, normalized: Sequence[str]) -> Quote:
+    """The first `REJECTION_WORDS` words of the chunk that are in no other chunk.
+
+    A shared quote, such as a table's header, would reject the other chunks too, unread.
+    """
+    words = list(re.finditer(r"\w+", text))
+    for first in range(max(len(words) - REJECTION_WORDS, 0) + 1):
+        last = words[min(first + REJECTION_WORDS, len(words)) - 1]
+        quote = " ".join(text[words[first].start() : last.end()].split())
+        if sum(contains(other, quote) for other in normalized) == 1:
+            return Quote(document=key.rpartition("#")[0], quote=quote)
+    raise ValueError(f"{key}: no {REJECTION_WORDS} words of it are in this chunk alone")
+
+
+def add_rejections(judgments: str, new: Judgments) -> str:
+    """The text of judgments.toml with the new quotes; its leading comments are kept as they are.
+
+    One it already has is not added again. Questions are sorted, so that the file diffs well.
+    """
+    existing = TypeAdapter(Judgments).validate_python(tomllib.loads(judgments))
+    merged = dict(existing)
+    for question_id, quotes in new.items():
+        for quote in quotes:
+            held = merged.get(question_id, ())
+            if normalize(quote.quote) not in {normalize(q.quote) for q in held}:
+                merged[question_id] = (*held, quote)
+
+    comments: list[str] = []
+    for line in judgments.splitlines():
+        if line and not line.startswith("#"):
+            break
+        comments.append(line)
+    blocks = ["\n".join(comments).rstrip()]
+    for question_id in sorted(merged):
+        lines = "".join(
+            f"  {{ document = {toml_string(q.document)}, quote = {toml_string(q.quote)} }},\n"
+            for q in merged[question_id]
+        )
+        blocks.append(f"{question_id} = [\n{lines}]")
+    return "\n\n".join(blocks) + "\n"
