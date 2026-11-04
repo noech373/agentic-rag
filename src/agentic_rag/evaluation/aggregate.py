@@ -1,9 +1,10 @@
 """Summarize a run: from one result per question to one figure per metric."""
 
+import math
 import random
 from collections import defaultdict
 from collections.abc import Sequence
-from statistics import fmean
+from statistics import NormalDist, fmean
 
 from agentic_rag.evaluation.golden import Category
 from agentic_rag.evaluation.runner import QuestionResult
@@ -45,6 +46,23 @@ def bootstrap_ci(
     low = int(tail * n_resamples)
     high = min(round((1 - tail) * n_resamples), n_resamples - 1)
     return means[low], means[high]
+
+
+def wilson_interval(k: int, n: int, *, confidence: float = 0.95) -> tuple[float, float]:
+    """The confidence interval of a proportion `k / n`, sound even when `k` is 0 or `n`.
+
+    Unlike p ± z·√(p(1-p)/n), it never collapses to a single point: 0 errors out of 100 still
+    leaves room for a few percent. With no observation, it is the whole of [0, 1].
+    """
+    if not 0 <= k <= n:
+        raise ValueError(f"{k} successes out of {n} trials")
+    if n == 0:
+        return 0.0, 1.0
+    z = NormalDist().inv_cdf(1 - (1 - confidence) / 2)
+    p = k / n
+    centre = (p + z**2 / (2 * n)) / (1 + z**2 / n)
+    half = z * math.sqrt(p * (1 - p) / n + z**2 / (4 * n**2)) / (1 + z**2 / n)
+    return max(0.0, centre - half), min(1.0, centre + half)
 
 
 def _scores_by_question(results: Sequence[QuestionResult], metric: str) -> dict[str, float]:
