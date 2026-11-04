@@ -7,7 +7,7 @@ from openai import OpenAI
 
 from agentic_rag.document import Chunk, Division, IndexedDocument, StoredChunk
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
-from agentic_rag.evaluation.relevance_judge import (
+from agentic_rag.evaluation.pooling.judge import (
     INSTRUCTIONS,
     JudgeError,
     OpenAIRelevanceJudge,

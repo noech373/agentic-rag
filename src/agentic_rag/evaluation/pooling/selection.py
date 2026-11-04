@@ -24,8 +24,8 @@ from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Question, contains, normalize
 from agentic_rag.evaluation.judgments import Judgments
 from agentic_rag.evaluation.metrics import is_judged
+from agentic_rag.evaluation.pooling.judge import RelevanceJudge, StatedFact, Verdict
 from agentic_rag.evaluation.record import RunRecord
-from agentic_rag.evaluation.relevance_judge import RelevanceJudge, StatedFact, Verdict
 from agentic_rag.evaluation.runner import JUDGED_K
 
 POOLING_DIR = Path("eval/pooling")  # llm.jsonl and review.toml
