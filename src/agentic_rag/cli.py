@@ -203,7 +203,7 @@ def pool_runs(
     from agentic_rag.config import get_settings
     from agentic_rag.evaluation.golden import load_golden_set
     from agentic_rag.evaluation.judgments import load_judgments
-    from agentic_rag.evaluation.pooling import selection
+    from agentic_rag.evaluation.pooling import review, selection
     from agentic_rag.evaluation.record import file_sha256
     from agentic_rag.evaluation.runner import tuning_questions
     from agentic_rag.factory import make_relevance_judge, make_store
@@ -239,8 +239,8 @@ def pool_runs(
         typer.echo(f"{len(pending) - len(batch)} pairs left: run again to finish before the review")
         return
 
-    entries = selection.review_sample([*done, *judged])
-    selection.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
+    entries = review.review_sample([*done, *judged])
+    review.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
     relevant = sum(entry.verdict.relevant for entry in entries)
     typer.echo(
         f"review of {len(entries)} chunks ({relevant} found relevant by the LLM, "
@@ -263,28 +263,30 @@ def merge_pool(
     from agentic_rag.config import get_settings
     from agentic_rag.evaluation.golden import GoldenSet
     from agentic_rag.evaluation.pooling import merge, selection
+    from agentic_rag.evaluation.pooling.agreement import agreement
+    from agentic_rag.evaluation.pooling.review import load_review, review_errors
     from agentic_rag.factory import make_store
 
-    review = selection.load_review(selection.POOLING_DIR / "review.toml")
-    if errors := selection.review_errors(review):
+    filled = load_review(selection.POOLING_DIR / "review.toml")
+    if errors := review_errors(filled):
         typer.echo("\n".join(errors), err=True)
         raise typer.Exit(code=1)
 
     llm = selection.load_pool_judgments(selection.POOLING_DIR / "llm.jsonl")
-    agreement = selection.agreement(llm, review)
-    false_rejections = agreement.false_rejections
+    measured = agreement(llm, filled)
+    false_rejections = measured.false_rejections
     typer.echo(
         f"false rejections: {false_rejections.k}/{false_rejections.n}, "
         f"upper bound {false_rejections.high:.1%}: unchecked rejections "
-        + ("kept" if agreement.rejections_kept else "NOT kept, only the reviewed ones count")
+        + ("kept" if measured.rejections_kept else "NOT kept, only the reviewed ones count")
     )
 
-    wordings = merge.new_wordings(review)
+    wordings = merge.new_wordings(filled)
     new_golden = merge.add_wordings(golden.read_text(encoding="utf-8"), wordings)
     questions = GoldenSet.model_validate(tomllib.loads(new_golden)).questions
 
     texts = {c.key: c.chunk.text for c in make_store(get_settings()).all_chunks()}
-    candidates = merge.rejection_candidates(llm, review)
+    candidates = merge.rejection_candidates(llm, filled)
     useful = merge.stating_a_fact(candidates, {q.id: q for q in questions}, texts)
     rejected = [pair for pair in candidates if pair not in useful]
     new_judgments = merge.add_rejections(
@@ -296,7 +298,7 @@ def merge_pool(
     typer.echo(f"{len(wordings)} wordings for the golden set, {len(rejected)} rejections")
     for question_id, key in useful:
         typer.echo(f"rejected by the LLM but states a fact, counted useful: {question_id} / {key}")
-    for entry in review:
+    for entry in filled:
         if entry.verdict == "new_fact":
             typer.echo(f"new fact to add by hand: {entry.question_id} / {entry.chunk}")
     typer.echo("the golden set changed: run the evaluations again")
