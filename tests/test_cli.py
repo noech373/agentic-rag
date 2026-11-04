@@ -6,14 +6,13 @@ import pytest
 from typer.testing import CliRunner
 
 from agentic_rag.cli import _load_pipeline, app  # pyright: ignore[reportPrivateUsage]
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, StoredChunk
 from agentic_rag.evaluation import record
 from agentic_rag.evaluation.pooling import POOLING_DIR, PoolJudgment, load_pool_judgments
 from agentic_rag.evaluation.record import RunRecord, file_sha256, load_run, save_run
 from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
 from agentic_rag.pipeline_config import PipelineConfig
-from agentic_rag.storage.base import IndexedDocument, StoredChunk
 
 runner = CliRunner()
 

@@ -2,8 +2,9 @@
 rare ones first.
 """
 
+from agentic_rag.document import RetrievedChunk
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.storage.base import KeywordSearch, RetrievedChunk
+from agentic_rag.storage.base import KeywordSearch
 
 
 class BM25Retriever(Retriever):

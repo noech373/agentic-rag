@@ -9,7 +9,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from agentic_rag.storage.base import RetrievedChunk
+from agentic_rag.document import RetrievedChunk
 
 NO_ANSWER = "I don't know based on the available sources."
 

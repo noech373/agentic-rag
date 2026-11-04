@@ -8,41 +8,7 @@ retriever only searches: a backend without vectors, for instance, can still serv
 from collections.abc import Collection, Sequence
 from typing import Protocol
 
-from pydantic import BaseModel, ConfigDict
-
-from agentic_rag.document import Chunk
-
-
-class IndexedDocument(BaseModel):
-    """A stored document: how to cite it, who may read it, and what its chunks were built from."""
-
-    model_config = ConfigDict(frozen=True)
-
-    id: str  # the manifest's slug: "gdpr"
-    title: str
-    short_title: str  # what the answer cites: "GDPR"
-    source_url: str | None  # None for internal documents
-    regulations: tuple[str, ...]
-    groups: tuple[str, ...]  # who may read it: ("public",); empty: nobody
-    sha256: str  # of the source file: an unchanged file is not ingested again
-    embedding_model: str  # of all its chunks: a query is only compared with vectors of its model
-
-
-class StoredChunk(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    document: IndexedDocument
-    position: int  # in the document, 0-based
-    chunk: Chunk
-
-    @property
-    def key(self) -> str:
-        """How runs and judgments name the chunk: "gdpr#12"."""
-        return f"{self.document.id}#{self.position}"
-
-
-class RetrievedChunk(StoredChunk):
-    score: float  # higher is more relevant; only comparable within one retriever
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk, StoredChunk
 
 
 class ChunkStore(Protocol):

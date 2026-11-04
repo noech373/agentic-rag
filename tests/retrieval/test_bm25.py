@@ -1,6 +1,6 @@
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.retrieval.bm25 import BM25Retriever
-from agentic_rag.storage.base import IndexedDocument, KeywordSearch, RetrievedChunk
+from agentic_rag.storage.base import KeywordSearch
 
 
 class _FakeSearch(KeywordSearch):

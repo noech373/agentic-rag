@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, StoredChunk
 from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
 from agentic_rag.evaluation.pooling import (
@@ -25,7 +25,6 @@ from agentic_rag.evaluation.pooling import (
 from agentic_rag.evaluation.record import RunRecord
 from agentic_rag.evaluation.relevance_judge import StatedFact, Verdict
 from agentic_rag.evaluation.runner import QuestionResult
-from agentic_rag.storage.base import IndexedDocument, StoredChunk
 
 _FACT = "notify the supervisory authority without undue delay"
 _REJECTED = "the right to lodge a complaint"

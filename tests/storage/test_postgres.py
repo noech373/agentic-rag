@@ -9,8 +9,7 @@ from sqlalchemy.exc import DataError, IntegrityError, OperationalError, Programm
 from sqlalchemy.orm import Session
 
 from agentic_rag.config import PostgresSettings
-from agentic_rag.document import Chunk, Division
-from agentic_rag.storage.base import IndexedDocument
+from agentic_rag.document import Chunk, Division, IndexedDocument
 from agentic_rag.storage.postgres import (
     BM25_INDEX,
     ChunkRow,

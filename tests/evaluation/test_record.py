@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.evaluation.record import (
     RunRecord,
     file_sha256,
@@ -18,7 +18,6 @@ from agentic_rag.evaluation.record import (
 )
 from agentic_rag.evaluation.runner import QuestionResult
 from agentic_rag.pipeline_config import PipelineConfig
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 def _record() -> RunRecord:

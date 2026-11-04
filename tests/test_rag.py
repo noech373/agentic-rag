@@ -1,10 +1,9 @@
 from collections.abc import Sequence
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER, Answer, Generator
 from agentic_rag.rag import RAG
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 class _FakeRetriever(Retriever):

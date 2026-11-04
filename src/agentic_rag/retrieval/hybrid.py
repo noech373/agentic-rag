@@ -2,8 +2,8 @@
 
 from collections.abc import Sequence
 
+from agentic_rag.document import RetrievedChunk
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.storage.base import RetrievedChunk
 
 RRF_K = 60  # Cormack et al., 2009: a first rank weighs little more than a second one
 CANDIDATES = 50  # Per retriever, whatever k: the top 8 is then the start of the top 50

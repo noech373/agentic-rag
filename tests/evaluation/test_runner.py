@@ -1,4 +1,4 @@
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.evaluation.golden import Evidence, GoldenSet, Question, Quote
 from agentic_rag.evaluation.runner import (
     JUDGED_K,
@@ -8,7 +8,6 @@ from agentic_rag.evaluation.runner import (
     run_retriever,
     tuning_questions,
 )
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk
 
 
 def _question(

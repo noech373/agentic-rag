@@ -2,9 +2,8 @@
 
 from collections.abc import Sequence
 
-from agentic_rag.document import Division, DivisionKind
+from agentic_rag.document import Division, DivisionKind, RetrievedChunk, StoredChunk
 from agentic_rag.generation.base import NO_ANSWER
-from agentic_rag.storage.base import RetrievedChunk, StoredChunk
 
 INSTRUCTIONS = f"""\
 You answer questions about EU regulatory compliance for compliance officers and engineers.

@@ -17,6 +17,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
+from agentic_rag.document import StoredChunk
 from agentic_rag.evaluation.aggregate import wilson_interval
 from agentic_rag.evaluation.comparison import IncomparableRunsError
 from agentic_rag.evaluation.golden import Question, contains, normalize
@@ -26,7 +27,6 @@ from agentic_rag.evaluation.record import RunRecord
 from agentic_rag.evaluation.relevance_judge import RelevanceJudge, StatedFact, Verdict
 from agentic_rag.evaluation.runner import JUDGED_K
 from agentic_rag.generation.prompt import citation
-from agentic_rag.storage.base import StoredChunk
 
 POOLING_DIR = Path("eval/pooling")  # llm.jsonl and review.toml
 POOL_DEPTH = JUDGED_K  # the top that judged@k checks

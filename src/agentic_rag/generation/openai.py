@@ -4,9 +4,9 @@ from collections.abc import Sequence
 
 from openai import OpenAI
 
+from agentic_rag.document import RetrievedChunk
 from agentic_rag.generation.base import Answer, GenerationError, Generator
 from agentic_rag.generation.prompt import INSTRUCTIONS, build_input
-from agentic_rag.storage.base import RetrievedChunk
 
 
 class OpenAIGenerator(Generator):

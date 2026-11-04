@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 
-from agentic_rag.document import Chunk
+from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.retrieval.vector import VectorRetriever
-from agentic_rag.storage.base import IndexedDocument, RetrievedChunk, VectorSearch
+from agentic_rag.storage.base import VectorSearch
 
 
 class _FakeEmbedder(Embedder):

@@ -5,7 +5,7 @@ import httpx
 import pytest
 from openai import OpenAI
 
-from agentic_rag.document import Chunk, Division
+from agentic_rag.document import Chunk, Division, IndexedDocument, StoredChunk
 from agentic_rag.evaluation.golden import Evidence, Question, Quote
 from agentic_rag.evaluation.relevance_judge import (
     INSTRUCTIONS,
@@ -16,7 +16,6 @@ from agentic_rag.evaluation.relevance_judge import (
     build_input,
     unsupported_facts,
 )
-from agentic_rag.storage.base import IndexedDocument, StoredChunk
 
 _VERDICT = {
     "reason": "It gives the deadline.",
