@@ -4,9 +4,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from agentic_rag.retrieval import cross_encoder
-from agentic_rag.retrieval.base import Reranker
-from agentic_rag.retrieval.cross_encoder import CrossEncoderReranker
+from agentic_rag.reranking import cross_encoder
+from agentic_rag.reranking.base import Reranker
+from agentic_rag.reranking.cross_encoder import CrossEncoderReranker
 
 
 class _FakeModel:

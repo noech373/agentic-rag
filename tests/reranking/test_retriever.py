@@ -3,8 +3,8 @@ from collections.abc import Sequence
 import pytest
 
 from agentic_rag.document import Chunk, IndexedDocument, RetrievedChunk
+from agentic_rag.reranking.retriever import CANDIDATES, RerankingRetriever
 from agentic_rag.retrieval.base import Retriever
-from agentic_rag.retrieval.reranking import CANDIDATES, RerankingRetriever
 
 
 def _result(name: str, score: float = 1.0) -> RetrievedChunk:
