@@ -15,6 +15,7 @@ class PipelineConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
+    reranker: Literal["bge-reranker-v2-m3", "ms-marco-minilm"] | None = None
 
 
 def load_pipeline(path: Path) -> PipelineConfig:
