@@ -18,6 +18,25 @@ def test_the_default_config_is_the_plain_vector_rag() -> None:
     assert PipelineConfig().retriever == "vector"
 
 
+def test_the_default_config_has_no_reranker() -> None:
+    assert PipelineConfig().reranker is None
+
+
+@pytest.mark.parametrize("name", ["bge-reranker-v2-m3", "ms-marco-minilm"])
+def test_a_reranker_is_read_from_a_file(tmp_path: Path, name: str) -> None:
+    path = _write(tmp_path, f'reranker = "{name}"\n')
+
+    assert load_pipeline(path).reranker == name
+
+
+def test_an_unknown_reranker_is_refused_when_the_file_is_read(tmp_path: Path) -> None:
+    # at loading, not after the model has been downloaded
+    path = _write(tmp_path, 'reranker = "bge-reranker-v3"\n')
+
+    with pytest.raises(ValidationError):
+        load_pipeline(path)
+
+
 def test_a_file_is_read_into_the_config(tmp_path: Path) -> None:
     path = _write(tmp_path, 'retriever = "vector"\n')
 
