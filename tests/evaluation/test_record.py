@@ -79,6 +79,15 @@ def test_config_values_keep_their_type(tmp_path: Path) -> None:
     }
 
 
+def test_a_config_value_left_empty_survives_the_file(tmp_path: Path) -> None:
+    path = tmp_path / "run.json"
+    record = _record().model_copy(update={"config": {"retriever": "vector", "reranker": None}})
+
+    save_run(record, path)
+
+    assert load_run(path).config == {"retriever": "vector", "reranker": None}
+
+
 def test_an_unknown_field_is_refused(tmp_path: Path) -> None:
     path = tmp_path / "run.json"
     data = json.loads(_record().model_dump_json())
@@ -245,7 +254,7 @@ def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> N
 
     record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
 
-    assert record.config == {"retriever": "vector"}
+    assert record.config == {"retriever": "vector", "reranker": None}  # None: no reranker, said
 
 
 def test_the_retriever_is_built_from_the_recorded_config(tmp_path: Path) -> None:
