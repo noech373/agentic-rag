@@ -1,7 +1,8 @@
 """Reranking: a finer model reorders the candidates of another retriever."""
 
 from agentic_rag.document import RetrievedChunk
-from agentic_rag.retrieval.base import Reranker, Retriever
+from agentic_rag.reranking.base import Reranker
+from agentic_rag.retrieval.base import Retriever
 
 CANDIDATES = 50  # Whatever k: the top 8 is then the start of the top 50
 

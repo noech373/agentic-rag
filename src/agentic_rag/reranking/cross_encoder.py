@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from sentence_transformers import CrossEncoder
 
-from agentic_rag.retrieval.base import Reranker
+from agentic_rag.reranking.base import Reranker
 
 
 class CrossEncoderReranker(Reranker):
