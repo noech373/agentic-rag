@@ -1,0 +1,3 @@
+# Vector search, then a cross-encoder reorders the 50 candidates.
+retriever = "vector"
+reranker = "bge-reranker-v2-m3"

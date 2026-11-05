@@ -74,7 +74,14 @@ def test_every_pipeline_file_of_the_repo_loads(path: Path) -> None:
     load_pipeline(path)
 
 
-def test_the_repo_has_a_pipeline_per_retriever_besides_the_baseline() -> None:
-    retrievers = {load_pipeline(path).retriever for path in PIPELINES.glob("*.toml")}
+def test_the_repo_has_a_pipeline_per_variant_besides_the_baseline() -> None:
+    variants = {
+        (config.retriever, config.reranker)
+        for config in map(load_pipeline, PIPELINES.glob("*.toml"))
+    }
 
-    assert retrievers == {"bm25", "hybrid"}
+    assert variants == {
+        ("bm25", None),
+        ("hybrid", None),
+        ("vector", "bge-reranker-v2-m3"),
+    }
