@@ -9,13 +9,15 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+RerankerName = Literal["bge-reranker-v2-m3", "ms-marco-minilm"]
+
 
 class PipelineConfig(BaseModel):
     # extra="forbid": a misspelled key would otherwise run the baseline under another name
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
-    reranker: Literal["bge-reranker-v2-m3", "ms-marco-minilm"] | None = None
+    reranker: RerankerName | None = None
 
 
 def load_pipeline(path: Path) -> PipelineConfig:

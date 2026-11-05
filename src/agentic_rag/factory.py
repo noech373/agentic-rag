@@ -14,8 +14,10 @@ from agentic_rag.embeddings.base import Embedder
 from agentic_rag.embeddings.openai import OpenAIEmbedder
 from agentic_rag.evaluation.pooling.judge import OpenAIRelevanceJudge, RelevanceJudge
 from agentic_rag.generation.openai import OpenAIGenerator
-from agentic_rag.pipeline_config import PipelineConfig
+from agentic_rag.pipeline_config import PipelineConfig, RerankerName
 from agentic_rag.rag import RAG
+from agentic_rag.reranking.base import Reranker
+from agentic_rag.reranking.retriever import RerankingRetriever
 from agentic_rag.retrieval.base import Retriever
 from agentic_rag.retrieval.bm25 import BM25Retriever
 from agentic_rag.retrieval.hybrid import HybridRetriever
@@ -34,6 +36,24 @@ def make_embedder(settings: Settings) -> Embedder:
 
 
 def make_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
+    retriever = _make_first_stage_retriever(settings, pipeline)
+    if pipeline.reranker is None:
+        return retriever
+    return RerankingRetriever(retriever, make_reranker(pipeline.reranker))
+
+
+def make_reranker(name: RerankerName) -> Reranker:
+    # Imported here: sentence-transformers takes 3 s to import, and only a reranker needs it
+    from agentic_rag.reranking.cross_encoder import CrossEncoderReranker
+
+    match name:
+        case "bge-reranker-v2-m3":
+            return CrossEncoderReranker("BAAI/bge-reranker-v2-m3")
+        case "ms-marco-minilm":
+            return CrossEncoderReranker("cross-encoder/ms-marco-MiniLM-L-6-v2")
+
+
+def _make_first_stage_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
     match pipeline.retriever:
         case "vector":
             return VectorRetriever(make_store(settings), make_embedder(settings))

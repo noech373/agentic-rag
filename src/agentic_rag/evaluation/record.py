@@ -25,7 +25,7 @@ class RunRecord(BaseModel):
     judgments_sha256: str
     git_sha: str
     dirty: bool  # uncommitted changes: the code may not match git_sha
-    config: dict[str, str | int | float | bool]
+    config: dict[str, str | int | float | bool | None]
     results: tuple[QuestionResult, ...]
 
 
