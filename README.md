@@ -191,7 +191,7 @@ Known limitations:
   available sources."* otherwise. The CLI lists the cited sources with their links. OpenAI is asked
   not to keep the responses (`store=False`).
 
-Known limitations, to be measured by the evaluation: no reranking yet, a fixed number of sources,
+Known limitations, to be measured by the evaluation: a fixed number of sources,
 and no access control on the documents yet.
 
 ## Pipelines
@@ -430,6 +430,54 @@ bricks are measured without them and will have to be rerun once it does. Article
 care: they are in a chunk's path, not its text, so neither retriever sees them.
 
 Next: the reranker.
+
+### 4. Reranking: not adopted, too slow on this machine
+
+A reranker is a finer model that reads the question and each candidate together, then reorders the
+candidates. Here it reorders the top 50 of vector search, a depth chosen because recall@8 is 0.75
+and recall@50 is 0.90: at most 0.15 to win.
+
+| | vector | + bge-reranker-v2-m3 | difference |
+|---|---|---|---|
+| recall@8 | 0.75 | 0.73 | −0.02 [−0.09, +0.05] |
+| recall@5 | 0.64 | 0.67 | +0.03 [−0.06, +0.12] |
+| recall@20 | 0.84 | 0.85 | +0.01 [−0.05, +0.08] |
+| MRR@8 | 0.63 | 0.66 | +0.03 [−0.06, +0.12] |
+| judged@8 | 1.00 | 0.69 | **−0.31 [−0.36, −0.27]** |
+| recall@8, factual (45) | 0.82 | 0.84 | |
+| recall@8, vague (21) | 0.67 | 0.52 | |
+| recall@8, multi-document (7) | 0.44 | 0.56 | |
+| recall@8, table (4) | 1.00 | 1.00 | |
+
+- **No measurable gain on recall@8**: 10 questions gain, 11 lose. Recall@50 is identical, as it
+  should be: the reranker only reorders the same candidates.
+- **These figures lean against the reranker.** It brings up 193 chunks nobody has judged (out of
+  616), and they count as misses. The difference on recall@8 is therefore a lower bound.
+- **The model matters.** In one-off runs outside the repo, with the same unjudged-chunk bias, two
+  light models lost clearly: `ms-marco-MiniLM-L6-v2` −0.15 [−0.25, −0.06] and
+  `jina-reranker-v1-turbo-en` −0.20 [−0.30, −0.10]. `v2-m3` beat both by +0.13 and +0.18, both
+  significant.
+- **Speed decides it.** Reranking 50 candidates on CPU, in those one-off runs:
+
+| model | p50 | p95 | memory peak |
+|---|---|---|---|
+| `bge-reranker-v2-m3` | 77 s | 188 s | 2.84 GB |
+| `ms-marco-MiniLM-L6-v2` | 2.9 s | 3.5 s | 0.87 GB |
+| `jina-reranker-v1-turbo-en` | 5.1 s | 6.7 s | 1.48 GB |
+
+**Decision:** no reranker by default, and `pipelines/reranker.toml` stays to compare later bricks
+with. Adopting one required a 95% interval on recall@8 entirely above zero, set before any run, and
+a p95 under 10 s per question on this machine, set once a first trial had shown about 70 s per
+question for `v2-m3`. No model passes both: the only one that keeps the recall is nearly 19 times too slow.
+
+**No pooling this time**, unlike the plan. Judging those 193 chunks could not change the decision:
+`v2-m3` fails on latency whatever its recall. At the last round's rate (54 relevant out of 1108)
+they would hold about ten relevant chunks, while the interval needs at least +0.09 to clear zero.
+
+**What this does not show:** that `v2-m3` is no better than vector search, since the unjudged chunks
+leave that open, or anything about reranking on a GPU, where the latency verdict may not hold and
+the pooling round would be worth doing. The golden set also still has no question in exact legal
+terms, so this run will have to be redone once it does.
 
 ## Development
 
