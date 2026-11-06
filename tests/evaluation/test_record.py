@@ -233,7 +233,9 @@ def _repo_with_golden(tmp_path: Path, judgments: str = "") -> tuple[Path, Path, 
 def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
     repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(
+        golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo, corpus_sha256="abc"
+    )
 
     assert [r.question_id for r in record.results] == ["kept"]
 
@@ -241,7 +243,9 @@ def test_a_run_scores_only_the_tuning_questions(tmp_path: Path) -> None:
 def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
     repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(
+        golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo, corpus_sha256="abc"
+    )
 
     assert record.golden_sha256 == file_sha256(golden)
     assert record.judgments_sha256 == file_sha256(judgments)
@@ -249,10 +253,31 @@ def test_a_run_keeps_its_provenance(tmp_path: Path) -> None:
     assert not record.dirty
 
 
+def test_a_run_keeps_the_fingerprint_of_its_corpus(tmp_path: Path) -> None:
+    repo, golden, judgments = _repo_with_golden(tmp_path)
+
+    record = record_run(
+        golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo, corpus_sha256="abc"
+    )
+
+    assert record.corpus_sha256 == "abc"
+
+
+def test_a_run_saved_before_corpus_variants_still_loads(tmp_path: Path) -> None:
+    path = tmp_path / "run.json"
+    saved = json.loads(_record().model_dump_json())
+    del saved["corpus_sha256"]
+    path.write_text(json.dumps(saved))
+
+    assert load_run(path).corpus_sha256 is None
+
+
 def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> None:
     repo, golden, judgments = _repo_with_golden(tmp_path)
 
-    record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
+    record = record_run(
+        golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo, corpus_sha256="abc"
+    )
 
     assert record.config == {
         "corpus": "public",
@@ -269,7 +294,7 @@ def test_the_retriever_is_built_from_the_recorded_config(tmp_path: Path) -> None
         built_from.append(pipeline)
         return _NothingFound()
 
-    record = record_run(golden, judgments, make, PipelineConfig(), repo)
+    record = record_run(golden, judgments, make, PipelineConfig(), repo, corpus_sha256="abc")
 
     assert [p.model_dump() for p in built_from] == [record.config]
 
@@ -296,6 +321,8 @@ def test_a_run_scores_judged_on_the_judgments_file(
 ) -> None:
     repo, golden, path = _repo_with_golden(tmp_path, judgments)
 
-    record = record_run(golden, path, lambda _: _RejectedFound(), PipelineConfig(), repo)
+    record = record_run(
+        golden, path, lambda _: _RejectedFound(), PipelineConfig(), repo, corpus_sha256="abc"
+    )
 
     assert [r.judged for r in record.results] == [judged]

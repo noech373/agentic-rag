@@ -162,14 +162,20 @@ def evaluate(
     """Score the retrieval on the tuning questions and save the run; see also `compare`."""
     from agentic_rag.config import get_settings
     from agentic_rag.evaluation import comparison, record
-    from agentic_rag.factory import make_retriever
+    from agentic_rag.factory import make_retriever, make_store
 
     config = _load_pipeline(pipeline)
     settings = get_settings()
     name = pipeline.stem if pipeline is not None else "baseline"
 
+    fingerprint = make_store(settings, config.corpus).fingerprint()  # a missing corpus stops here
     run = record.record_run(
-        golden, judgments, lambda p: make_retriever(settings, p), config, Path()
+        golden,
+        judgments,
+        lambda p: make_retriever(settings, p),
+        config,
+        Path(),
+        corpus_sha256=fingerprint,
     )
     path = record.RESULTS_DIR / f"{name}.json"
     record.save_run(run, path)

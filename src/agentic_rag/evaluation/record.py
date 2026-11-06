@@ -25,6 +25,7 @@ class RunRecord(BaseModel):
     judgments_sha256: str
     git_sha: str
     dirty: bool  # uncommitted changes: the code may not match git_sha
+    corpus_sha256: str | None = None  # None: a run saved before corpus variants existed
     config: dict[str, str | int | float | bool | None]
     results: tuple[QuestionResult, ...]
 
@@ -35,6 +36,8 @@ def record_run(
     make_retriever: Callable[[PipelineConfig], Retriever],
     pipeline: PipelineConfig,
     repo: Path,
+    *,
+    corpus_sha256: str,
 ) -> RunRecord:
     """Run the retriever on the tuning questions and keep what makes the run comparable."""
     retriever = make_retriever(pipeline)  # from the config it records: they cannot differ
@@ -45,6 +48,7 @@ def record_run(
         judgments_sha256=file_sha256(judgments_path),
         git_sha=git_sha(repo),
         dirty=git_dirty(repo),
+        corpus_sha256=corpus_sha256,
         config=pipeline.model_dump(),  # validated, defaults included: what actually ran
         results=tuple(results),
     )

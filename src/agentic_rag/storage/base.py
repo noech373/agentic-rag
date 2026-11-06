@@ -50,3 +50,7 @@ class ChunkReader(Protocol):
     def all_chunks(self) -> list[StoredChunk]:
         """Every stored chunk, in document then position order: to judge chunks offline."""
         ...
+
+    def fingerprint(self) -> str:
+        """A hash of what a search can return or compare: it changes when the corpus does."""
+        ...

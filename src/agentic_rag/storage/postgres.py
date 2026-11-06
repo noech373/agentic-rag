@@ -5,6 +5,8 @@ The tables are designed from the queries they serve: skip a document whose file 
 user may see (`groups`), and cite a chunk ("GDPR Art. 33(1)", with a link) from `path`.
 """
 
+import hashlib
+import json
 from collections.abc import Collection, Sequence
 
 from pgvector.sqlalchemy import Vector
@@ -15,6 +17,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Text,
+    cast,
     delete,
     func,
     insert,
@@ -184,6 +187,29 @@ class PostgresStore(ChunkReader, ChunkStore, KeywordSearch, VectorSearch):
                 )
                 for chunk, document in session.execute(statement)
             ]
+
+    def fingerprint(self) -> str:
+        # The vectors count: reingesting the same text gives different ones, and other rankings
+        statement = (
+            select(
+                ChunkRow.document_id,
+                ChunkRow.position,
+                ChunkRow.kind,
+                ChunkRow.text,
+                ChunkRow.path,
+                ChunkRow.page,
+                cast(ChunkRow.embedding, Text),
+                DocumentRow.sha256,
+                DocumentRow.embedding_model,
+            )
+            .join(DocumentRow)
+            .order_by(ChunkRow.document_id, ChunkRow.position)
+        )
+        digest = hashlib.sha256()
+        with self._sessions() as session:
+            for row in session.execute(statement):
+                digest.update(json.dumps(list(row), sort_keys=True).encode() + b"\n")
+        return digest.hexdigest()
 
 
 def _document(row: DocumentRow) -> IndexedDocument:
