@@ -64,6 +64,10 @@ def _situate(fake: _FakeOpenAI) -> str:
     return OpenAIContextualizer(fake.client(), "gpt-test").situate(_DOCUMENT, _CHUNK)
 
 
+def test_its_name_is_the_model() -> None:
+    assert OpenAIContextualizer(_FakeOpenAI().client(), "gpt-test").name == "gpt-test"
+
+
 def test_the_request_holds_the_model_the_instructions_and_the_input() -> None:
     fake = _FakeOpenAI()
 

@@ -13,6 +13,10 @@ class OpenAIContextualizer(Contextualizer):
         self._client = client
         self._model = model
 
+    @property
+    def name(self) -> str:
+        return self._model
+
     def situate(self, document: str, chunk: Chunk) -> str:
         response = self._client.responses.create(
             model=self._model,
