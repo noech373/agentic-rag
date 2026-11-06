@@ -85,9 +85,10 @@ def database_url(settings: PostgresSettings, database: str | None = None) -> URL
 
 
 class PostgresStore(ChunkReader, ChunkStore, KeywordSearch, VectorSearch):
-    def __init__(self, engine: Engine) -> None:
-        self._engine = engine
-        self._sessions = sessionmaker(engine)
+    def __init__(self, engine: Engine, corpus: str) -> None:
+        self.corpus = corpus  # the Postgres schema holding this variant's tables and indexes
+        self._engine = engine.execution_options(schema_translate_map={None: corpus})
+        self._sessions = sessionmaker(self._engine)
 
     def create_schema(self) -> None:
         """Create the missing extensions, tables and indexes. Existing tables are left as they are.
@@ -96,6 +97,7 @@ class PostgresStore(ChunkReader, ChunkStore, KeywordSearch, VectorSearch):
         a minute. Migrations (Alembic) will come once some data cannot be rebuilt.
         """
         with self._engine.begin() as connection:
+            connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {self.corpus}"))
             for extension in _EXTENSIONS:
                 connection.execute(text(f"CREATE EXTENSION IF NOT EXISTS {extension}"))
         Base.metadata.create_all(self._engine)
@@ -151,7 +153,9 @@ class PostgresStore(ChunkReader, ChunkStore, KeywordSearch, VectorSearch):
 
     def keyword_search(self, query: str, *, k: int) -> list[RetrievedChunk]:
         # pg_textsearch scores are negative, best first, and 0 for chunks without a query term
-        score = ChunkRow.text.op("<@>", return_type=Float())(func.to_bm25query(query, BM25_INDEX))
+        # A plain string: schema_translate_map does not reach it, so it names the schema itself
+        bm25_index = f"{self.corpus}.{BM25_INDEX}"
+        score = ChunkRow.text.op("<@>", return_type=Float())(func.to_bm25query(query, bm25_index))
         statement = (
             select(ChunkRow, DocumentRow, score)
             .join(DocumentRow)

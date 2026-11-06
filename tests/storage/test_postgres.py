@@ -1,6 +1,6 @@
 import math
 import os
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 
 import pytest
 from pydantic import SecretStr, ValidationError
@@ -40,6 +40,7 @@ def test_the_database_url_comes_from_the_settings() -> None:
 # --- On a real Postgres (skipped until `docker compose up -d` has been run) ---
 
 _TEST_DATABASE = "agentic_rag_test"  # created, then dropped, on the server of the .env settings
+_FRESH_DATABASE = "agentic_rag_test_fresh"  # for what only a database without extensions can show
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +65,7 @@ def engine() -> Iterator[Engine]:
         pytest.skip("Postgres not reachable: run `docker compose up -d`")
 
     engine = create_engine(database_url(settings, _TEST_DATABASE))
-    PostgresStore(engine).create_schema()
+    PostgresStore(engine, "public").create_schema()
     yield engine
 
     engine.dispose()
@@ -77,7 +78,17 @@ def engine() -> Iterator[Engine]:
 def store(engine: Engine) -> PostgresStore:
     with engine.begin() as connection:
         connection.execute(text("TRUNCATE documents, chunks"))
-    return PostgresStore(engine)
+    return PostgresStore(engine, "public")
+
+
+@pytest.fixture
+def titles(engine: Engine) -> Iterator[PostgresStore]:
+    """A second corpus in the same database, next to the one of `store`."""
+    variant = PostgresStore(engine, "titles")
+    variant.create_schema()
+    yield variant
+    with engine.begin() as connection:
+        connection.execute(text("DROP SCHEMA titles CASCADE"))
 
 
 def _document(
@@ -128,7 +139,7 @@ def test_create_schema_can_run_again(store: PostgresStore) -> None:
 
 @pytest.mark.integration
 def test_drop_schema_then_create_schema_starts_empty(engine: Engine) -> None:
-    store = PostgresStore(engine)
+    store = PostgresStore(engine, "public")
     _save(store, _document(), _chunk())
 
     store.drop_schema()
@@ -503,3 +514,121 @@ def test_all_chunks_are_read_in_document_then_position_order(store: PostgresStor
 @pytest.mark.integration
 def test_an_empty_store_has_no_chunks(store: PostgresStore) -> None:
     assert store.all_chunks() == []
+
+
+# --- Corpus variants: one Postgres schema each ---
+
+
+@pytest.mark.integration
+def test_the_same_document_lives_in_two_corpora_without_overwriting(
+    store: PostgresStore, titles: PostgresStore
+) -> None:
+    _save(store, _document(), _chunk("Plain text."))
+    _save(titles, _document(), _chunk("Text with titles."), _chunk("Second chunk."))
+
+    assert [c.chunk.text for c in store.all_chunks()] == ["Plain text."]
+    assert [c.chunk.text for c in titles.all_chunks()] == ["Text with titles.", "Second chunk."]
+
+
+@pytest.mark.integration
+def test_deleting_a_document_leaves_the_other_corpus_alone(
+    store: PostgresStore, titles: PostgresStore
+) -> None:
+    _save(store, _document(), _chunk())
+    _save(titles, _document(), _chunk())
+
+    titles.delete_documents(["gdpr"])
+
+    assert titles.indexed_documents() == {}
+    assert store.indexed_documents().keys() == {"gdpr"}
+
+
+@pytest.mark.integration
+def test_vector_search_stays_in_its_corpus(store: PostgresStore, titles: PostgresStore) -> None:
+    _save(store, _document("gdpr"), _chunk())
+    _save(titles, _document("nis2"), _chunk())
+
+    assert _search(store, [1.0, 0.0]) == [("gdpr", 0)]
+    assert _search(titles, [1.0, 0.0]) == [("nis2", 0)]
+
+
+@pytest.mark.integration
+def test_bm25_statistics_are_per_corpus(store: PostgresStore, titles: PostgresStore) -> None:
+    """The same chunk scores higher where its word is rare: the IDF is not shared."""
+    breach = "The controller shall notify the personal data breach."
+    _texts(store, breach, "Cats sleep on sofas.", "Tea grows on hills.", "Rivers reach the sea.")
+    _texts(titles, breach, "A breach of contract.", "Another breach was reported.")
+
+    rare = store.keyword_search("breach", k=1)[0]
+    common = next(r for r in titles.keyword_search("breach", k=3) if r.position == 0)
+
+    assert rare.chunk.text == common.chunk.text == breach
+    assert rare.score > common.score
+
+
+@pytest.mark.integration
+def test_dropping_a_corpus_leaves_the_other_alone(
+    store: PostgresStore, titles: PostgresStore
+) -> None:
+    _save(store, _document(), _chunk())
+    _save(titles, _document(), _chunk())
+
+    titles.drop_schema()
+
+    assert store.indexed_documents().keys() == {"gdpr"}
+
+
+_READS: dict[str, Callable[[PostgresStore], object]] = {
+    "documents": lambda s: s.indexed_documents(),
+    "chunks": lambda s: s.all_chunks(),
+    "vector": lambda s: s.vector_search([1.0, 0.0], embedding_model="model-a", k=1),
+    "keyword": lambda s: s.keyword_search("breach", k=1),
+}
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("read", _READS.values(), ids=_READS.keys())
+def test_reading_a_missing_corpus_fails_instead_of_falling_back(
+    store: PostgresStore, engine: Engine, read: Callable[[PostgresStore], object]
+) -> None:
+    """A misspelled variant must never measure the public tables under another name."""
+    _save(store, _document(), _chunk())
+
+    with pytest.raises(ProgrammingError, match="does not exist"):
+        read(PostgresStore(engine, "titels"))
+
+
+@pytest.mark.integration
+def test_on_a_new_database_a_corpus_gets_the_tables_and_public_the_extensions(
+    engine: Engine,
+) -> None:
+    admin = engine.execution_options(isolation_level="AUTOCOMMIT")
+    with admin.connect() as connection:
+        connection.execute(text(f"DROP DATABASE IF EXISTS {_FRESH_DATABASE} WITH (FORCE)"))
+        connection.execute(text(f"CREATE DATABASE {_FRESH_DATABASE}"))
+    fresh = create_engine(engine.url.set(database=_FRESH_DATABASE))
+    try:
+        store = PostgresStore(fresh, "titles")
+
+        store.create_schema()
+        store.create_schema()  # safe to repeat
+
+        with fresh.connect() as connection:
+            tables = connection.execute(
+                text("SELECT schemaname, tablename FROM pg_tables WHERE schemaname = 'public'")
+            ).all()
+            located = connection.execute(
+                text(
+                    "SELECT extname, extnamespace::regnamespace::text FROM pg_extension "
+                    "WHERE extname IN ('vector', 'pg_textsearch')"
+                )
+            ).all()
+        assert tables == []
+        assert {schema for _, schema in located} == {"public"}
+        assert len(located) == 2
+        _save(store, _document(), _chunk("A personal data breach."))
+        assert [r.position for r in store.keyword_search("breach", k=1)] == [0]
+    finally:
+        fresh.dispose()
+        with admin.connect() as connection:
+            connection.execute(text(f"DROP DATABASE {_FRESH_DATABASE} WITH (FORCE)"))

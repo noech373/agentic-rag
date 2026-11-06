@@ -29,6 +29,11 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
     )
 
 
+def test_a_store_is_on_the_public_corpus_unless_told_otherwise(settings: Settings) -> None:
+    assert factory.make_store(settings).corpus == "public"
+    assert factory.make_store(settings, "titles").corpus == "titles"
+
+
 def test_the_vector_pipeline_builds_a_vector_retriever(settings: Settings) -> None:
     retriever = make_retriever(settings, PipelineConfig(retriever="vector"))
 
