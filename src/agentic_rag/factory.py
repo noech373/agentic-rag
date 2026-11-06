@@ -26,8 +26,8 @@ from agentic_rag.storage.postgres import PostgresStore, database_url
 from agentic_rag.tracing import TracedRAG, TracedRetriever
 
 
-def make_store(settings: Settings) -> PostgresStore:
-    return PostgresStore(create_engine(database_url(settings.postgres)))
+def make_store(settings: Settings, corpus: str = "public") -> PostgresStore:
+    return PostgresStore(create_engine(database_url(settings.postgres)), corpus)
 
 
 def make_embedder(settings: Settings) -> Embedder:
