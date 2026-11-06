@@ -5,19 +5,20 @@ The defaults are the baseline: an empty file, or no file at all, is the plain ve
 
 import tomllib
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
 RerankerName = Literal["bge-reranker-v2-m3", "ms-marco-minilm"]
+# An ingested variant, a Postgres schema: its name ends up in SQL, hence the pattern
+CorpusName = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
 
 
 class PipelineConfig(BaseModel):
     # extra="forbid": a misspelled key would otherwise run the baseline under another name
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    # The ingested variant to search, a Postgres schema: its name ends up in SQL, hence the pattern
-    corpus: str = Field(default="public", pattern=r"^[a-z][a-z0-9_]*$")
+    corpus: CorpusName = "public"
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
     reranker: RerankerName | None = None
 
