@@ -173,6 +173,59 @@ def test_a_bad_pipeline_file_stops_eval_before_any_run(
     assert recorded == []
 
 
+class _NoIngester:
+    def __init__(self, *_args: object) -> None:
+        pass
+
+    def run(self, *_args: object, **_kwargs: object) -> list[object]:
+        return []
+
+
+@pytest.fixture
+def ingest_corpora(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """The corpus of each store `ingest` asks for, with nothing parsed, embedded or stored."""
+    corpora: list[str] = []
+
+    def make_store(_settings: object, corpus: str = "public") -> None:
+        corpora.append(corpus)
+
+    def load_manifest(_path: Path) -> _NoDocuments:
+        return _NoDocuments()
+
+    monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
+    monkeypatch.setattr("agentic_rag.factory.make_store", make_store)
+    monkeypatch.setattr("agentic_rag.factory.make_embedder", _offline(None))
+    monkeypatch.setattr("agentic_rag.ingestion.pipeline.Ingester", _NoIngester)
+    monkeypatch.setattr("agentic_rag.cli.load_manifest", load_manifest)
+    return corpora
+
+
+class _NoDocuments:
+    documents = ()
+
+
+def test_ingest_writes_to_the_public_corpus_by_default(ingest_corpora: list[str]) -> None:
+    result = runner.invoke(app, ["ingest"])
+
+    assert result.exit_code == 0, result.output
+    assert ingest_corpora == ["public"]
+
+
+def test_ingest_writes_to_the_corpus_it_is_given(ingest_corpora: list[str]) -> None:
+    result = runner.invoke(app, ["ingest", "--corpus", "titles"])
+
+    assert result.exit_code == 0, result.output
+    assert ingest_corpora == ["titles"]
+
+
+@pytest.mark.parametrize("name", ["Titles", "ti-tles", "a.b", "x; DROP SCHEMA public CASCADE"])
+def test_ingest_refuses_a_corpus_name_unsafe_in_sql(ingest_corpora: list[str], name: str) -> None:
+    result = runner.invoke(app, ["ingest", "--corpus", name])
+
+    assert result.exit_code == 2
+    assert ingest_corpora == []
+
+
 def test_eval_needs_the_golden_set(tmp_path: Path) -> None:
     result = runner.invoke(app, ["eval", "--golden", str(tmp_path / "nope.toml")])
 

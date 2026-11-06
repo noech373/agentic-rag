@@ -6,11 +6,11 @@ from typing import Annotated
 
 import httpx
 import typer
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from agentic_rag.evaluation.record import RunRecord, load_run
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, download, load_manifest
-from agentic_rag.pipeline_config import PipelineConfig, load_pipeline
+from agentic_rag.pipeline_config import CorpusName, PipelineConfig, load_pipeline
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -82,6 +82,14 @@ def convert_pdfs(
         typer.echo(f"{'converted':<11} {document.id} in {time.perf_counter() - start:.0f} s")
 
 
+def _corpus_name(name: str) -> str:
+    """Refused before anything is parsed or embedded."""
+    try:
+        return TypeAdapter(CorpusName).validate_python(name)
+    except ValidationError as exc:
+        raise typer.BadParameter(f"{name!r}: lowercase letters, digits and _ only") from exc
+
+
 @app.command("ingest")
 def ingest_corpus(
     manifest: Annotated[Path, typer.Option(help="Corpus manifest.")] = Path("corpus/manifest.toml"),
@@ -90,6 +98,9 @@ def ingest_corpus(
     force: Annotated[
         bool, typer.Option(help="Also re-ingest unchanged documents (after a parser change).")
     ] = False,
+    corpus: Annotated[
+        str, typer.Option(help="Variant to ingest into, created if missing.", callback=_corpus_name)
+    ] = "public",
 ) -> None:
     """Parse, chunk and embed the corpus into the store; unchanged documents are skipped."""
     from agentic_rag.config import get_settings
@@ -97,7 +108,8 @@ def ingest_corpus(
     from agentic_rag.ingestion.pipeline import Ingester, default_parsers  # imports Docling
 
     settings = get_settings()
-    ingester = Ingester(make_store(settings), make_embedder(settings), default_parsers(cache_dir))
+    store = make_store(settings, corpus)
+    ingester = Ingester(store, make_embedder(settings), default_parsers(cache_dir))
     documents = load_manifest(manifest).documents
     start = time.perf_counter()
     for outcome in ingester.run(documents, corpus_dir, force=force):
