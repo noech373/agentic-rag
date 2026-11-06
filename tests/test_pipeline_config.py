@@ -37,6 +37,27 @@ def test_an_unknown_reranker_is_refused_when_the_file_is_read(tmp_path: Path) ->
         load_pipeline(path)
 
 
+def test_the_default_config_searches_the_public_corpus() -> None:
+    assert PipelineConfig().corpus == "public"
+
+
+@pytest.mark.parametrize("name", ["titles", "titles_v2", "c"])
+def test_a_corpus_is_read_from_a_file(tmp_path: Path, name: str) -> None:
+    path = _write(tmp_path, f'corpus = "{name}"\n')
+
+    assert load_pipeline(path).corpus == name
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["", "Titles", "2titles", "ti-tles", "a.b", "titles\n", "x; DROP SCHEMA public CASCADE"],
+)
+def test_a_corpus_name_unsafe_in_sql_is_refused(name: str) -> None:
+    # the name is written as is in CREATE SCHEMA and in the BM25 index name
+    with pytest.raises(ValidationError):
+        PipelineConfig(corpus=name)
+
+
 def test_a_file_is_read_into_the_config(tmp_path: Path) -> None:
     path = _write(tmp_path, 'retriever = "vector"\n')
 

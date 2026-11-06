@@ -7,7 +7,7 @@ import tomllib
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 RerankerName = Literal["bge-reranker-v2-m3", "ms-marco-minilm"]
 
@@ -16,6 +16,8 @@ class PipelineConfig(BaseModel):
     # extra="forbid": a misspelled key would otherwise run the baseline under another name
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    # The ingested variant to search, a Postgres schema: its name ends up in SQL, hence the pattern
+    corpus: str = Field(default="public", pattern=r"^[a-z][a-z0-9_]*$")
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
     reranker: RerankerName | None = None
 
