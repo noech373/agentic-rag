@@ -1,5 +1,5 @@
 from agentic_rag.document import Chunk, Division
-from agentic_rag.ingestion.contextual.prompt import render_document
+from agentic_rag.ingestion.contextual.prompt import INSTRUCTIONS, build_input, render_document
 
 _CHAPTER_IV = Division(kind="chapter", number="IV", title="Controller and processor")
 _ARTICLE_33 = Division(kind="article", number="33", title="Notification of a personal data breach")
@@ -71,3 +71,26 @@ def test_a_path_seen_again_after_a_chunk_without_a_path_is_repeated() -> None:
     )
 
     assert rendered.count("## Recital 85") == 2
+
+
+def test_the_instructions_ask_for_the_context_alone() -> None:
+    assert "only with a succinct context" in INSTRUCTIONS
+    assert "without repeating the passage" in INSTRUCTIONS
+
+
+def test_the_input_is_the_document_then_the_located_passage() -> None:
+    built = build_input("<document>...</document>", _chunk("1. In the case...", _ARTICLE_33))
+
+    assert built == (
+        "<document>...</document>\n\n"
+        "<passage>\n"
+        "<location>Article 33: Notification of a personal data breach</location>\n"
+        "1. In the case...\n"
+        "</passage>"
+    )
+
+
+def test_a_passage_without_a_path_has_no_location() -> None:
+    built = build_input("<document>...</document>", _chunk("JC 2024 33"))
+
+    assert built == "<document>...</document>\n\n<passage>\nJC 2024 33\n</passage>"
