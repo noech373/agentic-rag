@@ -5,6 +5,12 @@ from collections.abc import Sequence
 from agentic_rag.citation import titled_path
 from agentic_rag.document import Chunk
 
+INSTRUCTIONS = """\
+You situate a passage within its document, to improve search retrieval of the passage.
+Answer only with a succinct context of one or two sentences, in English, without repeating the \
+passage.
+"""
+
 
 def render_document(title: str, chunks: Sequence[Chunk]) -> str:
     """The chunks in order, each path once: consecutive chunks often share it."""
@@ -16,3 +22,9 @@ def render_document(title: str, chunks: Sequence[Chunk]) -> str:
         previous = chunk.path
         parts.append(chunk.text)
     return "<document>\n" + "\n\n".join(parts) + "\n</document>"
+
+
+def build_input(document: str, chunk: Chunk) -> str:
+    """The rendered document, then the chunk to situate: its location tells repeated texts apart."""
+    location = f"<location>{titled_path(chunk)}</location>\n" if chunk.path else ""
+    return f"{document}\n\n<passage>\n{location}{chunk.text}\n</passage>"
