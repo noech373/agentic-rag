@@ -1,6 +1,6 @@
 """How to refer to a chunk: in the answers, the traces, the judge's prompt and the reviews."""
 
-from agentic_rag.document import Division, DivisionKind, StoredChunk
+from agentic_rag.document import Chunk, Division, DivisionKind, StoredChunk
 
 _NAMES: dict[DivisionKind, str] = {
     "chapter": "Chapter",
@@ -39,6 +39,11 @@ def label(division: Division, *, titled: bool = False) -> str:
     if titled and division.title:
         return f"{name}: {division.title}" if name else division.title
     return name or (division.title or "")
+
+
+def titled_path(chunk: Chunk) -> str:
+    """Where a chunk is, with titles: "Chapter IV: Controller... > Article 33: Notification..."."""
+    return " > ".join(label(division, titled=True) for division in chunk.path)
 
 
 def with_page(source: StoredChunk, parts: list[str | None]) -> str:

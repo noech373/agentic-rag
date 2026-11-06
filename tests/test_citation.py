@@ -1,4 +1,4 @@
-from agentic_rag.citation import citation
+from agentic_rag.citation import citation, titled_path
 from agentic_rag.document import Chunk, Division, IndexedDocument, StoredChunk
 
 _CHAPTER_IV = Division(kind="chapter", number="IV", title="Controller and processor")
@@ -64,3 +64,16 @@ def test_headings_below_a_point_do_not_replace_it() -> None:
 def test_a_chunk_without_path_is_cited_by_its_document() -> None:
     assert citation(_source()) == "GDPR"
     assert citation(_source(page=1)) == "GDPR, p. 1"
+
+
+def test_a_titled_path_joins_its_divisions_outermost_first() -> None:
+    chunk = _source(_CHAPTER_IV, _SECTION_2, _ARTICLE_33).chunk
+
+    assert titled_path(chunk) == (
+        f"Chapter IV: {_CHAPTER_IV.title} > Section 2: {_SECTION_2.title} > "
+        f"Article 33: {_ARTICLE_33.title}"
+    )
+
+
+def test_a_titled_path_is_empty_without_divisions() -> None:
+    assert titled_path(_source().chunk) == ""
