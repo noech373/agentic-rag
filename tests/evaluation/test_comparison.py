@@ -19,6 +19,34 @@ _BASELINE = RunRecord(
 )
 
 
+def test_a_corpus_changed_between_two_runs_asks_to_rerun_the_baseline() -> None:
+    before = _BASELINE.model_copy(update={"corpus_sha256": "aaa"})
+    after = _BASELINE.model_copy(update={"corpus_sha256": "bbb"})
+
+    [warning] = check_comparable(before, after)
+
+    assert "corpus changed" in warning
+
+
+def test_the_same_corpus_fingerprint_gives_no_warning() -> None:
+    before = _BASELINE.model_copy(update={"corpus_sha256": "aaa"})
+
+    assert check_comparable(before, before) == []
+
+
+def test_two_corpus_variants_are_meant_to_differ() -> None:
+    before = _BASELINE.model_copy(update={"corpus_sha256": "aaa", "config": {"corpus": "public"}})
+    after = _BASELINE.model_copy(update={"corpus_sha256": "bbb", "config": {"corpus": "titles"}})
+
+    assert check_comparable(before, after) == []
+
+
+def test_a_run_saved_without_a_fingerprint_gives_no_warning() -> None:
+    after = _BASELINE.model_copy(update={"corpus_sha256": "bbb"})
+
+    assert check_comparable(_BASELINE, after) == []
+
+
 def test_runs_that_differ_only_by_config_compare_without_warning() -> None:
     candidate = _BASELINE.model_copy(update={"config": {"retriever": "hybrid"}})
 

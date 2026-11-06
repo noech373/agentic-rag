@@ -21,6 +21,12 @@ def check_comparable(baseline: RunRecord, candidate: RunRecord) -> list[str]:
         )
     if baseline.judgments_sha256 != candidate.judgments_sha256:
         warnings.append("the runs used different judgments: their judged@k cannot be compared")
+    if (
+        baseline.config.get("corpus") == candidate.config.get("corpus")
+        and None not in (baseline.corpus_sha256, candidate.corpus_sha256)
+        and baseline.corpus_sha256 != candidate.corpus_sha256
+    ):
+        warnings.append("the corpus changed between the runs: rerun the baseline")
     for name, record in (("baseline", baseline), ("candidate", candidate)):
         if record.dirty:
             warnings.append(f"the {name} ran on uncommitted changes: not for the README")

@@ -86,7 +86,15 @@ def _run(score: float, **provenance: object) -> RunRecord:
 
 
 @pytest.fixture
-def recorded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> list[PipelineConfig]:
+def fingerprints() -> list[str]:
+    """The corpus fingerprints `eval` recorded."""
+    return []
+
+
+@pytest.fixture
+def recorded(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, fingerprints: list[str]
+) -> list[PipelineConfig]:
     """Replace the retrieval with a fixed run of score 1; return the configs it was asked to run."""
     (tmp_path / "eval").mkdir()
     (tmp_path / "eval" / "golden.toml").write_text("")
@@ -94,18 +102,45 @@ def recorded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> list[PipelineCo
     monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
     configs: list[PipelineConfig] = []
 
+    def make_store(_settings: object, corpus: str = "public") -> _FingerprintedStore:
+        return _FingerprintedStore(corpus)
+
     def fake_record_run(
         golden: Path,
         judgments: Path,
         make_retriever: object,
         pipeline: PipelineConfig,
         repo: Path,
+        *,
+        corpus_sha256: str,
     ) -> RunRecord:
         configs.append(pipeline)
+        fingerprints.append(corpus_sha256)
         return _run(1.0)
 
     monkeypatch.setattr(record, "record_run", fake_record_run)
+    monkeypatch.setattr("agentic_rag.factory.make_store", make_store)
     return configs
+
+
+class _FingerprintedStore:
+    def __init__(self, corpus: str) -> None:
+        self._corpus = corpus
+
+    def fingerprint(self) -> str:
+        return f"hash of {self._corpus}"
+
+
+def test_eval_records_the_fingerprint_of_the_corpus_it_searches(
+    recorded: list[PipelineConfig], fingerprints: list[str], tmp_path: Path
+) -> None:
+    path = tmp_path / "variant.toml"
+    path.write_text('corpus = "titles"\n')
+
+    result = runner.invoke(app, ["eval", "--pipeline", str(path)])
+
+    assert result.exit_code == 0, result.output
+    assert fingerprints == ["hash of titles"]
 
 
 def _variant(tmp_path: Path, name: str = "variant") -> str:

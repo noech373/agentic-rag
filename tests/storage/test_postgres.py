@@ -567,6 +567,64 @@ def test_bm25_statistics_are_per_corpus(store: PostgresStore, titles: PostgresSt
 
 
 @pytest.mark.integration
+def test_a_fingerprint_depends_on_the_content_not_on_the_corpus_name(
+    store: PostgresStore, titles: PostgresStore
+) -> None:
+    _save(store, _document(), _chunk("Same text."))
+    _save(titles, _document(), _chunk("Same text."))
+
+    assert store.fingerprint() == titles.fingerprint()
+
+
+@pytest.mark.integration
+def test_a_fingerprint_changes_with_the_text(store: PostgresStore) -> None:
+    _save(store, _document(), _chunk("Before."))
+    before = store.fingerprint()
+
+    _save(store, _document(), _chunk("After."))
+
+    assert store.fingerprint() != before
+
+
+@pytest.mark.integration
+def test_a_fingerprint_changes_with_the_vector_of_the_same_text(store: PostgresStore) -> None:
+    _save(store, _document(), _chunk(), embeddings=[[1.0, 0.0]])
+    before = store.fingerprint()
+
+    _save(store, _document(), _chunk(), embeddings=[[1.0, 1e-6]])
+
+    assert store.fingerprint() != before
+
+
+@pytest.mark.integration
+def test_a_fingerprint_changes_with_the_embedding_model(store: PostgresStore) -> None:
+    _save(store, _document(embedding_model="model-a"), _chunk())
+    before = store.fingerprint()
+
+    _save(store, _document(embedding_model="model-b"), _chunk())
+
+    assert store.fingerprint() != before
+
+
+@pytest.mark.integration
+def test_a_fingerprint_does_not_depend_on_insertion_order(
+    store: PostgresStore, titles: PostgresStore
+) -> None:
+    _save(store, _document("gdpr"), _chunk("G."))
+    _save(store, _document("nis2"), _chunk("N."))
+    _save(titles, _document("nis2"), _chunk("N."))
+    _save(titles, _document("gdpr"), _chunk("G."))
+
+    assert store.fingerprint() == titles.fingerprint()
+
+
+@pytest.mark.integration
+def test_the_fingerprint_of_a_missing_corpus_fails(engine: Engine) -> None:
+    with pytest.raises(ProgrammingError, match="does not exist"):
+        PostgresStore(engine, "titels").fingerprint()
+
+
+@pytest.mark.integration
 def test_dropping_a_corpus_leaves_the_other_alone(
     store: PostgresStore, titles: PostgresStore
 ) -> None:
