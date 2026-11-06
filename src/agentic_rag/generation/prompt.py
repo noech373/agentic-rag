@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-from agentic_rag.citation import label, with_page
+from agentic_rag.citation import titled_path, with_page
 from agentic_rag.document import RetrievedChunk
 from agentic_rag.generation.base import NO_ANSWER
 
@@ -24,8 +24,7 @@ def build_input(question: str, sources: Sequence[RetrievedChunk]) -> str:
 
 def _source(number: int, source: RetrievedChunk) -> str:
     """A source, with where it comes from: its titles say what the text alone may not."""
-    path = " > ".join(label(division, titled=True) for division in source.chunk.path)
-    location = with_page(source, [source.document.title, path])
+    location = with_page(source, [source.document.title, titled_path(source.chunk)])
     return (
         f'<source id="{number}">\n<location>{location}</location>\n{source.chunk.text}\n</source>'
     )
