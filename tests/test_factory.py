@@ -16,6 +16,7 @@ from agentic_rag.reranking.retriever import RerankingRetriever
 from agentic_rag.retrieval.bm25 import BM25Retriever
 from agentic_rag.retrieval.hybrid import HybridRetriever
 from agentic_rag.retrieval.vector import VectorRetriever
+from agentic_rag.storage.postgres import PostgresStore
 
 
 @pytest.fixture
@@ -32,6 +33,36 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
 def test_a_store_is_on_the_public_corpus_unless_told_otherwise(settings: Settings) -> None:
     assert factory.make_store(settings).corpus == "public"
     assert factory.make_store(settings, "titles").corpus == "titles"
+
+
+def _corpus(retriever: VectorRetriever | BM25Retriever) -> str:
+    store = retriever._search  # pyright: ignore[reportPrivateUsage]
+    assert isinstance(store, PostgresStore)
+    return store.corpus
+
+
+def test_the_vector_retriever_searches_the_corpus_of_its_pipeline(settings: Settings) -> None:
+    retriever = make_retriever(settings, PipelineConfig(retriever="vector", corpus="titles"))
+
+    assert isinstance(retriever, VectorRetriever)
+    assert _corpus(retriever) == "titles"
+
+
+def test_the_bm25_retriever_searches_the_corpus_of_its_pipeline(settings: Settings) -> None:
+    retriever = make_retriever(settings, PipelineConfig(retriever="bm25", corpus="titles"))
+
+    assert isinstance(retriever, BM25Retriever)
+    assert _corpus(retriever) == "titles"
+
+
+def test_the_hybrid_retriever_searches_the_corpus_of_its_pipeline(settings: Settings) -> None:
+    retriever = make_retriever(settings, PipelineConfig(retriever="hybrid", corpus="titles"))
+
+    assert isinstance(retriever, HybridRetriever)
+    vector, bm25 = retriever._retrievers  # pyright: ignore[reportPrivateUsage]
+    assert isinstance(vector, VectorRetriever)
+    assert isinstance(bm25, BM25Retriever)
+    assert (_corpus(vector), _corpus(bm25)) == ("titles", "titles")
 
 
 def test_the_vector_pipeline_builds_a_vector_retriever(settings: Settings) -> None:

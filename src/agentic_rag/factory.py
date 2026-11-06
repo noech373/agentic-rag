@@ -56,11 +56,11 @@ def make_reranker(name: RerankerName) -> Reranker:
 def _make_first_stage_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:
     match pipeline.retriever:
         case "vector":
-            return VectorRetriever(make_store(settings), make_embedder(settings))
+            return VectorRetriever(make_store(settings, pipeline.corpus), make_embedder(settings))
         case "bm25":
-            return BM25Retriever(make_store(settings))
+            return BM25Retriever(make_store(settings, pipeline.corpus))
         case "hybrid":
-            store = make_store(settings)
+            store = make_store(settings, pipeline.corpus)
             return HybridRetriever(
                 [VectorRetriever(store, make_embedder(settings)), BM25Retriever(store)]
             )

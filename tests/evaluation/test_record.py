@@ -254,7 +254,11 @@ def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> N
 
     record = record_run(golden, judgments, lambda _: _NothingFound(), PipelineConfig(), repo)
 
-    assert record.config == {"retriever": "vector", "reranker": None}  # None: no reranker, said
+    assert record.config == {
+        "corpus": "public",
+        "retriever": "vector",
+        "reranker": None,  # None: no reranker, said
+    }
 
 
 def test_the_retriever_is_built_from_the_recorded_config(tmp_path: Path) -> None:
