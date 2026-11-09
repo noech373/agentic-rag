@@ -12,7 +12,8 @@ passage.
 State which part of the document the passage belongs to and what it is about.
 Do not summarize the rest of the document; mention another provision only if it is needed to \
 understand this passage.
-Start by naming the document (e.g. "the GDPR", "ENISA's NIS2 implementation guidance").
+Start by naming the document by its common name, not its official number (e.g. "the GDPR", \
+"the AI Act", "NIS2", "ENISA's NIS2 implementation guidance").
 """
 
 
