@@ -6,15 +6,15 @@ from typing import Annotated
 
 import httpx
 import typer
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from agentic_rag.evaluation.record import RunRecord, load_run
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, download, load_manifest
-from agentic_rag.pipeline_config import CorpusName, PipelineConfig, load_pipeline
+from agentic_rag.pipeline_config import PipelineConfig, load_pipeline
 
 app = typer.Typer(no_args_is_help=True)
 
-# Shared by `ask` and `eval`, so both build the same RAG from the same file.
+# Shared by `ingest`, `ask` and `eval`: one file per variant, from its corpus to its answers.
 PipelineOption = Annotated[
     Path | None,
     typer.Option(
@@ -82,14 +82,6 @@ def convert_pdfs(
         typer.echo(f"{'converted':<11} {document.id} in {time.perf_counter() - start:.0f} s")
 
 
-def _corpus_name(name: str) -> str:
-    """Refused before anything is parsed or embedded."""
-    try:
-        return TypeAdapter(CorpusName).validate_python(name)
-    except ValidationError as exc:
-        raise typer.BadParameter(f"{name!r}: lowercase letters, digits and _ only") from exc
-
-
 @app.command("ingest")
 def ingest_corpus(
     manifest: Annotated[Path, typer.Option(help="Corpus manifest.")] = Path("corpus/manifest.toml"),
@@ -98,18 +90,26 @@ def ingest_corpus(
     force: Annotated[
         bool, typer.Option(help="Also re-ingest unchanged documents (after a parser change).")
     ] = False,
-    corpus: Annotated[
-        str, typer.Option(help="Variant to ingest into, created if missing.", callback=_corpus_name)
-    ] = "public",
+    pipeline: PipelineOption = None,
 ) -> None:
-    """Parse, chunk and embed the corpus into the store; unchanged documents are skipped."""
+    """Parse, chunk and embed the corpus into the store; unchanged documents are skipped.
+
+    Only `corpus` and `embedded_text` of the pipeline file count here: the corpus to write to,
+    created if missing, and what is embedded for each chunk.
+    """
     from agentic_rag.config import get_settings
-    from agentic_rag.factory import make_embedder, make_store
+    from agentic_rag.factory import make_embedder, make_store, make_texts_to_embed
     from agentic_rag.ingestion.pipeline import Ingester, default_parsers  # imports Docling
 
+    config = _load_pipeline(pipeline)
     settings = get_settings()
-    store = make_store(settings, corpus)
-    ingester = Ingester(store, make_embedder(settings), default_parsers(cache_dir))
+    ingester = Ingester(
+        make_store(settings, config.corpus),
+        make_embedder(settings),
+        default_parsers(cache_dir),
+        texts_to_embed=make_texts_to_embed(settings, config.embedded_text),
+    )
+    typer.echo(f"corpus {config.corpus}, embedding {config.embedded_text}")
     documents = load_manifest(manifest).documents
     start = time.perf_counter()
     for outcome in ingester.run(documents, corpus_dir, force=force):
