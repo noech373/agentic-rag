@@ -75,6 +75,23 @@ def test_an_unknown_embedded_text_is_refused_when_the_file_is_read(tmp_path: Pat
         load_pipeline(path)
 
 
+def test_openai_writes_the_contexts_by_default() -> None:
+    assert PipelineConfig().contextualizer == "openai"
+
+
+def test_who_writes_the_contexts_is_read_from_a_file(tmp_path: Path) -> None:
+    path = _write(tmp_path, 'contextualizer = "ollama"\n')
+
+    assert load_pipeline(path).contextualizer == "ollama"
+
+
+def test_an_unknown_contextualizer_is_refused_when_the_file_is_read(tmp_path: Path) -> None:
+    path = _write(tmp_path, 'contextualizer = "qwen"\n')
+
+    with pytest.raises(ValidationError, match="contextualizer"):
+        load_pipeline(path)
+
+
 def test_a_file_is_read_into_the_config(tmp_path: Path) -> None:
     path = _write(tmp_path, 'retriever = "vector"\n')
 

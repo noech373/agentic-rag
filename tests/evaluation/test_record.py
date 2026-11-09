@@ -282,6 +282,7 @@ def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> N
     assert record.config == {
         "corpus": "public",
         "embedded_text": "chunk",
+        "contextualizer": "openai",
         "retriever": "vector",
         "reranker": None,  # None: no reranker, said
     }

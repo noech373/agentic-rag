@@ -94,8 +94,8 @@ def ingest_corpus(
 ) -> None:
     """Parse, chunk and embed the corpus into the store; unchanged documents are skipped.
 
-    Only `corpus` and `embedded_text` of the pipeline file count here: the corpus to write to,
-    created if missing, and what is embedded for each chunk.
+    Only `corpus`, `embedded_text` and `contextualizer` of the pipeline file count here: the
+    corpus to write to, created if missing, what is embedded for each chunk and who writes it.
     """
     from agentic_rag.config import get_settings
     from agentic_rag.factory import make_embedder, make_store, make_texts_to_embed
@@ -107,7 +107,7 @@ def ingest_corpus(
         make_store(settings, config.corpus),
         make_embedder(settings),
         default_parsers(cache_dir),
-        texts_to_embed=make_texts_to_embed(settings, config.embedded_text),
+        texts_to_embed=make_texts_to_embed(settings, config),
     )
     typer.echo(f"corpus {config.corpus}, embedding {config.embedded_text}")
     documents = load_manifest(manifest).documents

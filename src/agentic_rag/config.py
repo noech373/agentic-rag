@@ -48,10 +48,21 @@ class LangfuseSettings(_EnvSettings):
         return self.public_key is not None and self.secret_key is not None
 
 
+class OllamaSettings(_EnvSettings):
+    """Optional: only a pipeline whose contexts Ollama writes needs it."""
+
+    model_config = SettingsConfigDict(env_prefix="OLLAMA_")
+
+    base_url: str | None = None
+    model: str | None = None
+    num_ctx: int | None = None
+
+
 class Settings(BaseModel):
     openai: OpenAISettings
     postgres: PostgresSettings
     langfuse: LangfuseSettings
+    ollama: OllamaSettings
 
 
 @lru_cache
@@ -63,4 +74,5 @@ def get_settings() -> Settings:
         openai=OpenAISettings(),  # pyright: ignore[reportCallIssue]
         postgres=PostgresSettings(),  # pyright: ignore[reportCallIssue]
         langfuse=LangfuseSettings(),
+        ollama=OllamaSettings(),
     )
