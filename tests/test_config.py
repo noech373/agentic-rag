@@ -3,13 +3,16 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from agentic_rag.config import LangfuseSettings, OpenAISettings
+from agentic_rag.config import LangfuseSettings, OllamaSettings, OpenAISettings
 
 _SETTINGS_ENV_VARS = (
     "OPENAI_API_KEY",
     "OPENAI_CHAT_MODEL",
     "LANGFUSE_PUBLIC_KEY",
     "LANGFUSE_SECRET_KEY",
+    "OLLAMA_BASE_URL",
+    "OLLAMA_MODEL",
+    "OLLAMA_NUM_CTX",
 )
 
 
@@ -54,3 +57,23 @@ def test_langfuse_tracing_is_enabled_with_both_keys(monkeypatch: pytest.MonkeyPa
     monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-test")
 
     assert LangfuseSettings().enabled
+
+
+def test_ollama_is_optional() -> None:
+    settings = OllamaSettings()
+
+    assert (settings.base_url, settings.model, settings.num_ctx) == (None, None, None)
+
+
+def test_ollama_reads_its_prefixed_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OLLAMA_BASE_URL", "https://ollama.test")
+    monkeypatch.setenv("OLLAMA_MODEL", "qwen-test")
+    monkeypatch.setenv("OLLAMA_NUM_CTX", "262144")
+
+    settings = OllamaSettings()
+
+    assert (settings.base_url, settings.model, settings.num_ctx) == (
+        "https://ollama.test",
+        "qwen-test",
+        262144,
+    )

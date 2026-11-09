@@ -7,10 +7,18 @@ import pytest
 from pydantic import SecretStr
 
 from agentic_rag import factory
-from agentic_rag.config import LangfuseSettings, OpenAISettings, PostgresSettings, Settings
+from agentic_rag.config import (
+    LangfuseSettings,
+    OllamaSettings,
+    OpenAISettings,
+    PostgresSettings,
+    Settings,
+)
 from agentic_rag.document import Chunk, Division
 from agentic_rag.factory import make_rag, make_retriever, make_texts_to_embed
 from agentic_rag.ingestion.contextual.cached import CONTEXTS_PATH, CachedContextualizer
+from agentic_rag.ingestion.contextual.ollama import OllamaContextualizer
+from agentic_rag.ingestion.contextual.openai import OpenAIContextualizer
 from agentic_rag.ingestion.contextual.prompt import render_document
 from agentic_rag.ingestion.embedded_text import ContextualTexts, chunk_texts, titled_texts
 from agentic_rag.pipeline_config import PipelineConfig, RerankerName
@@ -31,6 +39,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
         openai=OpenAISettings(api_key=SecretStr("sk-test"), chat_model="some-chat-model"),
         postgres=PostgresSettings(user="u", password=SecretStr("p"), db="d"),
         langfuse=LangfuseSettings(public_key=None, secret_key=None),
+        ollama=OllamaSettings(base_url=None, model=None, num_ctx=None),
     )
 
 
@@ -167,11 +176,11 @@ def test_a_pipeline_without_a_reranker_never_imports_the_model_library() -> None
 
 
 def test_the_chunk_text_alone_is_embedded_by_default(settings: Settings) -> None:
-    assert make_texts_to_embed(settings, PipelineConfig().embedded_text) is chunk_texts
+    assert make_texts_to_embed(settings, PipelineConfig()) is chunk_texts
 
 
 def test_the_titles_mode_embeds_the_titles(settings: Settings) -> None:
-    assert make_texts_to_embed(settings, "titles") is titled_texts
+    assert make_texts_to_embed(settings, PipelineConfig(embedded_text="titles")) is titled_texts
 
 
 def test_the_context_mode_reads_the_committed_cache_before_asking_the_llm(
@@ -189,7 +198,43 @@ def test_the_context_mode_reads_the_committed_cache_before_asking_the_llm(
     CONTEXTS_PATH.parent.mkdir()
     CachedContextualizer(_Fake(), CONTEXTS_PATH).situate(render_document("GDPR", [chunk]), chunk)
 
-    texts_to_embed = make_texts_to_embed(settings, "context")
+    texts_to_embed = make_texts_to_embed(settings, PipelineConfig(embedded_text="context"))
 
     assert isinstance(texts_to_embed, ContextualTexts)
     assert texts_to_embed("GDPR", [chunk]) == ["cached context\n\na"]
+
+
+def _contextualizer(settings: Settings, pipeline: PipelineConfig) -> object:
+    texts_to_embed = make_texts_to_embed(settings, pipeline)
+    assert isinstance(texts_to_embed, ContextualTexts)
+    cached = texts_to_embed.contextualizer
+    assert isinstance(cached, CachedContextualizer)
+    return cached._contextualizer  # pyright: ignore[reportPrivateUsage]
+
+
+def test_openai_writes_the_contexts_by_default(settings: Settings) -> None:
+    llm = _contextualizer(settings, PipelineConfig(embedded_text="context"))
+
+    assert isinstance(llm, OpenAIContextualizer)
+    assert llm.name == "some-chat-model"
+
+
+def test_ollama_writes_the_contexts_when_the_pipeline_asks_for_it(settings: Settings) -> None:
+    ollama = OllamaSettings(base_url="https://ollama.test", model="qwen-test", num_ctx=1000)
+    settings = settings.model_copy(update={"ollama": ollama})
+
+    llm = _contextualizer(
+        settings, PipelineConfig(embedded_text="context", contextualizer="ollama")
+    )
+
+    assert isinstance(llm, OllamaContextualizer)
+    assert llm.name == "qwen-test"
+
+
+def test_ollama_contexts_without_the_ollama_settings_fail_before_any_chunk(
+    settings: Settings,
+) -> None:
+    with pytest.raises(ValueError, match="OLLAMA_BASE_URL"):
+        make_texts_to_embed(
+            settings, PipelineConfig(embedded_text="context", contextualizer="ollama")
+        )

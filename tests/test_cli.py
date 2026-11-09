@@ -226,13 +226,15 @@ def ingested(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
     """The corpus and embedded text of each ingestion, with nothing parsed, embedded or stored."""
     calls: list[tuple[str, str]] = []
     corpora: list[str] = []
+    contextualizers.clear()
 
     def make_store(_settings: object, corpus: str = "public") -> None:
         corpora.append(corpus)
 
-    def make_texts_to_embed(_settings: object, embedded_text: str) -> str:
-        calls.append((corpora[-1], embedded_text))
-        return f"texts for {embedded_text}"
+    def make_texts_to_embed(_settings: object, pipeline: PipelineConfig) -> str:
+        calls.append((corpora[-1], pipeline.embedded_text))
+        contextualizers.append(pipeline.contextualizer)
+        return f"texts for {pipeline.embedded_text}"
 
     def load_manifest(_path: Path) -> _NoDocuments:
         return _NoDocuments()
@@ -249,6 +251,9 @@ def ingested(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
 
 class _NoDocuments:
     documents = ()
+
+
+contextualizers: list[str] = []  # who writes the contexts, for each ingestion
 
 
 def test_ingest_writes_the_chunk_texts_to_the_public_corpus_by_default(
@@ -272,6 +277,18 @@ def test_ingest_reads_the_corpus_and_the_embedded_text_from_the_pipeline(
     assert ingested == [("contextual", "context")]
     assert _NoIngester.built[0]["texts_to_embed"] == "texts for context"
     assert "corpus contextual, embedding context" in result.output
+
+
+def test_ingest_passes_who_writes_the_contexts_from_the_pipeline(
+    ingested: list[tuple[str, str]], tmp_path: Path
+) -> None:
+    path = tmp_path / "contextual.toml"
+    path.write_text('embedded_text = "context"\ncontextualizer = "ollama"\n')
+
+    result = runner.invoke(app, ["ingest", "--pipeline", str(path)])
+
+    assert result.exit_code == 0, result.output
+    assert contextualizers == ["ollama"]
 
 
 @pytest.mark.parametrize(
