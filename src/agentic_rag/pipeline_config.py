@@ -9,6 +9,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
+EmbeddedText = Literal["chunk", "titles", "context"]
 RerankerName = Literal["bge-reranker-v2-m3", "ms-marco-minilm"]
 # An ingested variant, a Postgres schema: its name ends up in SQL, hence the pattern
 CorpusName = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
@@ -19,8 +20,7 @@ class PipelineConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     corpus: CorpusName = "public"
-    # Read by `ingest` only: the corpus holds the vectors of this text
-    embedded_text: Literal["chunk", "titles"] = "chunk"
+    embedded_text: EmbeddedText = "chunk"
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
     reranker: RerankerName | None = None
 

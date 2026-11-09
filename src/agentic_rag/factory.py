@@ -14,7 +14,15 @@ from agentic_rag.embeddings.base import Embedder
 from agentic_rag.embeddings.openai import OpenAIEmbedder
 from agentic_rag.evaluation.pooling.judge import OpenAIRelevanceJudge, RelevanceJudge
 from agentic_rag.generation.openai import OpenAIGenerator
-from agentic_rag.pipeline_config import PipelineConfig, RerankerName
+from agentic_rag.ingestion.contextual.cached import CONTEXTS_PATH, CachedContextualizer
+from agentic_rag.ingestion.contextual.openai import OpenAIContextualizer
+from agentic_rag.ingestion.embedded_text import (
+    ContextualTexts,
+    TextsToEmbed,
+    chunk_texts,
+    titled_texts,
+)
+from agentic_rag.pipeline_config import EmbeddedText, PipelineConfig, RerankerName
 from agentic_rag.rag import RAG
 from agentic_rag.reranking.base import Reranker
 from agentic_rag.reranking.retriever import RerankingRetriever
@@ -33,6 +41,17 @@ def make_store(settings: Settings, corpus: str = "public") -> PostgresStore:
 def make_embedder(settings: Settings) -> Embedder:
     openai = settings.openai
     return OpenAIEmbedder(_openai(settings), openai.embedding_model, openai.embedding_dimensions)
+
+
+def make_texts_to_embed(settings: Settings, embedded_text: EmbeddedText) -> TextsToEmbed:
+    match embedded_text:
+        case "chunk":
+            return chunk_texts
+        case "titles":
+            return titled_texts
+        case "context":
+            llm = OpenAIContextualizer(_openai(settings), settings.openai.chat_model)
+            return ContextualTexts(CachedContextualizer(llm, CONTEXTS_PATH))
 
 
 def make_retriever(settings: Settings, pipeline: PipelineConfig) -> Retriever:

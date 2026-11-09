@@ -8,7 +8,11 @@ from pydantic import SecretStr
 
 from agentic_rag import factory
 from agentic_rag.config import LangfuseSettings, OpenAISettings, PostgresSettings, Settings
-from agentic_rag.factory import make_rag, make_retriever
+from agentic_rag.document import Chunk, Division
+from agentic_rag.factory import make_rag, make_retriever, make_texts_to_embed
+from agentic_rag.ingestion.contextual.cached import CONTEXTS_PATH, CachedContextualizer
+from agentic_rag.ingestion.contextual.prompt import render_document
+from agentic_rag.ingestion.embedded_text import ContextualTexts, chunk_texts, titled_texts
 from agentic_rag.pipeline_config import PipelineConfig, RerankerName
 from agentic_rag.rag import RAG
 from agentic_rag.reranking import cross_encoder
@@ -160,3 +164,32 @@ def test_a_pipeline_without_a_reranker_never_imports_the_model_library() -> None
     )
 
     subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603 - our own code
+
+
+def test_the_chunk_text_alone_is_embedded_by_default(settings: Settings) -> None:
+    assert make_texts_to_embed(settings, PipelineConfig().embedded_text) is chunk_texts
+
+
+def test_the_titles_mode_embeds_the_titles(settings: Settings) -> None:
+    assert make_texts_to_embed(settings, "titles") is titled_texts
+
+
+def test_the_context_mode_reads_the_committed_cache_before_asking_the_llm(
+    settings: Settings,
+) -> None:
+    """With a fake API key, a call to OpenAI would fail: the context comes from the cache."""
+    chunk = Chunk(kind="text", text="a", path=(Division(kind="article", number="33"),))
+
+    class _Fake:
+        name = settings.openai.chat_model
+
+        def situate(self, document: str, chunk: Chunk) -> str:
+            return "cached context"
+
+    CONTEXTS_PATH.parent.mkdir()
+    CachedContextualizer(_Fake(), CONTEXTS_PATH).situate(render_document("GDPR", [chunk]), chunk)
+
+    texts_to_embed = make_texts_to_embed(settings, "context")
+
+    assert isinstance(texts_to_embed, ContextualTexts)
+    assert texts_to_embed("GDPR", [chunk]) == ["cached context\n\na"]
