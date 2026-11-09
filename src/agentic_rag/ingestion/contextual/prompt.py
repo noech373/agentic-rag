@@ -9,6 +9,10 @@ INSTRUCTIONS = """\
 You situate a passage within its document, to improve search retrieval of the passage.
 Answer only with a succinct context of one or two sentences, in English, without repeating the \
 passage.
+State which part of the document the passage belongs to and what it is about.
+Do not summarize the rest of the document; mention another provision only if it is needed to \
+understand this passage.
+Start by naming the document (e.g. "the GDPR", "ENISA's NIS2 implementation guidance").
 """
 
 
