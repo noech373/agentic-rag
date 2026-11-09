@@ -83,6 +83,11 @@ def test_the_instructions_keep_the_context_on_its_passage_and_name_the_document(
     assert "Start by naming the document" in INSTRUCTIONS
 
 
+def test_the_instructions_ask_for_the_name_the_questions_use_not_the_official_number() -> None:
+    """Qwen wrote "Directive (EU) 2022/2555" where the questions say "NIS2"."""
+    assert "by its common name, not its official number" in INSTRUCTIONS
+
+
 def test_the_input_is_the_document_then_the_located_passage() -> None:
     built = build_input("<document>...</document>", _chunk("1. In the case...", _ARTICLE_33))
 
