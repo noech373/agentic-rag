@@ -114,12 +114,14 @@ def test_every_pipeline_file_of_the_repo_loads(path: Path) -> None:
 
 def test_the_repo_has_a_pipeline_per_variant_besides_the_baseline() -> None:
     variants = {
-        (config.retriever, config.reranker)
+        (config.corpus, config.embedded_text, config.retriever, config.reranker)
         for config in map(load_pipeline, PIPELINES.glob("*.toml"))
     }
 
     assert variants == {
-        ("bm25", None),
-        ("hybrid", None),
-        ("vector", "bge-reranker-v2-m3"),
+        ("public", "chunk", "bm25", None),
+        ("public", "chunk", "hybrid", None),
+        ("public", "chunk", "vector", "bge-reranker-v2-m3"),
+        ("titles", "titles", "vector", None),
+        ("contextual", "context", "vector", None),
     }

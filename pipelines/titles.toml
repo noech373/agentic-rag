@@ -1,0 +1,3 @@
+# Witness for contextual retrieval: the document title and section titles before each chunk, no LLM.
+corpus = "titles"
+embedded_text = "titles"

@@ -1,0 +1,3 @@
+# Contextual retrieval: an LLM-written context before each chunk (cached in eval/contexts.jsonl).
+corpus = "contextual"
+embedded_text = "context"
