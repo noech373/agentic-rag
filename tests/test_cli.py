@@ -1,6 +1,7 @@
 import tomllib
 from collections.abc import Callable
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 from typer.testing import CliRunner
@@ -209,56 +210,91 @@ def test_a_bad_pipeline_file_stops_eval_before_any_run(
 
 
 class _NoIngester:
-    def __init__(self, *_args: object) -> None:
-        pass
+    """Keeps what it was built with, and ingests nothing."""
+
+    built: ClassVar[list[dict[str, object]]] = []
+
+    def __init__(self, *_args: object, **kwargs: object) -> None:
+        self.built.append(kwargs)
 
     def run(self, *_args: object, **_kwargs: object) -> list[object]:
         return []
 
 
 @pytest.fixture
-def ingest_corpora(monkeypatch: pytest.MonkeyPatch) -> list[str]:
-    """The corpus of each store `ingest` asks for, with nothing parsed, embedded or stored."""
+def ingested(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
+    """The corpus and embedded text of each ingestion, with nothing parsed, embedded or stored."""
+    calls: list[tuple[str, str]] = []
     corpora: list[str] = []
 
     def make_store(_settings: object, corpus: str = "public") -> None:
         corpora.append(corpus)
 
+    def make_texts_to_embed(_settings: object, embedded_text: str) -> str:
+        calls.append((corpora[-1], embedded_text))
+        return f"texts for {embedded_text}"
+
     def load_manifest(_path: Path) -> _NoDocuments:
         return _NoDocuments()
 
+    _NoIngester.built.clear()
     monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
     monkeypatch.setattr("agentic_rag.factory.make_store", make_store)
     monkeypatch.setattr("agentic_rag.factory.make_embedder", _offline(None))
+    monkeypatch.setattr("agentic_rag.factory.make_texts_to_embed", make_texts_to_embed)
     monkeypatch.setattr("agentic_rag.ingestion.pipeline.Ingester", _NoIngester)
     monkeypatch.setattr("agentic_rag.cli.load_manifest", load_manifest)
-    return corpora
+    return calls
 
 
 class _NoDocuments:
     documents = ()
 
 
-def test_ingest_writes_to_the_public_corpus_by_default(ingest_corpora: list[str]) -> None:
+def test_ingest_writes_the_chunk_texts_to_the_public_corpus_by_default(
+    ingested: list[tuple[str, str]],
+) -> None:
     result = runner.invoke(app, ["ingest"])
 
     assert result.exit_code == 0, result.output
-    assert ingest_corpora == ["public"]
+    assert ingested == [("public", "chunk")]
 
 
-def test_ingest_writes_to_the_corpus_it_is_given(ingest_corpora: list[str]) -> None:
-    result = runner.invoke(app, ["ingest", "--corpus", "titles"])
+def test_ingest_reads_the_corpus_and_the_embedded_text_from_the_pipeline(
+    ingested: list[tuple[str, str]], tmp_path: Path
+) -> None:
+    path = tmp_path / "contextual.toml"
+    path.write_text('corpus = "contextual"\nembedded_text = "context"\n')
+
+    result = runner.invoke(app, ["ingest", "--pipeline", str(path)])
 
     assert result.exit_code == 0, result.output
-    assert ingest_corpora == ["titles"]
+    assert ingested == [("contextual", "context")]
+    assert _NoIngester.built[0]["texts_to_embed"] == "texts for context"
+    assert "corpus contextual, embedding context" in result.output
 
 
-@pytest.mark.parametrize("name", ["Titles", "ti-tles", "a.b", "x; DROP SCHEMA public CASCADE"])
-def test_ingest_refuses_a_corpus_name_unsafe_in_sql(ingest_corpora: list[str], name: str) -> None:
-    result = runner.invoke(app, ["ingest", "--corpus", name])
+@pytest.mark.parametrize(
+    "line",
+    ['corpus = "x; DROP SCHEMA public CASCADE"', 'embedded_text = "contexts"', 'corpus = "Titles"'],
+)
+def test_ingest_refuses_a_bad_pipeline_before_anything_is_built(
+    ingested: list[tuple[str, str]], tmp_path: Path, line: str
+) -> None:
+    path = tmp_path / "bad.toml"
+    path.write_text(line + "\n")
+
+    result = runner.invoke(app, ["ingest", "--pipeline", str(path)])
 
     assert result.exit_code == 2
-    assert ingest_corpora == []
+    assert ingested == []
+
+
+def test_ingest_has_no_corpus_option_any_more(ingested: list[tuple[str, str]]) -> None:
+    result = runner.invoke(app, ["ingest", "--corpus", "titles"])
+
+    assert result.exit_code == 2
+    assert ingested == []
 
 
 def test_eval_needs_the_golden_set(tmp_path: Path) -> None:
