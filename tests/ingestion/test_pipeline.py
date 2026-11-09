@@ -158,6 +158,37 @@ def test_the_chunks_of_a_document_are_embedded_in_one_call(
     assert embedder.calls == [["a", "b", "c"], ["d"]]
 
 
+def test_the_texts_to_embed_are_built_from_the_title_and_the_chunks(
+    store: _FakeStore, embedder: _FakeEmbedder, tmp_path: Path
+) -> None:
+    def shouted(title: str, chunks: Sequence[Chunk]) -> list[str]:
+        return [f"{title}: {chunk.text.upper()}" for chunk in chunks]
+
+    ingester = Ingester(
+        store, embedder, _PARSERS, chunker=_one_chunk_per_block, texts_to_embed=shouted
+    )
+
+    _run(ingester, [_source(tmp_path, "gdpr", "a\nb")], tmp_path)
+
+    assert embedder.calls == [["Title of gdpr: A", "Title of gdpr: B"]]
+
+
+def test_the_stored_chunks_keep_their_own_text_whatever_is_embedded(
+    store: _FakeStore, embedder: _FakeEmbedder, tmp_path: Path
+) -> None:
+    ingester = Ingester(
+        store,
+        embedder,
+        _PARSERS,
+        chunker=_one_chunk_per_block,
+        texts_to_embed=lambda title, chunks: ["other" for _ in chunks],
+    )
+
+    _run(ingester, [_source(tmp_path, "gdpr", "a\nb")], tmp_path)
+
+    assert [chunk.text for chunk, _ in store.chunks["gdpr"]] == ["a", "b"]
+
+
 def test_the_parser_is_chosen_by_the_format_of_the_document(
     store: _FakeStore, embedder: _FakeEmbedder, tmp_path: Path
 ) -> None:

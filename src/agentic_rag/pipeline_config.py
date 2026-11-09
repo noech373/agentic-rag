@@ -19,6 +19,8 @@ class PipelineConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     corpus: CorpusName = "public"
+    # Read by `ingest` only: the corpus holds the vectors of this text
+    embedded_text: Literal["chunk", "titles"] = "chunk"
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
     reranker: RerankerName | None = None
 

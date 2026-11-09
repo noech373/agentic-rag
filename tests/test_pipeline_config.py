@@ -58,6 +58,23 @@ def test_a_corpus_name_unsafe_in_sql_is_refused(name: str) -> None:
         PipelineConfig(corpus=name)
 
 
+def test_the_default_config_embeds_the_chunk_text_alone() -> None:
+    assert PipelineConfig().embedded_text == "chunk"
+
+
+def test_the_embedded_text_is_read_from_a_file(tmp_path: Path) -> None:
+    path = _write(tmp_path, 'embedded_text = "titles"\n')
+
+    assert load_pipeline(path).embedded_text == "titles"
+
+
+def test_an_unknown_embedded_text_is_refused_when_the_file_is_read(tmp_path: Path) -> None:
+    path = _write(tmp_path, 'embedded_text = "title"\n')
+
+    with pytest.raises(ValidationError, match="embedded_text"):
+        load_pipeline(path)
+
+
 def test_a_file_is_read_into_the_config(tmp_path: Path) -> None:
     path = _write(tmp_path, 'retriever = "vector"\n')
 

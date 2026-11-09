@@ -15,6 +15,7 @@ from agentic_rag.document import Block, Chunk, IndexedDocument
 from agentic_rag.embeddings.base import Embedder
 from agentic_rag.ingestion.chunking import chunk_blocks
 from agentic_rag.ingestion.corpus import ChecksumMismatchError, DocumentFormat, SourceDocument
+from agentic_rag.ingestion.embedded_text import TextsToEmbed, chunk_texts
 from agentic_rag.ingestion.parsers.eurlex import parse_eurlex
 from agentic_rag.ingestion.parsers.markdown import parse_markdown
 from agentic_rag.ingestion.parsers.pdf import parse_pdf
@@ -48,11 +49,13 @@ class Ingester:
         embedder: Embedder,
         parsers: Mapping[DocumentFormat, Parser],
         chunker: Chunker = chunk_blocks,
+        texts_to_embed: TextsToEmbed = chunk_texts,
     ) -> None:
         self._store = store
         self._embedder = embedder
         self._parsers = parsers
         self._chunker = chunker
+        self._texts_to_embed = texts_to_embed
 
     def run(
         self, documents: Sequence[SourceDocument], corpus_dir: Path, *, force: bool = False
@@ -88,7 +91,8 @@ class Ingester:
             raise ChecksumMismatchError(f"{path} differs from the manifest: download it again")
         blocks = self._parsers[document.format](content)
         chunks = self._chunker(blocks)
-        embeddings = self._embedder.embed_documents([chunk.text for chunk in chunks])
+        texts = self._texts_to_embed(document.title, chunks)
+        embeddings = self._embedder.embed_documents(texts)
         self._store.replace_document(self._indexed(document), chunks, embeddings)
         return len(chunks)
 
