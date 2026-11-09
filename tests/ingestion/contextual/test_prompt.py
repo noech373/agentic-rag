@@ -78,6 +78,11 @@ def test_the_instructions_ask_for_the_context_alone() -> None:
     assert "without repeating the passage" in INSTRUCTIONS
 
 
+def test_the_instructions_keep_the_context_on_its_passage_and_name_the_document() -> None:
+    assert "Do not summarize the rest of the document" in INSTRUCTIONS
+    assert "Start by naming the document" in INSTRUCTIONS
+
+
 def test_the_input_is_the_document_then_the_located_passage() -> None:
     built = build_input("<document>...</document>", _chunk("1. In the case...", _ARTICLE_33))
 
