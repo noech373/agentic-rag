@@ -14,7 +14,7 @@ from agentic_rag.ingestion.contextual.prompt import INSTRUCTIONS, build_input
 
 class OllamaContextualizer(Contextualizer):
     def __init__(self, client: httpx.Client, model: str, num_ctx: int) -> None:
-        self._client = client  # its base_url is the server's, without /v1
+        self._client = client
         self._model = model
         self._num_ctx = num_ctx  # the one the model is loaded with: another one reloads it
 
@@ -29,7 +29,7 @@ class OllamaContextualizer(Contextualizer):
                 "model": self._model,
                 "stream": False,
                 "think": False,
-                "options": {"num_ctx": self._num_ctx},
+                "options": {"num_ctx": self._num_ctx, "temperature": 0},
                 "messages": [
                     {"role": "system", "content": INSTRUCTIONS},
                     {"role": "user", "content": build_input(document, chunk)},

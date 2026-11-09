@@ -91,9 +91,17 @@ def test_the_request_sets_the_context_length_and_turns_thinking_and_streaming_of
 
     _situate(fake)
 
-    assert fake.body()["options"] == {"num_ctx": _NUM_CTX}
+    assert fake.body()["options"]["num_ctx"] == _NUM_CTX
     assert fake.body()["think"] is False
     assert fake.body()["stream"] is False
+
+
+def test_the_request_asks_for_the_most_likely_words_not_the_server_temperature() -> None:
+    fake = _FakeOllama()
+
+    _situate(fake)
+
+    assert fake.body()["options"]["temperature"] == 0
 
 
 def test_the_context_is_the_text_of_the_response() -> None:
@@ -106,7 +114,6 @@ def test_a_response_cut_by_its_length_is_an_error_not_a_truncated_context() -> N
 
 
 def test_a_prompt_that_filled_the_window_is_an_error_not_a_context_of_half_a_document() -> None:
-    """Ollama cuts a prompt too long without an error: 990 tokens read + 20 written fill 1000."""
     with pytest.raises(GenerationError, match="truncated"):
         _situate(_FakeOllama(prompt_tokens=990))
 
