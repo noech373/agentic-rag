@@ -15,6 +15,7 @@ from agentic_rag.document import Chunk
 from agentic_rag.ingestion.contextual.base import Contextualizer
 from agentic_rag.ingestion.contextual.prompt import INSTRUCTIONS, build_input
 
+CONTEXTS_PATH = Path("eval/contexts.jsonl")  # committed: ingesting again costs nothing
 _PASSAGE_CHARS = 80
 
 
