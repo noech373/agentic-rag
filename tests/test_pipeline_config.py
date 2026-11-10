@@ -92,6 +92,33 @@ def test_an_unknown_contextualizer_is_refused_when_the_file_is_read(tmp_path: Pa
         load_pipeline(path)
 
 
+def test_the_default_config_searches_with_the_question() -> None:
+    assert PipelineConfig().hyde is None
+
+
+def test_who_writes_the_hyde_answers_is_read_from_a_file(tmp_path: Path) -> None:
+    assert load_pipeline(_write(tmp_path, 'hyde = "ollama"')).hyde == "ollama"
+
+
+def test_hyde_without_a_writer_is_refused(tmp_path: Path) -> None:
+    """`true` would not say which LLM writes the answers."""
+    with pytest.raises(ValidationError, match="hyde"):
+        load_pipeline(_write(tmp_path, "hyde = true"))
+
+
+def test_openai_writes_the_answers_by_default() -> None:
+    assert PipelineConfig().generator == "openai"
+
+
+def test_who_writes_the_answers_is_read_from_a_file(tmp_path: Path) -> None:
+    assert load_pipeline(_write(tmp_path, 'generator = "ollama"')).generator == "ollama"
+
+
+def test_an_unknown_generator_is_refused_when_the_file_is_read(tmp_path: Path) -> None:
+    with pytest.raises(ValidationError, match="generator"):
+        load_pipeline(_write(tmp_path, 'generator = "mistral"'))
+
+
 def test_a_file_is_read_into_the_config(tmp_path: Path) -> None:
     path = _write(tmp_path, 'retriever = "vector"\n')
 
@@ -131,15 +158,16 @@ def test_every_pipeline_file_of_the_repo_loads(path: Path) -> None:
 
 def test_the_repo_has_a_pipeline_per_variant() -> None:
     variants = {
-        (config.corpus, config.embedded_text, config.retriever, config.reranker)
+        (config.corpus, config.embedded_text, config.retriever, config.hyde, config.reranker)
         for config in map(load_pipeline, PIPELINES.glob("*.toml"))
     }
 
     assert variants == {
-        ("public", "chunk", "vector", None),
-        ("titles", "titles", "bm25", None),
-        ("titles", "titles", "hybrid", None),
-        ("titles", "titles", "vector", "bge-reranker-v2-m3"),
-        ("titles", "titles", "vector", None),
-        ("contextual", "context", "vector", None),
+        ("public", "chunk", "vector", None, None),
+        ("titles", "titles", "bm25", None, None),
+        ("titles", "titles", "hybrid", None, None),
+        ("titles", "titles", "vector", None, "bge-reranker-v2-m3"),
+        ("titles", "titles", "vector", None, None),
+        ("titles", "titles", "vector", "ollama", None),
+        ("contextual", "context", "vector", None, None),
     }

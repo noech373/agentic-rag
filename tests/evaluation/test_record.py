@@ -284,7 +284,9 @@ def test_a_run_keeps_the_validated_config_with_its_defaults(tmp_path: Path) -> N
         "embedded_text": "titles",
         "contextualizer": "openai",
         "retriever": "vector",
+        "hyde": None,
         "reranker": None,  # None: no reranker, said
+        "generator": "openai",
     }
 
 
