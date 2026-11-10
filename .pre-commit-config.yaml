@@ -11,6 +11,7 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files # e.g. a downloaded PDF committed by mistake
+        exclude: ^eval/contexts\.jsonl$
       - id: detect-private-key
 
   # Secret scanning: blocks commits containing API keys (OpenAI, Langfuse, ...).
