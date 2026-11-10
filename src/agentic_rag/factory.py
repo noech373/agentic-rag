@@ -46,7 +46,7 @@ from agentic_rag.tracing import TracedRAG, TracedRetriever
 # --- Shared by ingestion and queries ---
 
 
-def make_store(settings: Settings, corpus: str = "public") -> PostgresStore:
+def make_store(settings: Settings, corpus: str) -> PostgresStore:
     return PostgresStore(create_engine(database_url(settings.postgres)), corpus)
 
 

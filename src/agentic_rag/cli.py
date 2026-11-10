@@ -243,7 +243,13 @@ def pool_runs(
 
     settings = get_settings()
     questions = tuning_questions(load_golden_set(golden))
-    chunks = {chunk.key: chunk for chunk in make_store(settings).all_chunks()}
+    corpora = sorted({selection.run_corpus(run) for run in records})
+    try:
+        chunks = selection.chunks_of_corpora(
+            {corpus: make_store(settings, corpus).all_chunks() for corpus in corpora}
+        )
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc), param_hint="RUNS") from exc
     done = selection.load_pool_judgments(llm_path)
     to_judge = selection.chunks_to_judge(questions, records, load_judgments(judgments), chunks)
     pending = selection.not_yet_judged(to_judge, done)
@@ -273,6 +279,9 @@ def merge_pool(
     judgments: Annotated[
         Path, typer.Option(exists=True, dir_okay=False, help="Rejected chunks.")
     ] = Path("eval/judgments.toml"),
+    corpus: Annotated[
+        str, typer.Option(help="Corpus of the pooled runs, where the rejections are quoted from.")
+    ] = PipelineConfig().corpus,
 ) -> None:
     """Merge the filled review into the golden set and the judgments; twice changes nothing."""
     import tomllib
@@ -302,7 +311,7 @@ def merge_pool(
     new_golden = merge.add_wordings(golden.read_text(encoding="utf-8"), wordings)
     questions = GoldenSet.model_validate(tomllib.loads(new_golden)).questions
 
-    texts = {c.key: c.chunk.text for c in make_store(get_settings()).all_chunks()}
+    texts = {c.key: c.chunk.text for c in make_store(get_settings(), corpus).all_chunks()}
     candidates = merge.rejection_candidates(llm, filled)
     useful = merge.stating_a_fact(candidates, {q.id: q for q in questions}, texts)
     rejected = [pair for pair in candidates if pair not in useful]

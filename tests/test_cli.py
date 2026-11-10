@@ -429,15 +429,32 @@ def _offline[T](value: T) -> Callable[[object], T]:
     return lambda _settings: value
 
 
+class _PoolStores:
+    """make_store, offline: the same chunks whatever the corpus, and the corpora it opened."""
+
+    def __init__(self) -> None:
+        self.corpora: list[str] = []
+
+    def __call__(self, _settings: object, corpus: str) -> _PoolStore:
+        self.corpora.append(corpus)
+        return _PoolStore()
+
+
 @pytest.fixture
-def pooled(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+def stores(monkeypatch: pytest.MonkeyPatch) -> _PoolStores:
+    stores = _PoolStores()
+    monkeypatch.setattr("agentic_rag.factory.make_store", stores)
+    return stores
+
+
+@pytest.fixture
+def pooled(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stores: _PoolStores) -> Path:
     """A golden set, its judgments, an offline store and judge; returns the golden set's path."""
     golden = tmp_path / "eval" / "golden.toml"
     golden.parent.mkdir()
     golden.write_text(_POOL_GOLDEN)
     (tmp_path / "eval" / "judgments.toml").write_text("")
     monkeypatch.setattr("agentic_rag.config.get_settings", lambda: None)
-    monkeypatch.setattr("agentic_rag.factory.make_store", _offline(_PoolStore()))
     monkeypatch.setattr("agentic_rag.factory.make_relevance_judge", _offline(_PoolJudge()))
     return golden
 
@@ -503,6 +520,57 @@ def test_pool_leaves_the_verdicts_of_an_earlier_round_out_of_the_review(
     assert "2 pairs to judge, 1 judged before" in result.stdout
     review = tomllib.loads((POOLING_DIR / "review.toml").read_text())
     assert {entry["chunk"] for entry in review["chunks"]} == {"gdpr#1", "gdpr#2"}
+
+
+def test_pool_reads_the_chunks_of_the_corpus_its_runs_searched(
+    pooled: Path, tmp_path: Path, stores: _PoolStores
+) -> None:
+    run = _pool_run(pooled)
+    run = run.model_copy(update={"config": {"corpus": "titles"}})
+
+    result = runner.invoke(app, ["pool", _saved(tmp_path, "hyde", run)])
+
+    assert result.exit_code == 0, result.output
+    assert stores.corpora == ["titles"]
+
+
+def test_pool_reads_a_run_saved_before_corpus_variants_on_public(
+    pooled: Path, tmp_path: Path, stores: _PoolStores
+) -> None:
+    result = runner.invoke(app, ["pool", _saved(tmp_path, "old", _pool_run(pooled))])
+
+    assert result.exit_code == 0, result.output
+    assert stores.corpora == ["public"]
+
+
+def test_pool_opens_each_corpus_of_its_runs_once(
+    pooled: Path, tmp_path: Path, stores: _PoolStores
+) -> None:
+    runs = [
+        _saved(tmp_path, name, _pool_run(pooled).model_copy(update={"config": {"corpus": c}}))
+        for name, c in (("a", "titles"), ("b", "contextual"), ("c", "titles"))
+    ]
+
+    result = runner.invoke(app, ["pool", *runs])
+
+    assert result.exit_code == 0, result.output
+    assert stores.corpora == ["contextual", "titles"]
+
+
+def test_merge_pool_quotes_the_rejections_from_the_adopted_corpus(
+    merged: Path, stores: _PoolStores
+) -> None:
+    result = runner.invoke(app, ["merge-pool"])
+
+    assert result.exit_code == 0, result.output
+    assert stores.corpora == ["titles"]
+
+
+def test_merge_pool_quotes_from_the_corpus_it_is_given(merged: Path, stores: _PoolStores) -> None:
+    result = runner.invoke(app, ["merge-pool", "--corpus", "contextual"])
+
+    assert result.exit_code == 0, result.output
+    assert stores.corpora == ["contextual"]
 
 
 def test_pool_never_overwrites_a_review(pooled: Path, tmp_path: Path) -> None:

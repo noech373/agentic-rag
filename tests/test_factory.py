@@ -48,8 +48,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
     )
 
 
-def test_a_store_is_on_the_public_corpus_unless_told_otherwise(settings: Settings) -> None:
-    assert factory.make_store(settings).corpus == "public"
+def test_a_store_is_on_the_corpus_it_is_given(settings: Settings) -> None:
     assert factory.make_store(settings, "titles").corpus == "titles"
 
 

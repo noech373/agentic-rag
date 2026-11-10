@@ -8,11 +8,13 @@ from agentic_rag.evaluation.golden import Evidence, Question, Quote
 from agentic_rag.evaluation.pooling.judge import StatedFact, Verdict
 from agentic_rag.evaluation.pooling.selection import (
     PoolJudgment,
+    chunks_of_corpora,
     chunks_to_judge,
     judge_pool,
     load_pool_judgments,
     not_yet_judged,
     pool,
+    run_corpus,
     verdicts_on,
 )
 from agentic_rag.evaluation.record import RunRecord
@@ -257,3 +259,53 @@ def test_only_the_verdicts_on_the_pairs_to_judge_go_to_the_review() -> None:
     to_judge = [(_question("q1"), _stored("gdpr#1")), (_question("q1"), _stored("gdpr#2"))]
 
     assert verdicts_on(to_judge, done) == [done[0]]
+
+
+def test_the_chunks_of_one_corpus_are_found_by_key() -> None:
+    chunks = chunks_of_corpora({"titles": [_stored("gdpr#0", "a"), _stored("gdpr#1", "b")]})
+
+    assert {key: c.chunk.text for key, c in chunks.items()} == {"gdpr#0": "a", "gdpr#1": "b"}
+
+
+def test_corpora_chunked_alike_pool_together() -> None:
+    """titles and contextual: only the embedded text differs, not the stored one."""
+    chunks = chunks_of_corpora(
+        {"titles": [_stored("gdpr#0", "a")], "contextual": [_stored("gdpr#0", "a")]}
+    )
+
+    assert list(chunks) == ["gdpr#0"]
+
+
+def test_corpora_chunked_differently_are_refused() -> None:
+    """Otherwise the judge would read a passage the run never found, and no one would see it."""
+    with pytest.raises(ValueError, match="gdpr#0 differs between corpora titles and small"):
+        chunks_of_corpora({"titles": [_stored("gdpr#0", "a")], "small": [_stored("gdpr#0", "b")]})
+
+
+def test_a_key_in_one_corpus_only_is_kept() -> None:
+    chunks = chunks_of_corpora(
+        {"titles": [_stored("gdpr#0", "a")], "small": [_stored("gdpr#9", "b")]}
+    )
+
+    assert set(chunks) == {"gdpr#0", "gdpr#9"}
+
+
+def test_a_run_names_its_corpus() -> None:
+    run = RunRecord(
+        golden_sha256="g",
+        judgments_sha256="j",
+        git_sha="s",
+        dirty=False,
+        config={"corpus": "titles"},
+        results=(),
+    )
+
+    assert run_corpus(run) == "titles"
+
+
+def test_a_run_saved_before_corpus_variants_searched_public() -> None:
+    run = RunRecord(
+        golden_sha256="g", judgments_sha256="j", git_sha="s", dirty=False, config={}, results=()
+    )
+
+    assert run_corpus(run) == "public"
