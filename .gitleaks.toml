@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Context cache: each key is the SHA-256 of an LLM request, not a secret"
+regexTarget = "match"
+regexes = ['''^key":"[0-9a-f]{64}"?$''']
