@@ -638,6 +638,8 @@ any_of = [
   { document = "gdpr", quote = "high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject" },
   { document = "edpb-guidelines-2022-09", quote = "Communication of a breach to the individual is only triggered where it is likely to result in a high risk" },
   { document = "edpb-guidelines-2021-01", quote = "the given breach will not result in a high risk to the rights and freedoms of natural persons, a notification to the SA will suffice" },
+  { document = "edpb-guidelines-2021-01", quote = "communicate the personal data breach to the data subject when the personal data breach is likely to result in a high risk" },
+  { document = "gdpr", quote = "communicate to the data subject a personal data breach, without undue delay, where that personal data breach is likely to result in a high risk" },
 ]
 
 [[questions]]
@@ -655,6 +657,7 @@ any_of = [
   { document = "edpb-guidelines-2021-01", quote = "It should be documented in accordance with Article 33 (5) and notified to the SA in accordance with Article 33 (1)." },
   { document = "edpb-guidelines-2021-01", quote = "the relevant SA(s) should also be involved in the form of a data breach notification" },
   { document = "edpb-guidelines-2021-01", quote = "Documenting the breach according to Article 33 (5) GDPR and notifying the SA about it are not optional in this scenario." },
+  { document = "gdpr", quote = "the controller should notify the personal data breach to the supervisory authority without undue delay and, where feasible, not later than 72 hours" },
 ]
 
 [[questions.evidence]]
@@ -666,6 +669,7 @@ any_of = [
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
   { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk." },
   { document = "edpb-guidelines-2021-01", quote = "the controller should notify all 100.000 data subjects (including the data subjects whose accounts were not compromised) in accordance with Article 34 GDPR" },
+  { document = "gdpr", quote = "communicate to the data subject a personal data breach, without undue delay, where that personal data breach is likely to result in a high risk" },
 ]
 
 [[questions]]
@@ -688,6 +692,8 @@ any_of = [
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons, the data subjects should definitely be informed about it" },
   { document = "edpb-guidelines-2021-01", quote = "the controller should notify all 100.000 data subjects (including the data subjects whose accounts were not compromised) in accordance with Article 34 GDPR" },
+  { document = "gdpr", quote = "When the personal data breach is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate" },
+  { document = "gdpr", quote = "communicate to the data subject a personal data breach, without undue delay, where that personal data breach is likely to result in a high risk" },
 ]
 
 [[questions.evidence]]
@@ -715,12 +721,16 @@ any_of = [
   { document = "edpb-guidelines-2022-09", quote = "the hospital is obliged to notify as high-risk to patient's well-being and privacy may occur" },
   { document = "edpb-guidelines-2022-09", quote = "if critical medical data about patients are unavailable, even temporarily, this could present a risk" },
   { document = "edpb-guidelines-2021-01", quote = "A notification to the SA is considered necessary, as special categories of personal data are involved" },
+  { document = "gdpr", quote = "the controller shall without undue delay and, where feasible, not later than 72 hours after having become aware of it, notify the personal data breach" },
+  { document = "gdpr", quote = "the controller should notify the personal data breach to the supervisory authority without undue delay and, where feasible, not later than 72 hours" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "Yes, report to the affected individuals" },
   { document = "edpb-guidelines-2021-01", quote = "Informing the data subjects about the breach is necessary due to the impact for the patients" },
+  { document = "gdpr", quote = "When the personal data breach is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate" },
+  { document = "gdpr", quote = "communicate to the data subject a personal data breach, without undue delay, where that personal data breach is likely to result in a high risk" },
 ]
 
 [[questions.evidence]]
@@ -962,6 +972,8 @@ answer = "Not as a general obligation. The controller and the processor must imp
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "the controller and the processor shall implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk" },
+  { document = "gdpr", quote = "processed in a manner that ensures appropriate security of the personal data, including protection against unauthorised or unlawful processing" },
+  { document = "gdpr", quote = "the controller or processor should evaluate the risks inherent in the processing and implement measures to mitigate those risks, such as encryption" },
 ]
 
 [[questions.evidence]]
@@ -972,6 +984,7 @@ any_of = [
   { document = "cnil-developer-guide-01", quote = "the GDPR considers that pseudonymization makes it possible to reduce the risks for data subjects" },
   { document = "gdpr", quote = "The application of pseudonymisation to personal data can reduce the risks to the data subjects concerned" },
   { document = "edpb-guidelines-2022-09", quote = "can also reduce the likelihood of individuals being identified in the event of a breach" },
+  { document = "gdpr", quote = "Such measures could consist, inter alia, of minimising the processing of personal data, pseudonymising personal data as soon as possible" },
 ]
 
 [[questions.evidence]]
@@ -1295,6 +1308,7 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "nis2", quote = "Regardless of their size, this Directive also applies to entities of a type referred to in Annex I or II" },
+  { document = "nis2", quote = "qualified trust service providers and top-level domain name registries as well as DNS service providers, regardless of their size" },
 ]
 
 [[questions.evidence]]
@@ -1745,7 +1759,7 @@ any_of = [
 
 [[questions]]
 id = "dora-report-identification-code"
-category = "table"
+category = "factual"
 origin = "passage"
 question = "Which company ID goes into a DORA incident report, and what does it look like?"
 answer = "A Legal Entity Identifier (LEI): a unique 20-character alphanumeric code, based on ISO 17442-1:2020. A third-party provider submitting the report for the entity can instead use the identification code specified in the Commission Implementing Regulation that specifies Article 28(9) of DORA (ESAs, data glossary, field 1.3)."
@@ -1754,12 +1768,15 @@ answer = "A Legal Entity Identifier (LEI): a unique 20-character alphanumeric co
 any_of = [
   { document = "esas-dora-incident-reporting", quote = "the identification code is to be a Legal Entity Identifier (LEI), which is a unique 20 alphanumeric character code" },
   { document = "esas-dora-incident-reporting", quote = "Unique 20 alphanumeric character code, based on ISO 17442-1:2020" },
+  { document = "esas-dora-incident-reporting", quote = "name, LEI code of the financial entity" },
+  { document = "esas-dora-incident-reporting", quote = "Unique alphanumeric 20 character code, based on ISO 17442-1:2020" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "esas-dora-incident-reporting", quote = "Where a third-party provider submits a report for a financial entity, they can use an identification code" },
   { document = "esas-dora-incident-reporting", quote = "allowing TPPs reporting for FEs to provide an LEI code or any other identification code" },
+  { document = "esas-dora-incident-reporting", quote = "name and identification code of the entity submitting the report for the financial entity" },
 ]
 
 [[questions]]
@@ -1817,6 +1834,7 @@ any_of = [
 any_of = [
   { document = "dora", quote = "identify and assess all relevant risks in relation to the contractual arrangement" },
   { document = "dora", quote = "the possible concentration risk entailed" },
+  { document = "dora", quote = "take into account whether the envisaged conclusion of a contractual arrangement in relation to ICT services supporting critical or important functions would lead" },
 ]
 
 [[questions.evidence]]
@@ -2204,6 +2222,11 @@ any_of = [
 any_of = [
   { document = "data-act", quote = "inform the customer about the existence of a request of a third-country authority to access its data before complying" },
   { document = "data-act", quote = "should be able to inform the customer whose data are being requested before granting access to those data" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "data-act", quote = "transfer to or access to such data by that third-country authority shall take place only where" },
 ]
 
 [[questions]]
