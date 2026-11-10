@@ -16,6 +16,11 @@ from agentic_rag.config import (
 )
 from agentic_rag.document import Chunk, Division
 from agentic_rag.factory import make_rag, make_retriever, make_texts_to_embed
+from agentic_rag.generation.ollama import OllamaGenerator
+from agentic_rag.generation.openai import OpenAIGenerator
+from agentic_rag.hyde.cached import ANSWERS_PATH, CachedAnswerWriter
+from agentic_rag.hyde.ollama import OllamaAnswerWriter
+from agentic_rag.hyde.retriever import HydeRetriever
 from agentic_rag.ingestion.contextual.cached import CONTEXTS_PATH, CachedContextualizer
 from agentic_rag.ingestion.contextual.ollama import OllamaContextualizer
 from agentic_rag.ingestion.contextual.openai import OpenAIContextualizer
@@ -238,3 +243,87 @@ def test_ollama_contexts_without_the_ollama_settings_fail_before_any_chunk(
         make_texts_to_embed(
             settings, PipelineConfig(embedded_text="context", contextualizer="ollama")
         )
+
+
+@pytest.fixture
+def qwen(settings: Settings) -> Settings:
+    ollama = OllamaSettings(base_url="https://ollama.test", model="qwen-test", num_ctx=1000)
+    return settings.model_copy(update={"ollama": ollama})
+
+
+def test_without_hyde_the_retriever_searches_with_the_question(qwen: Settings) -> None:
+    assert isinstance(make_retriever(qwen, PipelineConfig()), VectorRetriever)
+
+
+@pytest.mark.parametrize("first", ["vector", "bm25", "hybrid"])
+def test_hyde_wraps_whichever_retriever_is_chosen(
+    qwen: Settings, first: Literal["vector", "bm25", "hybrid"]
+) -> None:
+    retriever = make_retriever(qwen, PipelineConfig(retriever=first, hyde="ollama"))
+
+    assert isinstance(retriever, HydeRetriever)
+    expected = {"vector": VectorRetriever, "bm25": BM25Retriever, "hybrid": HybridRetriever}[first]
+    assert isinstance(retriever._retriever, expected)  # pyright: ignore[reportPrivateUsage]
+
+
+def test_qwen_writes_the_answers_through_the_committed_cache(qwen: Settings) -> None:
+    retriever = make_retriever(qwen, PipelineConfig(hyde="ollama"))
+
+    assert isinstance(retriever, HydeRetriever)
+    cached = retriever._writer  # pyright: ignore[reportPrivateUsage]
+    assert isinstance(cached, CachedAnswerWriter)
+    assert cached._path == ANSWERS_PATH  # pyright: ignore[reportPrivateUsage]
+    writer = cached._writer  # pyright: ignore[reportPrivateUsage]
+    assert isinstance(writer, OllamaAnswerWriter)
+    assert writer.name == "qwen-test"
+
+
+def test_hyde_reads_the_committed_cache_before_asking_qwen(qwen: Settings) -> None:
+    """ollama.test does not exist: the answer can only come from the cache."""
+
+    class _Fake:
+        name = "qwen-test"
+
+        def write(self, question: str) -> str:
+            return "cached answer"
+
+    ANSWERS_PATH.parent.mkdir()
+    CachedAnswerWriter(_Fake(), ANSWERS_PATH).write("Can we dismiss our DPO?")
+
+    retriever = make_retriever(qwen, PipelineConfig(hyde="ollama"))
+
+    assert isinstance(retriever, HydeRetriever)
+    writer = retriever._writer  # pyright: ignore[reportPrivateUsage]
+    assert writer.write("Can we dismiss our DPO?") == "cached answer"
+
+
+@pytest.mark.usefixtures("fake_cross_encoder")
+def test_the_reranker_scores_against_the_question_not_the_hyde_answer(qwen: Settings) -> None:
+    retriever = make_retriever(qwen, PipelineConfig(hyde="ollama", reranker="ms-marco-minilm"))
+
+    assert isinstance(retriever, RerankingRetriever)
+    assert isinstance(retriever._retriever, HydeRetriever)  # pyright: ignore[reportPrivateUsage]
+
+
+def test_hyde_without_the_ollama_settings_fails_before_any_question(settings: Settings) -> None:
+    with pytest.raises(ValueError, match="OLLAMA_BASE_URL"):
+        make_retriever(settings, PipelineConfig(hyde="ollama"))
+
+
+def test_openai_writes_the_answers_by_default(settings: Settings) -> None:
+    rag = make_rag(settings, PipelineConfig())
+
+    assert isinstance(rag._generator, OpenAIGenerator)  # pyright: ignore[reportPrivateUsage]
+
+
+def test_ollama_writes_the_answers_when_the_pipeline_asks_for_it(qwen: Settings) -> None:
+    rag = make_rag(qwen, PipelineConfig(generator="ollama"))
+
+    assert isinstance(rag._generator, OllamaGenerator)  # pyright: ignore[reportPrivateUsage]
+
+
+def test_an_ollama_generator_without_the_ollama_settings_fails_before_any_question(
+    settings: Settings,
+) -> None:
+    with pytest.raises(ValueError, match="OLLAMA_BASE_URL"):
+        make_rag(settings, PipelineConfig(generator="ollama"))

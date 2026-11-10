@@ -49,7 +49,7 @@ class LangfuseSettings(_EnvSettings):
 
 
 class OllamaSettings(_EnvSettings):
-    """Optional: only a pipeline whose contexts Ollama writes needs it."""
+    """Optional: only a pipeline that calls Qwen (contexts, HyDE) needs it."""
 
     model_config = SettingsConfigDict(env_prefix="OLLAMA_")
 

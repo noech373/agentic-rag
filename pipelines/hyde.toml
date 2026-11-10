@@ -1,0 +1,2 @@
+# HyDE: search with the answer Qwen writes to the question without any document.
+hyde = "ollama"
