@@ -157,6 +157,11 @@ still cite *Art. 33(1)*. A heading that a merged chunk drops from its path (the 
 1922 chunks, and a test checks that their text is exactly the text of the blocks, apart from these
 heading lines. The 512-token budget is a starting point, to be compared with others in Phase 4.
 
+What gets embedded is set by the pipeline (`embedded_text`): the chunk's text alone (the baseline),
+or after its document title and titled path (the default since entry 5 of the results), or after a
+context an LLM writes. Only the vectors change: BM25, the LLM and the metrics read the chunk's text.
+Each choice is ingested into its own PostgreSQL schema (`corpus`), so the variants live side by side.
+
 Known limitations:
 
 - A single line over the budget stays whole: a recital is one line, up to 833 tokens, well below
@@ -168,7 +173,7 @@ Known limitations:
 ## Retrieval and answers
 
 - **Three retrievers**, picked by the pipeline file (see [Pipelines](#pipelines)):
-  - **vector** (the baseline): the chunks whose embedding is nearest to the question's (cosine).
+  - **vector** (the default): the chunks whose embedding is nearest to the question's (cosine).
   - **bm25**: the chunks sharing the most words with the question, rare words weighing more, with
     [pg_textsearch](https://github.com/timescale/pg_textsearch) (English stemming and stop words).
     It finds the exact terms that embeddings blur, such as a defined term or an article's wording.
@@ -209,9 +214,11 @@ uv run agentic-rag ask --pipeline pipelines/hybrid.toml "Who must test the ICT b
 uv run agentic-rag eval --pipeline pipelines/hybrid.toml   # saved as eval/results/hybrid.json
 ```
 
-Without `--pipeline`, the defaults are the baseline (vector search). A misspelled key is refused
-rather than silently running the baseline under another name, and the validated pipeline, defaults
-included, is saved with each evaluation run, so a result always says which system produced it. The
+Without `--pipeline`, the defaults are the best composition adopted so far (vector search on the
+titled chunks), saved as `eval/results/default.json`; [`pipelines/baseline.toml`](pipelines/baseline.toml)
+keeps the plain RAG the ablation starts from. A variant file only states what differs from the
+defaults, so a new brick stacks on what was adopted before it. A misspelled key is refused rather than
+silently running the defaults under another name, and the validated pipeline, defaults included, is saved with each evaluation run, so a result always says which system produced it. The
 file holds only what a brick needs: fields appear with the bricks (reranker, guardrails, LLM), while
 secrets and infrastructure stay in `.env`.
 
@@ -309,8 +316,11 @@ The numbers come from the runs saved in [`eval/results/`](eval/results/) and can
 `compare`. Unless stated otherwise: retrieval on the 77 tuning questions, differences against the
 previous system, **bold** when the 95 % interval excludes 0.
 
-**Current system:** vector search (entry 1). Hybrid search is available as a pipeline but not the
-default (entry 2). Entries keep the numbers of their time: entry 3 corrects those of 1 and 2.
+**Current system:** vector search on chunks embedded after their titles (entry 5). Hybrid search,
+reranking and contextual retrieval are available as pipelines but not the default (entries 2, 4, 5).
+Entries keep the numbers of their time: entry 3 corrects those of 1 and 2. Entries 1 to 4 were
+measured on the plain baseline; since entry 5, the variants that only set the retriever stack on the
+titles, so their saved runs must be redone before being compared with the default.
 
 ### 1. Baseline: vector search
 
@@ -478,6 +488,68 @@ they would hold about ten relevant chunks, while the interval needs at least +0.
 leave that open, or anything about reranking on a GPU, where the latency verdict may not hold and
 the pooling round would be worth doing. The golden set also still has no question in exact legal
 terms, so this run will have to be redone once it does.
+
+### 5. Titles and contextual retrieval: titles adopted, contextual retrieval not
+
+Vector search only sees a chunk's own text, but a chunk often makes sense only in its place: "1. In
+the case of a personal data breach, the controller shall…" does not say it is the GDPR, Article 33.
+Two ways to put that back into what is embedded (the stored text does not change):
+
+- **titles**, no LLM: the document title and the titled path before the text.
+  `Regulation (EU) 2016/679 (General Data Protection Regulation) > Chapter IV: Controller and
+  processor > Section 2: Security of personal data > Article 33: Notification of a personal data
+  breach to the supervisory authority`
+- **contextual retrieval** ([Anthropic, 2024](https://www.anthropic.com/news/contextual-retrieval)):
+  an LLM reads the whole document and writes one or two sentences that situate each chunk. *"The
+  GDPR, Article 33, which is part of Chapter IV (Controller and processor) and Section 2 (Security of
+  personal data), outlines the controller's obligation to notify the supervisory authority of a
+  personal data breach within 72 hours…"* The 1922 contexts were written by `qwen3.8:27b` through
+  Ollama at temperature 0 (median 44 words), and are cached in
+  [`eval/contexts.jsonl`](eval/contexts.jsonl), so the ingestion can be redone without the model.
+
+Titles is the witness: it tells what the LLM adds beyond the structure the parser already knows.
+**The rule was set before the runs:** contextual retrieval is adopted if its 95 % interval on
+recall@8 is entirely above 0 against both the baseline and titles; otherwise titles is kept.
+
+The new chunks the two variants brought up were pooled first (a second round, same method as
+entry 3): 302 unjudged pairs, 17 found relevant by the LLM, 117 checked blind by a person. 1 of 100
+sampled rejections was wrong (upper bound 5.4 %), so the unchecked rejections were kept; one review
+found a fact the golden set missed, added by hand. All three runs are then at judged@8 1.00, and the
+differences barely moved (±0.01), so the gains are not an artifact of unjudged chunks.
+
+| | baseline | titles | contextual | titles − baseline | contextual − baseline | contextual − titles |
+|---|---|---|---|---|---|---|
+| recall@5 | 0.64 | 0.73 | 0.72 | **+0.09 [+0.03, +0.16]** | **+0.08 [+0.01, +0.16]** | −0.01 [−0.06, +0.05] |
+| recall@8 | 0.75 | 0.77 | 0.81 | +0.02 [−0.02, +0.06] | +0.05 [−0.01, +0.12] | +0.04 [−0.02, +0.10] |
+| recall@50 | 0.90 | 0.93 | 0.96 | +0.03 [−0.00, +0.07] | **+0.06 [+0.02, +0.11]** | +0.03 [−0.01, +0.07] |
+| MRR@8 | 0.63 | 0.68 | 0.71 | +0.05 [−0.02, +0.12] | **+0.08 [+0.00, +0.16]** | +0.03 [−0.04, +0.10] |
+| recall@8, factual (45) | 0.82 | 0.84 | 0.86 | | | |
+| recall@8, vague (21) | 0.67 | 0.67 | 0.81 | | | |
+| recall@8, multi-document (7) | 0.44 | 0.44 | 0.37 | | | |
+| recall@8, table (4) | 1.00 | 1.00 | 1.00 | | | |
+
+- **Titles move the right chunk up, for free.** Recall@5 gains 0.09 (15 questions gain, 5 lose),
+  but by rank 8 the baseline has mostly caught up (6 gain, 4 lose).
+- **Contextual retrieval finds more, but not significantly at rank 8.** Recall@8 gains 0.05 over the
+  baseline (14 questions gain, 5 lose) and 0.04 over titles (9 gain, 4 lose), both intervals
+  touching 0. It is significant deeper (recall@50 +0.06: chunks the baseline does not find at all)
+  and on the ranking (MRR@8 +0.08).
+- **The gain is on vague questions** (0.67 to 0.81), worded as a user would: the context restates
+  in plain words what a provision is about. Titles do nothing there (0.67). With 21 questions this
+  is an indication, not a result.
+
+**Decision:** titles become the default (`pipelines/baseline.toml` keeps the plain RAG). Contextual
+retrieval is not adopted: the rule is not met, and it costs an LLM call per chunk at every
+ingestion, from a model that is not available everywhere. It stays as `pipelines/contextual.toml`.
+
+**What this does not show:**
+- That contextual retrieval does not help: +0.04 over titles is below what 77 questions can detect
+  (about ±8 points). A larger golden set would settle it, and it will be rerun then.
+- Anything about article numbers: titles put "Article 33" into the embedded text, but the golden set
+  has no question in exact legal terms yet (entry 3).
+- Whether contexts that summarize the passage, rather than only situate it, help or hurt: some do,
+  despite the prompt, and this was not measured separately.
+- Anything about other contextualizing models: only Qwen wrote these contexts.
 
 ## Development
 
