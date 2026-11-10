@@ -13,6 +13,7 @@ from agentic_rag.evaluation.pooling.selection import (
     load_pool_judgments,
     not_yet_judged,
     pool,
+    verdicts_on,
 )
 from agentic_rag.evaluation.record import RunRecord
 from agentic_rag.evaluation.runner import QuestionResult
@@ -244,3 +245,15 @@ def test_resuming_after_a_failure_judges_only_what_is_missing(tmp_path: Path) ->
     judge_pool(not_yet_judged(to_judge, load_pool_judgments(path)), _FakeJudge(), path)
 
     assert sorted(j.chunk for j in load_pool_judgments(path)) == ["gdpr#1", "gdpr#2", "gdpr#3"]
+
+
+def test_only_the_verdicts_on_the_pairs_to_judge_go_to_the_review() -> None:
+    def verdict(question_id: str, key: str) -> PoolJudgment:
+        return PoolJudgment(
+            question_id=question_id, chunk=key, model="m", verdict=Verdict(reason="", facts=())
+        )
+
+    done = [verdict("q1", "gdpr#1"), verdict("q1", "gdpr#9"), verdict("q2", "gdpr#2")]
+    to_judge = [(_question("q1"), _stored("gdpr#1")), (_question("q1"), _stored("gdpr#2"))]
+
+    assert verdicts_on(to_judge, done) == [done[0]]

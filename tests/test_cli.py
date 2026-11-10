@@ -484,6 +484,27 @@ def test_pool_with_a_limit_stops_before_the_review_and_resumes(
     assert (POOLING_DIR / "review.toml").is_file()
 
 
+def test_pool_leaves_the_verdicts_of_an_earlier_round_out_of_the_review(
+    pooled: Path, tmp_path: Path
+) -> None:
+    run = _saved(tmp_path, "baseline", _pool_run(pooled))
+    POOLING_DIR.mkdir(parents=True)
+    earlier = PoolJudgment(
+        question_id="q0",
+        chunk="gdpr#9",
+        model="m",
+        verdict=Verdict(reason="", facts=(StatedFact(fact=1, quote="an earlier quote"),)),
+    )
+    (POOLING_DIR / "llm.jsonl").write_text(earlier.model_dump_json() + "\n")
+
+    result = runner.invoke(app, ["pool", run])
+
+    assert result.exit_code == 0, result.output
+    assert "2 pairs to judge, 1 judged before" in result.stdout
+    review = tomllib.loads((POOLING_DIR / "review.toml").read_text())
+    assert {entry["chunk"] for entry in review["chunks"]} == {"gdpr#1", "gdpr#2"}
+
+
 def test_pool_never_overwrites_a_review(pooled: Path, tmp_path: Path) -> None:
     run = _saved(tmp_path, "baseline", _pool_run(pooled))
     POOLING_DIR.mkdir(parents=True)

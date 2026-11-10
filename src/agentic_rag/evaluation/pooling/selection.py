@@ -79,6 +79,14 @@ def not_yet_judged(
     return [(q, c) for q, c in to_judge if (q.id, c.key) not in judged]
 
 
+def verdicts_on(
+    to_judge: Sequence[tuple[Question, StoredChunk]], done: Sequence[PoolJudgment]
+) -> list[PoolJudgment]:
+    """The verdicts on the pairs this pooling judges: earlier rounds stay out of its review."""
+    pairs = {(question.id, chunk.key) for question, chunk in to_judge}
+    return [j for j in done if (j.question_id, j.chunk) in pairs]
+
+
 def judge_pool(
     to_judge: Sequence[tuple[Question, StoredChunk]],
     judge: RelevanceJudge,

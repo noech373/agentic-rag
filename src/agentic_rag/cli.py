@@ -245,9 +245,8 @@ def pool_runs(
     questions = tuning_questions(load_golden_set(golden))
     chunks = {chunk.key: chunk for chunk in make_store(settings).all_chunks()}
     done = selection.load_pool_judgments(llm_path)
-    pending = selection.not_yet_judged(
-        selection.chunks_to_judge(questions, records, load_judgments(judgments), chunks), done
-    )
+    to_judge = selection.chunks_to_judge(questions, records, load_judgments(judgments), chunks)
+    pending = selection.not_yet_judged(to_judge, done)
     typer.echo(f"{len(pending)} pairs to judge, {len(done)} judged before")
 
     batch = pending[:limit]
@@ -257,7 +256,7 @@ def pool_runs(
         typer.echo(f"{len(pending) - len(batch)} pairs left: run again to finish before the review")
         return
 
-    entries = review.review_sample([*done, *judged])
+    entries = review.review_sample(selection.verdicts_on(to_judge, [*done, *judged]))
     review.write_review(entries, {q.id: q for q in questions}, chunks, review_path)
     relevant = sum(entry.verdict.relevant for entry in entries)
     typer.echo(
