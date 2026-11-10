@@ -37,6 +37,8 @@ class _FakeRetriever:
 class _FakeWriter:
     """Answers every question with the same text, and remembers the questions."""
 
+    name = "fake"
+
     def __init__(self, answer: str = ANSWER) -> None:
         self._answer = answer
         self.questions: list[str] = []

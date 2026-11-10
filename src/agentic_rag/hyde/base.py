@@ -7,6 +7,11 @@ from typing import Protocol
 
 
 class AnswerWriter(Protocol):
+    @property
+    def name(self) -> str:
+        """The model that writes the answers: another model writes other answers."""
+        ...
+
     def write(self, question: str) -> str:
         """A plausible answer to `question`, from the model's own knowledge."""
         ...
