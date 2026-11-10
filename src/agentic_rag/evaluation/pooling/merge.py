@@ -130,12 +130,15 @@ def _own_quote(key: str, text: str, normalized: Sequence[str]) -> Quote:
     """The first `REJECTION_WORDS` words of the chunk that are in no other chunk.
 
     A shared quote, such as a table's header, would reject the other chunks too, unread.
+    Exact copies of the chunk do not count: the same text gets the same verdict.
     """
+    own = normalize(text)
+    others = [other for other in normalized if other != own]
     words = list(re.finditer(r"\w+", text))
-    for first in range(max(len(words) - REJECTION_WORDS, 0) + 1):
+    for first in range(max(len(words) - REJECTION_WORDS, 0) + 1 if words else 0):
         last = words[min(first + REJECTION_WORDS, len(words)) - 1]
         quote = " ".join(text[words[first].start() : last.end()].split())
-        if sum(contains(other, quote) for other in normalized) == 1:
+        if not any(contains(other, quote) for other in others):
             return Quote(document=key.rpartition("#")[0], quote=quote)
     raise ValueError(f"{key}: no {REJECTION_WORDS} words of it are in this chunk alone")
 
