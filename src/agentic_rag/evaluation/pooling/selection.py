@@ -36,6 +36,31 @@ class PoolJudgment(BaseModel):
     verdict: Verdict
 
 
+def run_corpus(run: RunRecord) -> str:
+    """The corpus the run searched: the runs saved before corpus variants searched `public`."""
+    return str(run.config.get("corpus", "public"))
+
+
+def chunks_of_corpora(chunks: Mapping[str, Sequence[StoredChunk]]) -> dict[str, StoredChunk]:
+    """The chunks of every corpus, by key ("gdpr#12").
+
+    The pooling knows a chunk by its position only: a key whose text differs from one corpus to
+    another would show the judge a passage the run never found.
+    """
+    merged: dict[str, StoredChunk] = {}
+    origin: dict[str, str] = {}
+    for corpus, stored in chunks.items():
+        for chunk in stored:
+            first = merged.setdefault(chunk.key, chunk)
+            origin.setdefault(chunk.key, corpus)
+            if first.chunk.text != chunk.chunk.text:
+                raise ValueError(
+                    f"{chunk.key} differs between corpora {origin[chunk.key]} and {corpus}: "
+                    "pool runs of differently chunked corpora separately"
+                )
+    return merged
+
+
 def pool(question_id: str, runs: Sequence[RunRecord], depth: int = POOL_DEPTH) -> list[str]:
     """The first `depth` chunks of each run for the question, each once, in the order first seen."""
     pooled: dict[str, None] = {}  # a dict keeps the insertion order
