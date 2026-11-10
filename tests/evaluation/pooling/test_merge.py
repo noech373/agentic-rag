@@ -246,9 +246,26 @@ def test_a_short_chunk_is_quoted_whole() -> None:
     assert quote.quote == "Too short"
 
 
-def test_a_chunk_without_its_own_words_is_an_error() -> None:
+def test_exact_copies_of_a_chunk_do_not_block_its_quote() -> None:
+    texts = {"edpb#1": _WORDS, "edpb#2": _WORDS, "edpb#3": f"{_WORDS} and more"}
+
+    with pytest.raises(ValueError, match="edpb#1: no 12 words"):
+        rejection_quotes([("q", "edpb#1")], texts)
+
+    del texts["edpb#3"]
+    [quote] = rejection_quotes([("q", "edpb#1")], texts)["q"]
+
+    assert quote.quote == " ".join(f"word{i}" for i in range(12))
+
+
+def test_a_chunk_inside_a_larger_one_is_an_error() -> None:
     with pytest.raises(ValueError, match="gdpr#1: no 12 words"):
-        rejection_quotes([("q", "gdpr#1")], {"gdpr#1": _WORDS, "gdpr#2": _WORDS})
+        rejection_quotes([("q", "gdpr#1")], {"gdpr#1": _WORDS, "gdpr#2": f"Before. {_WORDS}"})
+
+
+def test_a_chunk_without_words_is_an_error() -> None:
+    with pytest.raises(ValueError, match="gdpr#1: no 12 words"):
+        rejection_quotes([("q", "gdpr#1")], {"gdpr#1": "| --- | --- |"})
 
 
 def test_the_rejections_are_grouped_by_question() -> None:
