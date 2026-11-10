@@ -320,7 +320,7 @@ previous system, **bold** when the 95 % interval excludes 0.
 reranking and contextual retrieval are available as pipelines but not the default (entries 2, 4, 5).
 Entries keep the numbers of their time: entry 3 corrects those of 1 and 2. Entries 1 to 4 were
 measured on the plain baseline; since entry 5, the variants that only set the retriever stack on the
-titles, so their saved runs must be redone before being compared with the default.
+titles. Entry 6 redoes BM25 and hybrid search on them; the reranking run is still from entry 4.
 
 ### 1. Baseline: vector search
 
@@ -550,6 +550,39 @@ ingestion, from a model that is not available everywhere. It stays as `pipelines
 - Whether contexts that summarize the passage, rather than only situate it, help or hurt: some do,
   despite the prompt, and this was not measured separately.
 - Anything about other contextualizing models: only Qwen wrote these contexts.
+
+### 6. BM25 and hybrid search on the titled chunks: still not adopted
+
+Entry 5 changed what the vector search embeds, so the BM25 and hybrid runs of entries 2 and 3 no
+longer compared with the default. Both were rerun with it at the same commit, on the golden set and
+judgments of entry 5.
+
+| | default | bm25 | hybrid | bm25 − default | hybrid − default |
+|---|---|---|---|---|---|
+| recall@5 | 0.73 | 0.44 | 0.57 | **−0.29 [−0.39, −0.20]** | **−0.16 [−0.25, −0.08]** |
+| recall@8 | 0.77 | 0.47 | 0.67 | **−0.30 [−0.39, −0.20]** | **−0.10 [−0.17, −0.04]** |
+| recall@20 | 0.86 | 0.58 | 0.83 | **−0.28 [−0.38, −0.19]** | −0.03 [−0.09, +0.02] |
+| recall@50 | 0.93 | 0.68 | 0.91 | **−0.25 [−0.35, −0.16]** | −0.02 [−0.07, +0.01] |
+| MRR@8 | 0.68 | 0.37 | 0.55 | **−0.31 [−0.42, −0.20]** | **−0.12 [−0.22, −0.04]** |
+| judged@8 | 1.00 | 1.00 | 0.91 | | |
+| recall@8, factual (45) | 0.84 | 0.61 | 0.78 | | |
+| recall@8, vague (21) | 0.67 | 0.20 | 0.41 | | |
+| recall@8, multi-document (7) | 0.44 | 0.32 | 0.51 | | |
+| recall@8, table (4) | 1.00 | 0.62 | 1.00 | | |
+
+- **BM25 did not change**, as expected: it reads the stored text, which has no titles. Its top 8 is
+  the same as before for all 77 questions; recall@8 moves from 0.44 to 0.47 only through the
+  judgments added by pooling.
+- **Hybrid search still loses at the top** (recall@8: 3 questions gain, 15 lose), and again on vague
+  questions (0.67 to 0.41). Deeper, the loss is no longer significant (recall@50 −0.02): the fusion
+  keeps the right chunks among the candidates but ranks BM25's wrong ones above them.
+- 9 % of the hybrid top 8 was never judged and counts as missed. It was not pooled again: in the
+  last round, 3 to 6 % of such chunks were relevant, about +0.01 of recall, far from the −0.10.
+
+**Decision:** unchanged, vector search stays the default.
+
+**What this does not show:** anything on questions in exact legal terms, which the golden set still
+lacks (entry 2). The multi-document gain (0.44 to 0.51) rests on 7 questions.
 
 ## Development
 
