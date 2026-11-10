@@ -13,6 +13,23 @@ from agentic_rag.generation.base import Answer, GenerationError, Generator
 from agentic_rag.generation.prompt import INSTRUCTIONS, build_input
 
 
+class OllamaGenerator(Generator):
+    def __init__(self, client: httpx.Client, model: str, num_ctx: int) -> None:
+        self._client = client
+        self._model = model
+        self._num_ctx = num_ctx  # the one the model is loaded with: another one reloads it
+
+    def generate(self, question: str, sources: Sequence[RetrievedChunk]) -> Answer:
+        text = chat(
+            self._client,
+            self._model,
+            self._num_ctx,
+            INSTRUCTIONS,
+            build_input(question, sources),
+        )
+        return Answer(text=text, sources=tuple(sources))
+
+
 def chat(client: httpx.Client, model: str, num_ctx: int, instructions: str, text: str) -> str:
     """The model's answer to `text`, the most likely words, without thinking."""
     response = client.post(
@@ -39,20 +56,3 @@ def chat(client: httpx.Client, model: str, num_ctx: int, instructions: str, text
     if not answer.strip():
         raise GenerationError("response without text")
     return answer
-
-
-class OllamaGenerator(Generator):
-    def __init__(self, client: httpx.Client, model: str, num_ctx: int) -> None:
-        self._client = client
-        self._model = model
-        self._num_ctx = num_ctx  # the one the model is loaded with: another one reloads it
-
-    def generate(self, question: str, sources: Sequence[RetrievedChunk]) -> Answer:
-        text = chat(
-            self._client,
-            self._model,
-            self._num_ctx,
-            INSTRUCTIONS,
-            build_input(question, sources),
-        )
-        return Answer(text=text, sources=tuple(sources))
