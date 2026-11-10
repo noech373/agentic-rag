@@ -14,6 +14,7 @@ from agentic_rag.evaluation.pooling.review import ReviewEntry, toml_string
 from agentic_rag.evaluation.pooling.selection import PoolJudgment
 
 REJECTION_WORDS = 12  # enough to tell a chunk from the others, short enough to read
+_WORD = re.compile(r"\w+|[✔✓✘✗]")  # a check mark is a word for `normalize`
 
 
 class NewWording(NamedTuple):
@@ -134,7 +135,7 @@ def _own_quote(key: str, text: str, normalized: Sequence[str]) -> Quote:
     """
     own = normalize(text)
     others = [other for other in normalized if other != own]
-    words = list(re.finditer(r"\w+", text))
+    words = list(_WORD.finditer(text))
     for first in range(max(len(words) - REJECTION_WORDS, 0) + 1 if words else 0):
         last = words[min(first + REJECTION_WORDS, len(words)) - 1]
         quote = " ".join(text[words[first].start() : last.end()].split())

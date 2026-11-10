@@ -240,6 +240,16 @@ def test_the_quote_is_in_no_other_chunk() -> None:
     assert not contains(normalize(texts["esas#2"]), quote.quote)
 
 
+def test_check_marks_tell_two_tables_apart() -> None:
+    header = " ".join(f"column{i}" for i in range(12))
+    texts = {"edpb#1": f"| {header} |\n| ✓ | ✓ |", "edpb#2": f"| {header} |\n| ✓ | X |"}
+
+    [quote] = rejection_quotes([("q", "edpb#1")], texts)["q"]
+
+    assert contains(normalize(texts["edpb#1"]), quote.quote)
+    assert not contains(normalize(texts["edpb#2"]), quote.quote)
+
+
 def test_a_short_chunk_is_quoted_whole() -> None:
     [quote] = rejection_quotes([("q", "gdpr#1")], {"gdpr#1": "Too short."})["q"]
 
