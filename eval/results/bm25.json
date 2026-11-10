@@ -1,10 +1,15 @@
 {
-  "golden_sha256": "032c3aeea0d0af8ec5b2337218851efaba32289fbe8ebb18edbfe80bca2f8147",
-  "judgments_sha256": "d2c987239161762b1cb7c6646ac7db22007d200c384bc44410873c15e91c7ae5",
-  "git_sha": "b3633d2236d7a852c2f23357be9a830e078a1b76",
+  "golden_sha256": "3c8fd69af5069e5e321e1e0c58479627620570340569b88c92120365bec5f149",
+  "judgments_sha256": "c02c90f435f35e2301e99fb11cb1e153da225abda5b5d4e1a3054942af54eb1e",
+  "git_sha": "7984cc6cde4b57fad5d4a6281d39cceca6f925ae",
   "dirty": false,
+  "corpus_sha256": "869480de51f7e26c63cdf8497ec40641faa930dccd52be72bcaee85a9969aff6",
   "config": {
-    "retriever": "bm25"
+    "corpus": "titles",
+    "embedded_text": "titles",
+    "contextualizer": "openai",
+    "retriever": "bm25",
+    "reranker": null
   },
   "results": [
     {
@@ -1611,8 +1616,8 @@
       "question_id": "hospital-records-unavailable",
       "category": "factual",
       "recall": {
-        "recall@5": 1.0,
-        "recall@8": 1.0,
+        "recall@5": 0.6666666666666666,
+        "recall@8": 0.6666666666666666,
         "recall@20": 1.0,
         "recall@50": 1.0
       },
