@@ -24,6 +24,8 @@ ai-act-high-risk-logs-retention = [
   { document = "ai-act", quote = "3. The instructions for use shall contain at least the following information" },
   { document = "ai-act", quote = "1. The provider shall draw up a written machine readable, physical or" },
   { document = "ai-act", quote = "AI systems shall be designed and developed in such a way as" },
+  { document = "ai-act", quote = "1. The provider shall, for a period ending 10 years after the" },
+  { document = "ai-act", quote = "10. Without prejudice to Directive (EU) 2016/680, in the framework of" },
 ]
 
 ai-act-high-risk-testing-before-market = [
@@ -41,6 +43,8 @@ ai-act-high-risk-testing-before-market = [
   { document = "ai-act", quote = "177) In order to ensure legal certainty, ensure an appropriate adaptation period" },
   { document = "ai-act", quote = "166) It is important that AI systems related to products that are" },
   { document = "ai-act", quote = "1. The provider shall draw up a written machine readable, physical or" },
+  { document = "ai-act", quote = "1. Where, having performed an evaluation under Article 79, after consulting the" },
+  { document = "ai-act", quote = "i) the subjects of the testing in real world conditions have given" },
 ]
 
 ai-act-instructions-for-deployers = [
@@ -58,6 +62,8 @@ ai-act-instructions-for-deployers = [
   { document = "ai-act", quote = "1. Before making a high-risk AI system available on the market" },
   { document = "ai-act", quote = "1. Deployers of high-risk AI systems shall take appropriate technical and" },
   { document = "ai-act", quote = "3. For high-risk AI systems covered by the Union harmonisation legislation" },
+  { document = "ai-act", quote = "88) Along the AI value chain multiple parties often supply AI systems" },
+  { document = "ai-act", quote = "1. Providers of high-risk AI systems shall put a quality management" },
 ]
 
 ai-act-job-application-sorting-not-high-risk = [
@@ -74,6 +80,9 @@ ai-act-job-application-sorting-not-high-risk = [
   { document = "ai-act", quote = "52) As regards stand-alone AI systems, namely high-risk AI systems" },
   { document = "ai-act", quote = "46) High-risk AI systems should only be placed on the Union" },
   { document = "ai-act", quote = "58) Another area in which the use of AI systems deserves special" },
+  { document = "ai-act", quote = "60) AI systems used in migration, asylum and border control management affect" },
+  { document = "ai-act", quote = "62) Without prejudice to the rules provided for in Regulation (EU) 2024" },
+  { document = "ai-act", quote = "5. Access to and enjoyment of essential private services and essential public" },
 ]
 
 ai-act-recruitment-no-external-assessment = [
@@ -88,6 +97,11 @@ ai-act-recruitment-no-external-assessment = [
   { document = "ai-act", quote = "1. Prior to deploying a high-risk AI system referred to in" },
   { document = "ai-act", quote = "61) Certain AI systems intended for the administration of justice and democratic" },
   { document = "ai-act", quote = "1. Irrespective of whether an AI system is placed on the market" },
+  { document = "ai-act", quote = "5. For high-risk AI systems referred to in point 1(a" },
+  { document = "ai-act", quote = "2. When assessing the condition under paragraph 1, point (b), the Commission" },
+  { document = "ai-act", quote = "47) AI systems could have an adverse impact on the health and" },
+  { document = "ai-act", quote = "5. Access to and enjoyment of essential private services and essential public" },
+  { document = "ai-act", quote = "6. High-risk AI systems shall be tested for the purpose of" },
 ]
 
 ai-act-third-party-gpai-model = [
@@ -102,6 +116,10 @@ ai-act-third-party-gpai-model = [
   { document = "ai-act", quote = "Section 1 Information to be provided by all providers of general-purpose" },
   { document = "ai-act", quote = "117) The codes of practice should represent a central tool for the" },
   { document = "ai-act", quote = "4. The provider of a high-risk AI system and the third" },
+  { document = "ai-act", quote = "164) The AI Office should be able to take the necessary actions" },
+  { document = "ai-act", quote = "1. In addition to the obligations listed in Articles 53 and 54" },
+  { document = "ai-act", quote = "4. Providers of general-purpose AI models may rely on codes of" },
+  { document = "ai-act", quote = "1. For the purpose of carrying out the tasks assigned to it" },
 ]
 
 ai-act-training-data-governance = [
@@ -116,6 +134,10 @@ ai-act-training-data-governance = [
   { document = "ai-act", quote = "65) The risk-management system should consist of a continuous, iterative process" },
   { document = "ai-act", quote = "1. High-risk AI systems shall technically allow for the automatic recording" },
   { document = "ai-act", quote = "Section 1 Information to be provided by all providers of general-purpose" },
+  { document = "ai-act", quote = "1. High-risk AI systems shall comply with the requirements laid down" },
+  { document = "ai-act", quote = "Additional information to be provided by providers of general-purpose AI models" },
+  { document = "ai-act", quote = "3. The instructions for use shall contain at least the following information" },
+  { document = "ai-act", quote = "70) In order to protect the right of others from the discrimination" },
 ]
 
 analytics-cookie-lifetime = [
@@ -132,6 +154,7 @@ analytics-cookie-lifetime = [
   { document = "cnil-developer-guide-16", quote = "Generally speaking, **before depositing or reading a cookie or tracer,** editors of" },
   { document = "cnil-developer-guide-15", quote = "The European ePrivacy Directive requires the user's consent before any action" },
   { document = "cnil-developer-guide-15", quote = "First of all, check on the CNIL website that **a text does" },
+  { document = "cnil-developer-guide-16", quote = "Most large audience measurement offerings do not fall within the scope of" },
 ]
 
 bank-simulated-attack-frequency = [
@@ -151,6 +174,12 @@ bank-simulated-attack-frequency = [
   { document = "nis2", quote = "56) Member States should, in their national cybersecurity strategies, address the specific" },
   { document = "enisa-nis2-implementation-guidance", quote = "13.2.3. The relevant entities shall test, review and, where appropriate" },
   { document = "edpb-guidelines-2021-01", quote = "16. A frequent cause for a data breach notification is a ransomware" },
+  { document = "enisa-nis2-implementation-guidance", quote = "4.2.6. The relevant entities shall carry out regular testing of" },
+  { document = "enisa-nis2-implementation-guidance", quote = "3.5.5. The relevant entities shall test at planned intervals their" },
+  { document = "edpb-guidelines-2021-01", quote = "69. Just as in case of ransomware attacks, regardless of the outcome" },
+  { document = "dora", quote = "1. For the purpose of assessing preparedness for handling ICT-related incidents" },
+  { document = "enisa-nis2-implementation-guidance", quote = "7.3. The relevant entities shall review and, where appropriate, update the" },
+  { document = "dora", quote = "1. Financial entities shall have in place mechanisms to promptly detect anomalous" },
 ]
 
 big-analytics-no-banner = [
@@ -168,6 +197,9 @@ big-analytics-no-banner = [
   { document = "data-act", quote = "Providers of data processing services shall take the measures provided for in" },
   { document = "ai-act", quote = "68) ‘downstream provider’ means a provider of an AI system, including a" },
   { document = "cnil-developer-guide-10", quote = "Documentation is sometimes left out during development, due to lack of time" },
+  { document = "cnil-developer-guide-05", quote = "Choose a service provider that ensures appropriate security and confidentiality measures and" },
+  { document = "ai-act", quote = "69) The right to privacy and to protection of personal data must" },
+  { document = "cnil-developer-guide-09", quote = "Do you use libraries, SDKs, or other software components written by third" },
 ]
 
 breach-no-notification-individuals = [
@@ -178,6 +210,8 @@ breach-no-notification-individuals = [
   { document = "edpb-guidelines-2022-09", quote = "An individual informs the controller that they have received an email impersonating" },
   { document = "edpb-guidelines-2022-09", quote = "3. The GDPR introduced the requirement for a personal data breach (henceforth" },
   { document = "edpb-guidelines-2022-09", quote = "35. Once the controller has become aware, a notifiable breach must be" },
+  { document = "edpb-guidelines-2021-01", quote = "risks | | --- | --- | --- | | Internal documentation | Notification to SA | Communication to data subjects | | ✓ | X" },
+  { document = "edpb-guidelines-2021-01", quote = "81. Moreover, other risk mitigating circumstances are at play as well: the" },
 ]
 
 bundled-consent-gym = [
@@ -196,6 +230,10 @@ bundled-consent-gym = [
   { document = "esas-dora-incident-reporting", quote = "of responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | | | becomes" },
   { document = "esas-dora-incident-reporting", quote = "The ESAs agree with the views to ensure harmonised and consistent incident" },
   { document = "data-act", quote = "1. Where, in business-to-business relations, a data holder is obliged" },
+  { document = "gdpr", quote = "33) It is often not possible to fully identify the purpose of" },
+  { document = "data-act", quote = "1. Where data cannot be directly accessed by the user from the" },
+  { document = "data-act", quote = "37) In order to prevent the exploitation of users, third parties to" },
+  { document = "data-act", quote = "1. A third party shall process the data made available to it" },
 ]
 
 cctv-public-square-dpia = [
@@ -215,6 +253,12 @@ cctv-public-square-dpia = [
   { document = "enisa-nis2-implementation-guidance", quote = "3.3.1. The relevant entities shall put in place a simple" },
   { document = "enisa-nis2-implementation-guidance", quote = "13.2.1. For the purpose of Article 21(2)(e) of" },
   { document = "ai-act", quote = "1. The following AI practices shall be prohibited: (a) the placing on" },
+  { document = "ai-act", quote = "1. Where, having performed an evaluation under Article 79, after consulting the" },
+  { document = "ai-act", quote = "1. Where, within three months of receipt of the notification referred to" },
+  { document = "ai-act", quote = "1. Regulation (EU) 2019/1020 shall apply to AI systems covered by" },
+  { document = "ai-act", quote = "1. AI systems presenting a risk shall be understood as a ‘product" },
+  { document = "enisa-nis2-implementation-guidance", quote = "13.3.3. The relevant entities shall test, review and, where appropriate" },
+  { document = "ai-act", quote = "1. Prior to deploying a high-risk AI system referred to in" },
 ]
 
 chatbot-disclose-ai = [
@@ -236,6 +280,7 @@ chatbot-disclose-ai = [
   { document = "cnil-developer-guide-13", quote = "All organisations that use personal data have **the obligation to indicate where" },
   { document = "cnil-developer-guide-11", quote = "Real\" production data should not be used during the development and testing" },
   { document = "ai-act", quote = "72) To address concerns related to opacity and complexity of certain AI" },
+  { document = "ai-act", quote = "5. For high-risk AI systems referred to in point 1(a" },
 ]
 
 child-consent-age = [
@@ -252,6 +297,11 @@ child-consent-age = [
   { document = "gdpr", quote = "71) The data subject should have the right not to be subject" },
   { document = "ai-act", quote = "132) Certain AI systems intended to interact with natural persons or to" },
   { document = "ai-act", quote = "19) For the purposes of this Regulation the notion of ‘publicly accessible" },
+  { document = "gdpr", quote = "42) Where processing is based on the data subject's consent, the" },
+  { document = "gdpr", quote = "43) In order to ensure that consent is freely given, consent should" },
+  { document = "ai-act", quote = "168) Compliance with this Regulation should be enforceable by means of the" },
+  { document = "gdpr", quote = "1. In the absence of a decision pursuant to Article 45(3" },
+  { document = "data-act", quote = "1. Where data cannot be directly accessed by the user from the" },
 ]
 
 cloud-provider-contract-content = [
@@ -270,6 +320,10 @@ cloud-provider-contract-content = [
   { document = "data-act", quote = "1. The obligations laid down in Article 23, point (d), Article 29" },
   { document = "data-act", quote = "99) In line with the minimum requirement allowing switching between providers of" },
   { document = "edpb-guidelines-2022-09", quote = "49. When a controller notifies a breach to the supervisory authority, Article" },
+  { document = "gdpr", quote = "4. Where a processor engages another processor for carrying out specific processing" },
+  { document = "data-act", quote = "102) To foster further trust in data, it is important that safeguards" },
+  { document = "data-act", quote = "1. A third party shall process the data made available to it" },
+  { document = "data-act", quote = "1. Providers of data processing services shall make the following information available" },
 ]
 
 cloud-switching-notice-period = [
@@ -290,6 +344,9 @@ cloud-switching-notice-period = [
   { document = "gdpr", quote = "137) There may be an urgent need to act in order to" },
   { document = "edpb-guidelines-2022-09", quote = "43. The controller retains overall responsibility for the protection of personal data" },
   { document = "dora", quote = "a) full service level descriptions, including updates and revisions thereof with precise" },
+  { document = "data-act", quote = "6. Providers of data processing services shall not be required to develop" },
+  { document = "data-act", quote = "95) The information to be provided by providers of data processing services" },
+  { document = "data-act", quote = "1. Providers of data processing services that concern scalable and elastic computing" },
 ]
 
 cnil-compliant-claim = [
@@ -306,6 +363,9 @@ cnil-compliant-claim = [
   { document = "cnil-developer-guide-15", quote = "First of all, check on the CNIL website that **a text does" },
   { document = "ai-act", quote = "1. Market surveillance authorities shall have competences and powers to ensure that" },
   { document = "cnil-developer-guide-05", quote = "Choose a service provider that ensures appropriate security and confidentiality measures and" },
+  { document = "cnil-developer-guide-12", quote = "The information must be **easy to access**: the user must be able" },
+  { document = "cnil-developer-guide-02", quote = "Include privacy protection, including data security requirements, at the design stage of" },
+  { document = "cnil-developer-guide-16", quote = "Most large audience measurement offerings do not fall within the scope of" },
 ]
 
 cnil-guide-main-recommendations = [
@@ -320,6 +380,11 @@ cnil-guide-main-recommendations = [
   { document = "edpb-guidelines-2022-09", quote = "42. Article 26 GDPR concerns joint controllers and specifies that joint controllers" },
   { document = "cnil-developer-guide-02", quote = "Put privacy protection at the center of your developments** by adopting a" },
   { document = "cnil-developer-guide-05", quote = "Choose a service provider that ensures appropriate security and confidentiality measures and" },
+  { document = "cnil-developer-guide-02", quote = "The principles of personal data protection must be integrated into IT developments" },
+  { document = "cnil-developer-guide-10", quote = "It is essential to adopt good code-writing techniques as soon as" },
+  { document = "cnil-developer-guide-09", quote = "Do you use libraries, SDKs, or other software components written by third" },
+  { document = "cnil-developer-guide-09", quote = "Assess the value of adding each dependency.** Some commonly used software bricks" },
+  { document = "cnil-developer-guide-03", quote = "Assess the risks** in the tools and processes used for your developments" },
 ]
 
 consent-withdrawal = [
@@ -333,6 +398,8 @@ consent-withdrawal = [
   { document = "cnil-developer-guide-15", quote = "Right of access | Right to rectification | Right to erasure | Right to restriction" },
   { document = "ai-act", quote = "1. For the purpose of testing in real world conditions under Article" },
   { document = "ai-act", quote = "i) the subjects of the testing in real world conditions have given" },
+  { document = "gdpr", quote = "1. The data subject shall have the right not to be subject" },
+  { document = "gdpr", quote = "1. The data subject shall have the right to object, on grounds" },
 ]
 
 cookie-shopping-basket-consent = [
@@ -347,6 +414,7 @@ cookie-shopping-basket-consent = [
   { document = "cnil-developer-guide-15", quote = "First of all, check on the CNIL website that **a text does" },
   { document = "cnil-developer-guide-01", quote = "Where they relate to natural persons, **the following data are personal data" },
   { document = "gdpr", quote = "1. Where processing is based on consent, the controller shall be able" },
+  { document = "gdpr", quote = "38) Children merit specific protection with regard to their personal data, as" },
 ]
 
 data-act-application-dates = [
@@ -360,6 +428,8 @@ data-act-application-dates = [
   { document = "data-act", quote = "96) To facilitate interoperability and switching between data processing services, users and" },
   { document = "data-act", quote = "5) This Regulation ensures that users of a connected product or related" },
   { document = "data-act", quote = "1. This Regulation lays down harmonised rules, inter alia, on: (a) the" },
+  { document = "data-act", quote = "Providers of data processing services shall take the measures provided for in" },
+  { document = "data-act", quote = "1. Providers of data processing services that concern scalable and elastic computing" },
 ]
 
 data-act-atm-data-compensation = [
@@ -381,6 +451,14 @@ data-act-atm-data-compensation = [
   { document = "data-act", quote = "22) Connected products may be designed to make certain data directly accessible" },
   { document = "gdpr", quote = "1. The controller shall take appropriate measures to provide any information referred" },
   { document = "data-act", quote = "1. Where data cannot be directly accessed by the user from the" },
+  { document = "data-act", quote = "4. If the conditions laid down in paragraph 2 or 3 are" },
+  { document = "data-act", quote = "4. Paragraph 3 of this Article does not preclude a public sector" },
+  { document = "data-act", quote = "36) Access to any data stored in and accessed from terminal equipment" },
+  { document = "data-act", quote = "1. The obligations laid down in Article 23, point (d), Article 29" },
+  { document = "data-act", quote = "1. A data holder receiving a request to make data available under" },
+  { document = "data-act", quote = "body, the Commission, the European Central Bank or a Union body receiving" },
+  { document = "data-act", quote = "1. Public sector bodies, the Commission, the European Central Bank and Union" },
+  { document = "data-act", quote = "1. The requirements laid down in Article 23, Article 24, Article 25" },
 ]
 
 data-act-atm-data-model-training = [
@@ -402,6 +480,10 @@ data-act-atm-data-model-training = [
   { document = "edpb-guidelines-2021-01", quote = "An insurance group offers car insurances. To do this, it sends out" },
   { document = "data-act", quote = "70) The objective of the obligation to provide the data is to" },
   { document = "data-act", quote = "15) The data represent the digitisation of user actions and events and" },
+  { document = "ai-act", quote = "3. For the purposes of paragraph 1, first subparagraph, point (h) and" },
+  { document = "ai-act", quote = "159) Each market surveillance authority for high-risk AI systems in the" },
+  { document = "ai-act", quote = "69) The right to privacy and to protection of personal data must" },
+  { document = "ai-act", quote = "70) In order to protect the right of others from the discrimination" },
 ]
 
 data-act-atm-derived-data = [
@@ -424,6 +506,11 @@ data-act-atm-derived-data = [
   { document = "ai-act", quote = "38) The use of AI systems for real-time remote biometric identification" },
   { document = "data-act", quote = "14) Connected products that obtain, generate or collect, by means of their" },
   { document = "data-act", quote = "30) The user should be free to use the data for any" },
+  { document = "data-act", quote = "36) Access to any data stored in and accessed from terminal equipment" },
+  { document = "ai-act", quote = "10. Without prejudice to Directive (EU) 2016/680, in the framework of" },
+  { document = "ai-act", quote = "3. For the purposes of paragraph 1, first subparagraph, point (h) and" },
+  { document = "ai-act", quote = "1. The Commission shall, in collaboration with the Member States, set up" },
+  { document = "ai-act", quote = "1. The Commission, market surveillance authorities and notified bodies and any other" },
 ]
 
 data-act-atm-trade-secrets = [
@@ -436,6 +523,9 @@ data-act-atm-trade-secrets = [
   { document = "edpb-guidelines-2021-01", quote = "A hypermarket chain detected, 3 months after its configuration, that some email" },
   { document = "data-act", quote = "body, the Commission, the European Central Bank or a Union body receiving" },
   { document = "data-act", quote = "6. A data holder shall not use any readily available data to" },
+  { document = "ai-act", quote = "1. The Commission, market surveillance authorities and notified bodies and any other" },
+  { document = "data-act", quote = "4. If the conditions laid down in paragraph 2 or 3 are" },
+  { document = "data-act", quote = "9. Without prejudice to a user’s right to seek redress at" },
 ]
 
 data-act-bank-cloud-functional-equivalence = [
@@ -453,6 +543,8 @@ data-act-bank-cloud-functional-equivalence = [
   { document = "data-act", quote = "78) The ability of customers of data processing services, including cloud and" },
   { document = "data-act", quote = "84) This Regulation aims to facilitate switching between data processing services, which" },
   { document = "data-act", quote = "1. Open interoperability specifications and harmonised standards for the interoperability of data" },
+  { document = "data-act", quote = "94) Throughout the switching process, a high level of security should be" },
+  { document = "data-act", quote = "97) In order to facilitate switching between data processing services, all parties" },
 ]
 
 data-act-cloud-foreign-government-access = [
@@ -467,6 +559,10 @@ data-act-cloud-foreign-government-access = [
   { document = "data-act", quote = "7) The fundamental right to the protection of personal data is safeguarded" },
   { document = "data-act", quote = "26) To foster the emergence of liquid, fair and efficient markets for" },
   { document = "data-act", quote = "1. An exceptional need to use certain data within the meaning of" },
+  { document = "data-act", quote = "1. This Chapter shall not affect the obligations laid down in Union" },
+  { document = "data-act", quote = "body, the Commission, the European Central Bank or a Union body demonstrates" },
+  { document = "data-act", quote = "72) In the case of an exceptional need related to a public" },
+  { document = "data-act", quote = "Commission, the European Central Bank or a Union body shall be entitled" },
 ]
 
 data-act-cloud-pre-contract-switching-info = [
@@ -487,6 +583,7 @@ data-act-cloud-pre-contract-switching-info = [
   { document = "data-act", quote = "74) When reusing data provided by data holders, public sector bodies, the" },
   { document = "data-act", quote = "88) Switching charges are charges imposed by providers of data processing services" },
   { document = "data-act", quote = "96) To facilitate interoperability and switching between data processing services, users and" },
+  { document = "data-act", quote = "6. Providers of data processing services shall not be required to develop" },
 ]
 
 data-act-unfair-liability-clause = [
@@ -504,6 +601,7 @@ data-act-unfair-liability-clause = [
   { document = "data-act", quote = "The Commission, before 12 September 2025, shall develop and recommend non-binding" },
   { document = "dora", quote = "75) Moreover, the voluntary use of standard contractual clauses developed by public" },
   { document = "data-act", quote = "62) In order to ensure legal certainty, this Regulation establishes a list" },
+  { document = "data-act", quote = "44) In order to ensure that the conditions for mandatory data access" },
 ]
 
 demo-with-other-client-data = [
@@ -522,6 +620,11 @@ demo-with-other-client-data = [
   { document = "data-act", quote = "1. The obligations laid down in Article 23, point (d), Article 29" },
   { document = "ai-act", quote = "be provided and thereafter kept up to date with regard to testing" },
   { document = "data-act", quote = "82) Undermining the extraction of the exportable data that belongs to the" },
+  { document = "data-act", quote = "3. Before concluding a contract for the provision of a related service" },
+  { document = "data-act", quote = "1. Connected products shall be designed and manufactured, and related services shall" },
+  { document = "cnil-developer-guide-05", quote = "Choose a service provider that ensures appropriate security and confidentiality measures and" },
+  { document = "data-act", quote = "6. A data holder shall not use any readily available data to" },
+  { document = "cnil-developer-guide-16", quote = "Most large audience measurement offerings do not fall within the scope of" },
 ]
 
 dora-automated-failover = [
@@ -542,6 +645,14 @@ dora-automated-failover = [
   { document = "esas-dora-incident-reporting", quote = "1. One of the objectives of Regulation (EU) 2022/2554 on digital" },
   { document = "enisa-nis2-implementation-guidance", quote = "Measures in place for dealing with disasters, such as failover sites in" },
   { document = "esas-dora-incident-reporting", quote = "10. Several respondents were of the view that the RTS and ITS" },
+  { document = "dora", quote = "6. In determining the recovery time and recovery point objectives for each" },
+  { document = "dora", quote = "48) To keep pace with an evolving cyber threat landscape, financial entities" },
+  { document = "dora", quote = "50) While this Regulation allows financial entities to determine their recovery time" },
+  { document = "dora", quote = "1. For the purposes of adequately protecting ICT systems and with a" },
+  { document = "dora", quote = "64) A financial entity should at all times remain fully responsible for" },
+  { document = "dora", quote = "49) Efficient business continuity and recovery plans are necessary to allow financial" },
+  { document = "dora", quote = "1. Financial entities shall have in place mechanisms to promptly detect anomalous" },
+  { document = "dora", quote = "In order to address and manage ICT risk, financial entities shall use" },
 ]
 
 dora-client-impact-mandatory = [
@@ -557,6 +668,9 @@ dora-client-impact-mandatory = [
   { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | use" },
   { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | 2.3" },
   { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | As" },
+  { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | 4.10" },
+  { document = "dora", quote = "2. Financial entities may, on a voluntary basis, notify significant cyber threats" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | --- | --- | | 2.5 | Classification criteria that triggered the" },
 ]
 
 dora-exit-strategy = [
@@ -575,6 +689,10 @@ dora-exit-strategy = [
   { document = "ai-act", quote = "Additional information to be provided by providers of general-purpose AI models" },
   { document = "nis2", quote = "34) Given the emergence of innovative technologies and new business models, new" },
   { document = "data-act", quote = "1. The rights of the customer and the obligations of the provider" },
+  { document = "ai-act", quote = "1. Where necessary and appropriate, the Commission may request providers to: (a" },
+  { document = "ai-act", quote = "86) Where, under the conditions laid down in this Regulation, the provider" },
+  { document = "ai-act", quote = "1. The provider shall, for a period ending 10 years after the" },
+  { document = "data-act", quote = "Providers of data processing services shall take the measures provided for in" },
 ]
 
 dora-incident-reporting-responsibility = [
@@ -591,6 +709,10 @@ dora-incident-reporting-responsibility = [
   { document = "esas-dora-incident-reporting", quote = "of responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | | especially" },
   { document = "esas-dora-incident-reporting", quote = "The SGs largely agree with the ESAs proposal to introduce harmonised timelines" },
   { document = "esas-dora-incident-reporting", quote = "10. Several respondents were of the view that the RTS and ITS" },
+  { document = "dora", quote = "The requirements laid down in this Chapter shall also apply to operational" },
+  { document = "dora", quote = "8. The notification to be done by ESMA pursuant to paragraph 7" },
+  { document = "esas-dora-incident-reporting", quote = "provided in the major incident initial notification, intermediate and final reports When" },
+  { document = "nis2", quote = "1. Each Member State shall ensure that essential and important entities notify" },
 ]
 
 dora-incident-type-mandatory-reports = [
@@ -605,6 +727,12 @@ dora-incident-type-mandatory-reports = [
   { document = "esas-dora-incident-reporting", quote = "of responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | Reclassification" },
   { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | | | | | - insurance" },
   { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | d. Inadequate" },
+  { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | The entities" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | | --- | --- | --- | | 4.6 | Incident resolution summary | | | 4.7" },
+  { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | actions" },
+  { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | | | | | | - Financial counterparts" },
+  { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | causes" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | --- | --- | | 2.5 | Classification criteria that triggered the" },
 ]
 
 dora-llm-api-critical-provider = [
@@ -617,6 +745,7 @@ dora-llm-api-critical-provider = [
   { document = "dora", quote = "80) The Oversight Framework largely depends on the degree of collaboration between" },
   { document = "dora", quote = "81) Against this background, the need of the Lead Overseer to impose" },
   { document = "dora", quote = "1. When performing the identification and assessment of risks referred to in" },
+  { document = "dora", quote = "84) To facilitate communication with the Lead Overseer and to ensure adequate" },
 ]
 
 dora-planned-arrangement-notification = [
@@ -633,6 +762,9 @@ dora-planned-arrangement-notification = [
   { document = "enisa-nis2-implementation-guidance", quote = "Documented procedures for the timely return of assets upon termination of employment" },
   { document = "dora", quote = "the ICT risk management framework referred to in Article 6(1) and" },
   { document = "dora", quote = "1. Financial entities, other than entities referred to in Article 16(1" },
+  { document = "dora", quote = "a) full service level descriptions, including updates and revisions thereof with precise" },
+  { document = "dora", quote = "d) to issue recommendations on the areas referred to in Article 33" },
+  { document = "esas-dora-incident-reporting", quote = "Where financial entities intend to outsource the incident reporting obligation in accordance" },
 ]
 
 dora-pre-contract-assessment = [
@@ -649,6 +781,10 @@ dora-pre-contract-assessment = [
   { document = "esas-dora-incident-reporting", quote = "responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | | | • the timelines" },
   { document = "esas-dora-incident-reporting", quote = "ICT-related incident reporting regime for financial entities (FEs) in the European" },
   { document = "data-act", quote = "Providers of data processing services shall take the measures provided for in" },
+  { document = "dora", quote = "71) Irrespective of the criticality or importance of the function supported by" },
+  { document = "dora", quote = "69) When renegotiating contractual arrangements to seek alignment with the requirements of" },
+  { document = "dora", quote = "74) Such contractual arrangements should also provide for dedicated exit strategies to" },
+  { document = "dora", quote = "72) In addition to such contractual provisions, and with a view to" },
 ]
 
 dora-provider-audit-rights = [
@@ -666,6 +802,7 @@ dora-provider-audit-rights = [
   { document = "dora", quote = "63) To address the complexity of the various sources of ICT risk" },
   { document = "dora", quote = "By way of derogation from point (e), the ICT third-party service" },
   { document = "dora", quote = "88) Lead Overseers should be granted the necessary powers to conduct investigations" },
+  { document = "dora", quote = "7. Where the officials and other persons authorised by the Lead Overseer" },
 ]
 
 dora-register-of-information = [
@@ -684,6 +821,15 @@ dora-register-of-information = [
   { document = "ai-act", quote = "131) In order to facilitate the work of the Commission and the" },
   { document = "esas-dora-incident-reporting", quote = "34. Several respondents suggested ensuring further consistency between DORA and NIS2 by" },
   { document = "esas-dora-incident-reporting", quote = "Option 1A - a harmonised set of reporting timelines applicable to all FEs" },
+  { document = "ai-act", quote = "Section B — Information to be submitted by providers of high-risk AI" },
+  { document = "gdpr", quote = "62) However, it is not necessary to impose the obligation to provide" },
+  { document = "data-act", quote = "24) Before concluding a contract for the purchase, rent, or lease of" },
+  { document = "dora", quote = "1. Financial entities may exchange amongst themselves cyber threat information and intelligence" },
+  { document = "gdpr", quote = "1. Each controller and, where applicable, the controller's representative, shall maintain" },
+  { document = "dora", quote = "65) The conduct of such monitoring should follow a strategic approach to" },
+  { document = "esas-dora-incident-reporting", quote = "Data field | Description | Mandatory field | Field type | | --- | --- | --- | --- | | 1. Name of the entity" },
+  { document = "dora", quote = "Member States shall notify the laws, regulations and administrative provisions implementing this" },
+  { document = "dora", quote = "1. The Lead Overseer may, by simple request or by decision, require" },
 ]
 
 dora-report-identification-code = [
@@ -701,6 +847,12 @@ dora-report-identification-code = [
   { document = "esas-dora-incident-reporting", quote = "notification in NIS2 will be required in a high-level way in" },
   { document = "esas-dora-incident-reporting", quote = "39. Many respondents were of the view that it should be possible" },
   { document = "esas-dora-incident-reporting", quote = "of responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | | intragroup" },
+  { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | 4.6" },
+  { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | actions" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | --- | --- | | 2.5 | Classification criteria that triggered the" },
+  { document = "esas-dora-incident-reporting", quote = "notification | Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | supporting" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | | --- | --- | --- | | 4.6 | Incident resolution summary | | | 4.7" },
+  { document = "esas-dora-incident-reporting", quote = "Number of field | Data field | | | --- | --- | --- | | General information about the financial entity | General" },
 ]
 
 dpia-minimum-content = [
@@ -720,6 +872,8 @@ dpia-minimum-content = [
   { document = "enisa-nis2-implementation-guidance", quote = "This publication represents the views and interpretations of ENISA, unless stated otherwise" },
   { document = "ai-act", quote = "1. The technical documentation of a high-risk AI system shall be" },
   { document = "enisa-nis2-implementation-guidance", quote = "13.2.2. For that purpose, the relevant entities shall, where appropriate" },
+  { document = "ai-act", quote = "Additional information to be provided by providers of general-purpose AI models" },
+  { document = "gdpr", quote = "1. Where a type of processing in particular using new technologies, and" },
 ]
 
 dpia-when-required = [
@@ -732,6 +886,9 @@ dpia-when-required = [
   { document = "cnil-developer-guide-15", quote = "In the context of a development for a private organization (companies, associations" },
   { document = "edpb-guidelines-2021-01", quote = "88. In this particular case the data controller took adequate measures to" },
   { document = "edpb-guidelines-2022-09", quote = "35. Once the controller has become aware, a notifiable breach must be" },
+  { document = "gdpr", quote = "76) The likelihood and severity of the risk to the rights and" },
+  { document = "gdpr", quote = "1. The controller shall consult the supervisory authority prior to processing where" },
+  { document = "gdpr", quote = "93) In the context of the adoption of the Member State law" },
 ]
 
 dpo-dismissal = [
@@ -753,6 +910,12 @@ dpo-dismissal = [
   { document = "cnil-developer-guide-00", quote = "4. **Manage the risks**. When you find out that a processing of" },
   { document = "gdpr", quote = "33) It is often not possible to fully identify the purpose of" },
   { document = "cnil-developer-guide-02", quote = "Put privacy protection at the center of your developments** by adopting a" },
+  { document = "gdpr", quote = "data subject shall have the right to obtain from the controller restriction" },
+  { document = "gdpr", quote = "1. The Board shall act independently when performing its tasks or exercising" },
+  { document = "gdpr", quote = "1. The discussions of the Board shall be confidential where the Board" },
+  { document = "ai-act", quote = "1. In the AI regulatory sandbox, personal data lawfully collected for other" },
+  { document = "gdpr", quote = "1. Union or Member State law to which the data controller or" },
+  { document = "gdpr", quote = "52) Derogating from the prohibition on processing special categories of personal data" },
 ]
 
 dpo-external-shared = [
@@ -775,6 +938,11 @@ dpo-external-shared = [
   { document = "edpb-guidelines-2021-01", quote = "The information system of a hospital / healthcare centre was exposed to a" },
   { document = "dora", quote = "77) The Oversight Framework should apply only to critical ICT third-party" },
   { document = "esas-dora-incident-reporting", quote = "of responses received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | | - Financial" },
+  { document = "dora", quote = "31) Taking into account the potential systemic risk entailed by increased outsourcing" },
+  { document = "dora", quote = "1. Competent authorities shall cooperate closely among themselves and, where applicable, with" },
+  { document = "gdpr", quote = "37) A group of undertakings should cover a controlling undertaking and its" },
+  { document = "dora", quote = "95) To leverage the specific competences, technical skills and expertise of staff" },
+  { document = "dora", quote = "1. Financial entities shall only use testers for the carrying out of" },
 ]
 
 dpo-it-manager-conflict = [
@@ -799,6 +967,11 @@ dpo-it-manager-conflict = [
   { document = "edpb-guidelines-2021-01", quote = "9. The breach should be notified when the controller is of the" },
   { document = "gdpr", quote = "1. Member States may, by law or by collective agreements, provide for" },
   { document = "gdpr", quote = "84) In order to enhance compliance with this Regulation where processing operations" },
+  { document = "gdpr", quote = "74) The responsibility and liability of the controller for any processing of" },
+  { document = "gdpr", quote = "1. Taking into account the state of the art, the costs of" },
+  { document = "data-act", quote = "5. Member States shall ensure that the tasks and powers of the" },
+  { document = "gdpr", quote = "95) The processor should assist the controller, where necessary and upon request" },
+  { document = "gdpr", quote = "1. Without prejudice to other tasks set out under this Regulation, each" },
 ]
 
 dpo-mandatory-cases = [
@@ -814,6 +987,7 @@ dpo-mandatory-cases = [
   { document = "gdpr", quote = "1. Where personal data relating to a data subject are collected from" },
   { document = "gdpr", quote = "1. Where a type of processing in particular using new technologies, and" },
   { document = "data-act", quote = "107) In order to ensure the application and enforcement of this Regulation" },
+  { document = "data-act", quote = "1. Each Member State shall designate one or more competent authorities to" },
 ]
 
 dpo-project-scoping = [
@@ -834,6 +1008,14 @@ dpo-project-scoping = [
   { document = "cnil-developer-guide-02", quote = "The principles of personal data protection must be integrated into IT developments" },
   { document = "enisa-nis2-implementation-guidance", quote = "GUIDANCE ▪ the longest period of time that shared access to project files" },
   { document = "gdpr", quote = "1. The data protection officer shall have at least the following tasks" },
+  { document = "gdpr", quote = "1. The controller and the processor shall designate a data protection officer" },
+  { document = "dora", quote = "1. The Lead Overseer, appointed in accordance with Article 31(1), point" },
+  { document = "dora", quote = "59) Since this Regulation does not require financial entities to cover all" },
+  { document = "dora", quote = "66) A thorough pre-contracting analysis should underpin and precede the formal" },
+  { document = "gdpr", quote = "84) In order to enhance compliance with this Regulation where processing operations" },
+  { document = "dora", quote = "d) to issue recommendations on the areas referred to in Article 33" },
+  { document = "dora", quote = "84) To facilitate communication with the Lead Overseer and to ensure adequate" },
+  { document = "dora", quote = "4. Based on the assessment referred to in paragraph 2, and in" },
 ]
 
 employee-leaving-assets = [
@@ -856,6 +1038,7 @@ employee-leaving-assets = [
   { document = "enisa-nis2-implementation-guidance", quote = "Measure: a cybersecurity risk-management measure as referred to in the NIS2" },
   { document = "enisa-nis2-implementation-guidance", quote = "Beyond the relevant entities to the regulation, this guidance may provide indications" },
   { document = "enisa-nis2-implementation-guidance", quote = "Define procedures to ensure that assets are deposited, returned or irrevocably deleted" },
+  { document = "enisa-nis2-implementation-guidance", quote = "11.5.4. The relevant entities shall regularly review the identities for" },
 ]
 
 erasure-legal-obligation = [
@@ -868,6 +1051,11 @@ erasure-legal-obligation = [
   { document = "gdpr", quote = "47) The legitimate interests of a controller, including those of a controller" },
   { document = "gdpr", quote = "to the information referred to in paragraph 1, the controller shall, at" },
   { document = "gdpr", quote = "59) Modalities should be provided for facilitating the exercise of the data" },
+  { document = "gdpr", quote = "69) Where personal data might lawfully be processed because processing is necessary" },
+  { document = "gdpr", quote = "1. Personal data shall be: (a) processed lawfully, fairly and in a" },
+  { document = "gdpr", quote = "The controller shall communicate any rectification or erasure of personal data or" },
+  { document = "gdpr", quote = "39) Any processing of personal data should be lawful and fair. It" },
+  { document = "gdpr", quote = "3. Processing by a processor shall be governed by a contract or" },
 ]
 
 erasure-vector-embeddings = [
@@ -882,6 +1070,9 @@ erasure-vector-embeddings = [
   { document = "cnil-developer-guide-05", quote = "Represent and describe how the product generally works before starting your project" },
   { document = "edpb-guidelines-2021-01", quote = "54. If possible, after solving the problem, the database should be compared" },
   { document = "data-act", quote = "71) Data holders should have the possibility to either decline a request" },
+  { document = "gdpr", quote = "data subject shall have the right to obtain from the controller restriction" },
+  { document = "data-act", quote = "73) Data made available to public sector bodies, the Commission, the European" },
+  { document = "gdpr", quote = "The controller shall communicate any rectification or erasure of personal data or" },
 ]
 
 exfiltration-online-service-notification = [
@@ -897,6 +1088,10 @@ exfiltration-online-service-notification = [
   { document = "edpb-guidelines-2022-09", quote = "107. Of course, when assessing risk, a key factor is the type" },
   { document = "edpb-guidelines-2021-01", quote = "An insurance agent noticed that - made possible by the faulty settings of" },
   { document = "edpb-guidelines-2021-01", quote = "One of the computers used by an agricultural company was exposed to" },
+  { document = "edpb-guidelines-2021-01", quote = "An employment agency was the victim of a cyber-attack, which placed" },
+  { document = "edpb-guidelines-2021-01", quote = "The information system of a hospital / healthcare centre was exposed to a" },
+  { document = "edpb-guidelines-2021-01", quote = "51. The security of the data controller's environment is extremely important" },
+  { document = "edpb-guidelines-2021-01", quote = "A bank suffered a cyber-attack against one of its online banking" },
 ]
 
 fines-denmark = [
@@ -912,6 +1107,7 @@ fines-denmark = [
   { document = "edpb-guidelines-2022-09", quote = "125. In addition to these details, the EDPB recommends that the controller" },
   { document = "ai-act", quote = "1. The Commission may impose on providers of general-purpose AI models" },
   { document = "gdpr", quote = "148) In order to strengthen the enforcement of the rules of this" },
+  { document = "ai-act", quote = "5. The rights of defence of the parties concerned shall be fully" },
 ]
 
 fines-public-authorities = [
@@ -931,6 +1127,10 @@ fines-public-authorities = [
   { document = "edpb-guidelines-2022-09", quote = "24. A breach can potentially have a range of significant adverse effects" },
   { document = "data-act", quote = "1. Member States shall lay down the rules on penalties applicable to" },
   { document = "edpb-guidelines-2021-01", quote = "1. The GDPR introduces, in certain cases, the requirement for a personal" },
+  { document = "ai-act", quote = "5. The rights of defence of the parties concerned shall be fully" },
+  { document = "gdpr", quote = "1. Each supervisory authority shall ensure that the imposition of administrative fines" },
+  { document = "gdpr", quote = "9. Where the legal system of the Member State does not provide" },
+  { document = "nis2", quote = "1. Where the competent authorities become aware in the course of supervision" },
 ]
 
 fines-records-and-access = [
@@ -950,6 +1150,12 @@ fines-records-and-access = [
   { document = "cnil-developer-guide-14", quote = "Personal data cannot be kept for an indefinite period of time: this" },
   { document = "ai-act", quote = "5. The rights of defence of the parties concerned shall be fully" },
   { document = "edpb-guidelines-2022-09", quote = "can access the account details of any other user | company has conducted" },
+  { document = "ai-act", quote = "11. Member States shall, on an annual basis, report to the Commission" },
+  { document = "ai-act", quote = "168) Compliance with this Regulation should be enforceable by means of the" },
+  { document = "data-act", quote = "1. Member States shall lay down the rules on penalties applicable to" },
+  { document = "gdpr", quote = "148) In order to strengthen the enforcement of the rules of this" },
+  { document = "gdpr", quote = "5. The obligations referred to in paragraphs 1 and 2 shall not" },
+  { document = "gdpr", quote = "1. Each supervisory authority shall ensure that the imposition of administrative fines" },
 ]
 
 hospital-records-unavailable = [
@@ -963,6 +1169,10 @@ hospital-records-unavailable = [
   { document = "edpb-guidelines-2021-01", quote = "129. Even if the attacker was probably not aiming at collecting personal" },
   { document = "edpb-guidelines-2021-01", quote = "32. Without a backup few measures to remediate the loss of personal" },
   { document = "edpb-guidelines-2022-09", quote = "was to encrypt the data, and that there was no other malware" },
+  { document = "edpb-guidelines-2021-01", quote = "One of the computers used by an agricultural company was exposed to" },
+  { document = "edpb-guidelines-2021-01", quote = "41. The data controller should have adopted the same prior measures as" },
+  { document = "edpb-guidelines-2021-01", quote = "102. During the assessment of the safeguarding measures the type of the" },
+  { document = "edpb-guidelines-2021-01", quote = "risks | | --- | --- | --- | | Internal documentation | Notification to SA | Communication to data subjects | | ✓ | ✓" },
 ]
 
 ip-addresses-personal-data = [
@@ -983,6 +1193,12 @@ ip-addresses-personal-data = [
   { document = "cnil-developer-guide-16", quote = "Subject to a number of conditions**, cookies used for audience measurement are" },
   { document = "esas-dora-incident-reporting", quote = "Data field | Description | Mandatory field | Field type | | --- | --- | --- | --- | | 17. Actions taken to prevent" },
   { document = "cnil-developer-guide-01", quote = "Pseudonymization is a compromise between retaining raw data and producing anonymized datasets" },
+  { document = "gdpr", quote = "3. The controller shall provide the information referred to in paragraphs 1" },
+  { document = "edpb-guidelines-2021-01", quote = "51. The security of the data controller's environment is extremely important" },
+  { document = "ai-act", quote = "1. The Commission, market surveillance authorities and notified bodies and any other" },
+  { document = "ai-act", quote = "167) In order to ensure trustful and constructive cooperation of competent authorities" },
+  { document = "gdpr", quote = "1. If the purposes for which a controller processes personal data do" },
+  { document = "data-act", quote = "1. Providers of data processing services shall make the following information available" },
 ]
 
 job-applicant-ranking-high-risk = [
@@ -996,6 +1212,11 @@ job-applicant-ranking-high-risk = [
   { document = "ai-act", quote = "1. The Commission is empowered to adopt delegated acts in accordance with" },
   { document = "ai-act", quote = "59) Given their role and responsibility, actions by law enforcement authorities involving" },
   { document = "ai-act", quote = "4. The provider of a high-risk AI system and the third" },
+  { document = "ai-act", quote = "54) As biometric data constitutes a special category of personal data, it" },
+  { document = "ai-act", quote = "5. Access to and enjoyment of essential private services and essential public" },
+  { document = "ai-act", quote = "56) The deployment of AI systems in education is important to promote" },
+  { document = "ai-act", quote = "2. When assessing the condition under paragraph 1, point (b), the Commission" },
+  { document = "ai-act", quote = "62) Without prejudice to the rules provided for in Regulation (EU) 2024" },
 ]
 
 lawful-bases = [
@@ -1007,6 +1228,7 @@ lawful-bases = [
   { document = "cnil-developer-guide-01", quote = "Understanding the notions of \"personal data\", \"purpose\" and \"processing\" is essential to" },
   { document = "edpb-guidelines-2022-09", quote = "13. As part of any attempt to address a breach the controller" },
   { document = "gdpr", quote = "3. The basis for the processing referred to in point (c) and" },
+  { document = "gdpr", quote = "1. Personal data shall be: (a) processed lawfully, fairly and in a" },
 ]
 
 llm-api-outside-eu-transfer = [
@@ -1025,6 +1247,10 @@ llm-api-outside-eu-transfer = [
   { document = "gdpr", quote = "2. A transfer pursuant to point (g) of the first subparagraph of" },
   { document = "ai-act", quote = "1. In the AI regulatory sandbox, personal data lawfully collected for other" },
   { document = "gdpr", quote = "101) Flows of personal data to and from countries outside the Union" },
+  { document = "data-act", quote = "4. If the conditions laid down in paragraph 2 or 3 are" },
+  { document = "gdpr", quote = "Any judgment of a court or tribunal and any decision of an" },
+  { document = "cnil-developer-guide-05", quote = "When designing the architecture of your application, you must identify personal data" },
+  { document = "gdpr", quote = "1. In the absence of an adequacy decision pursuant to Article 45" },
 ]
 
 marketplace-credentials-breach = [
@@ -1041,6 +1267,7 @@ marketplace-credentials-breach = [
   { document = "edpb-guidelines-2021-01", quote = "63. It is important to mention that controllers handling data of highly" },
   { document = "edpb-guidelines-2021-01", quote = "The server of a public transportation company was exposed to a ransomware" },
   { document = "edpb-guidelines-2021-01", quote = "56. In this particular case data confidentiality is compromised, but the passwords" },
+  { document = "edpb-guidelines-2021-01", quote = "based on the identified risks | | --- | --- | --- | | Internal documentation ✓ | Notification to SA X" },
 ]
 
 max-fines = [
@@ -1057,6 +1284,7 @@ max-fines = [
   { document = "gdpr", quote = "1. Each supervisory authority shall ensure that the imposition of administrative fines" },
   { document = "data-act", quote = "1. Member States shall lay down the rules on penalties applicable to" },
   { document = "nis2", quote = "1. Member States shall ensure that the administrative fines imposed on essential" },
+  { document = "ai-act", quote = "5. The rights of defence of the parties concerned shall be fully" },
 ]
 
 network-segmentation-evidence = [
@@ -1069,6 +1297,10 @@ network-segmentation-evidence = [
   { document = "enisa-nis2-implementation-guidance", quote = "Under the NIS2 Directive, EU member states set requirements for cybersecurity risk" },
   { document = "enisa-nis2-implementation-guidance", quote = "1.2.5. Conflicting duties and conflicting areas of responsibility shall be" },
   { document = "enisa-nis2-implementation-guidance", quote = "6.7.3. The relevant entities shall review and, where appropriate, update" },
+  { document = "enisa-nis2-implementation-guidance", quote = "The correct usage of mobile devices and other remote accesses (e.g" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Documented policy on cryptography in line with relevant regulations and state-of" },
+  { document = "enisa-nis2-implementation-guidance", quote = "11.5.2. For that purpose, the relevant entities shall: (a) set" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Documented policy on the security of network and information systems which contains" },
 ]
 
 nis1-replacement-reasons = [
@@ -1087,6 +1319,12 @@ nis1-replacement-reasons = [
   { document = "enisa-nis2-implementation-guidance", quote = "Belgium has completed the incorporation of the NIS2 Directive into national legislation" },
   { document = "esas-dora-incident-reporting", quote = "received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | Feedback on the" },
   { document = "dora", quote = "Regulation (EC) No 1060/2009 is amended as follows: (1) in Annex" },
+  { document = "nis2", quote = "1) Directive (EU) 2016/1148 of the European Parliament and the Council" },
+  { document = "nis2", quote = "142) Since the objective of this Directive, namely to achieve a high" },
+  { document = "nis2", quote = "1. This Directive lays down measures that aim to achieve a high" },
+  { document = "nis2", quote = "144) The European Data Protection Supervisor was consulted in accordance with Article" },
+  { document = "nis2", quote = "Directive (EU) 2016/1148 | This Directive | | --- | --- | | Article 1(1) | Article 1(1" },
+  { document = "nis2", quote = "Directive (EU) 2016/1148 is repealed with effect from 18 October 2024" },
 ]
 
 nis2-essential-entity-fine = [
@@ -1102,6 +1340,10 @@ nis2-essential-entity-fine = [
   { document = "gdpr", quote = "151) The legal systems of Denmark and Estonia do not allow for" },
   { document = "nis2", quote = "8. Where the legal system of a Member State does not provide" },
   { document = "gdpr", quote = "9. Where the legal system of the Member State does not provide" },
+  { document = "nis2", quote = "129) In order to ensure effective enforcement of the obligations laid down" },
+  { document = "nis2", quote = "4. Member States shall ensure that their competent authorities, when exercising their" },
+  { document = "nis2", quote = "15) Entities falling within the scope of this Directive for the purpose" },
+  { document = "nis2", quote = "132) Where this Directive does not harmonise administrative penalties or where necessary" },
 ]
 
 nis2-in-house-data-centre-exclusion = [
@@ -1120,6 +1362,12 @@ nis2-in-house-data-centre-exclusion = [
   { document = "cnil-developer-guide-05", quote = "Choose a service provider that ensures appropriate security and confidentiality measures and" },
   { document = "edpb-guidelines-2021-01", quote = "One of the computers used by an agricultural company was exposed to" },
   { document = "esas-dora-incident-reporting", quote = "received | ESAs' analysis | Proposed amendments to the RTS&ITS | | --- | --- | --- | --- | | Feedback on the" },
+  { document = "nis2", quote = "16) In order to avoid entities that have partner enterprises or that" },
+  { document = "nis2", quote = "86) Among service providers, managed security service providers in areas such as" },
+  { document = "nis2", quote = "1. This Directive applies to public or private entities of a type" },
+  { document = "nis2", quote = "115) Where a publicly available recursive DNS service is provided by a" },
+  { document = "enisa-nis2-implementation-guidance", quote = "6.8.2. For that purpose, the relevant entities shall: (a) consider" },
+  { document = "nis2", quote = "83) Essential and important entities should ensure the security of the network" },
 ]
 
 nis2-managed-security-provider-definition = [
@@ -1141,6 +1389,12 @@ nis2-managed-security-provider-definition = [
   { document = "dora", quote = "29) Even though Union financial services law contains certain general rules on" },
   { document = "edpb-guidelines-2021-01", quote = "104. A combination of the below mentioned measures - applied depending on the" },
   { document = "dora", quote = "31) Taking into account the potential systemic risk entailed by increased outsourcing" },
+  { document = "dora", quote = "1. The Lead Overseer, appointed in accordance with Article 31(1), point" },
+  { document = "dora", quote = "2. The designation referred to in paragraph 1, point (a), shall be" },
+  { document = "nis2", quote = "56) Member States should, in their national cybersecurity strategies, address the specific" },
+  { document = "nis2", quote = "15) Entities falling within the scope of this Directive for the purpose" },
+  { document = "dora", quote = "19) ‘ICT third-party service provider’ means an undertaking providing ICT services" },
+  { document = "dora", quote = "63) To address the complexity of the various sources of ICT risk" },
 ]
 
 nis2-minimum-security-measures = [
@@ -1154,6 +1408,14 @@ nis2-minimum-security-measures = [
   { document = "esas-dora-incident-reporting", quote = "34. Several respondents suggested ensuring further consistency between DORA and NIS2 by" },
   { document = "esas-dora-incident-reporting", quote = "notification in NIS2 will be required in a high-level way in" },
   { document = "enisa-nis2-implementation-guidance", quote = "5.1.3. When establishing their supply chain security policy, relevant entities" },
+  { document = "enisa-nis2-implementation-guidance", quote = "6.3.1. The relevant entities shall take the appropriate measures to" },
+  { document = "enisa-nis2-implementation-guidance", quote = "6.7.2. For the purpose of point 6.7.1., the" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Implement secure-by-design principles by integrating security at every layer of" },
+  { document = "enisa-nis2-implementation-guidance", quote = "6.9.1. The relevant entities shall protect their network and information" },
+  { document = "enisa-nis2-implementation-guidance", quote = "6.7.1. The relevant entities shall take the appropriate measures to" },
+  { document = "enisa-nis2-implementation-guidance", quote = "11.6.3. The relevant entities shall to the extent feasible use" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Up-to-date network diagrams, including OOB connections. · Firewall(s) configured in" },
+  { document = "nis2", quote = "104) Providers of public electronic communications networks or of publicly available electronic" },
 ]
 
 nis2-small-company-scope = [
@@ -1173,6 +1435,14 @@ nis2-small-company-scope = [
   { document = "esas-dora-incident-reporting", quote = "notification in NIS2 will be required in a high-level way in" },
   { document = "nis2", quote = "16) In order to avoid entities that have partner enterprises or that" },
   { document = "esas-dora-incident-reporting", quote = "Mandatory for intermediate report | Mandatory for final report | Field type | | --- | --- | --- | --- | --- | --- | | financial entity" },
+  { document = "nis2", quote = "21) The Commission could provide guidance to assist Member States in implementing" },
+  { document = "nis2", quote = "15) Entities falling within the scope of this Directive for the purpose" },
+  { document = "nis2", quote = "7. This Directive does not apply to public administration entities that carry" },
+  { document = "enisa-nis2-implementation-guidance", quote = "This publication represents the views and interpretations of ENISA, unless stated otherwise" },
+  { document = "nis2", quote = "31) Entities belonging to the digital infrastructure sector are in essence based" },
+  { document = "nis2", quote = "11) Some entities carry out activities in the areas of national security" },
+  { document = "enisa-nis2-implementation-guidance", quote = "This document is not legally binding and is only of an advisory" },
+  { document = "nis2", quote = "20) The Commission should, in cooperation with the Cooperation Group and after" },
 ]
 
 physiotherapist-dpia = [
@@ -1194,6 +1464,9 @@ physiotherapist-dpia = [
   { document = "edpb-guidelines-2021-01", quote = "36. The data controller should have adopted the same prior measures as" },
   { document = "gdpr", quote = "54) The processing of special categories of personal data may be necessary" },
   { document = "ai-act", quote = "6. Deployers of high-risk AI systems shall keep the logs automatically" },
+  { document = "gdpr", quote = "90) In such cases, a data protection impact assessment should be carried" },
+  { document = "gdpr", quote = "157) By coupling information from registries, researchers can obtain new knowledge of" },
+  { document = "gdpr", quote = "i) processing is necessary for reasons of public interest in the area" },
 ]
 
 prior-consultation = [
@@ -1211,6 +1484,10 @@ prior-consultation = [
   { document = "edpb-guidelines-2022-09", quote = "or similar personal data breaches may justify more time for communication.\" 94" },
   { document = "edpb-guidelines-2022-09", quote = "66. Where there is cross-border processing 30 of personal data, a" },
   { document = "gdpr", quote = "1. Where a type of processing in particular using new technologies, and" },
+  { document = "gdpr", quote = "1. Without prejudice to Article 55, the supervisory authority of the main" },
+  { document = "gdpr", quote = "85) A personal data breach may, if not addressed in an appropriate" },
+  { document = "gdpr", quote = "6. The lead supervisory authority or, as the case may be, the" },
+  { document = "edpb-guidelines-2022-09", quote = "An individual informs the controller that they have received an email impersonating" },
 ]
 
 production-data-evaluation = [
@@ -1231,6 +1508,10 @@ production-data-evaluation = [
   { document = "ai-act", quote = "97) The notion of general-purpose AI models should be clearly defined" },
   { document = "ai-act", quote = "107) In order to increase transparency on the data that is used" },
   { document = "ai-act", quote = "104) The providers of general-purpose AI models that are released under" },
+  { document = "gdpr", quote = "71) The data subject should have the right not to be subject" },
+  { document = "ai-act", quote = "1. High-risk AI systems which make use of techniques involving the" },
+  { document = "cnil-developer-guide-01", quote = "Pseudonymization is a compromise between retaining raw data and producing anonymized datasets" },
+  { document = "gdpr", quote = "26) The principles of data protection should apply to any information concerning" },
 ]
 
 pseudonymise-before-indexing = [
@@ -1246,6 +1527,8 @@ pseudonymise-before-indexing = [
   { document = "data-act", quote = "1. When requesting data pursuant to Article 14, a public sector body" },
   { document = "ai-act", quote = "5. To the extent that it is strictly necessary for the purpose" },
   { document = "gdpr", quote = "156) The processing of personal data for archiving purposes in the public" },
+  { document = "gdpr", quote = "1. Processing for archiving purposes in the public interest, scientific or historical" },
+  { document = "data-act", quote = "8) The principles of data minimisation and data protection by design and" },
 ]
 
 public-authority-legitimate-interest = [
@@ -1260,6 +1543,9 @@ public-authority-legitimate-interest = [
   { document = "gdpr", quote = "112) Those derogations should in particular apply to data transfers required and" },
   { document = "gdpr", quote = "1. In the absence of an adequacy decision pursuant to Article 45" },
   { document = "cnil-developer-guide-15", quote = "Right of access | Right to rectification | Right to erasure | Right to restriction" },
+  { document = "gdpr", quote = "19) The protection of natural persons with regard to the processing of" },
+  { document = "gdpr", quote = "3. The basis for the processing referred to in point (c) and" },
+  { document = "gdpr", quote = "154) This Regulation allows the principle of public access to official documents" },
 ]
 
 smart-thermostat-data-access = [
@@ -1279,6 +1565,7 @@ smart-thermostat-data-access = [
   { document = "data-act", quote = "22) Connected products may be designed to make certain data directly accessible" },
   { document = "data-act", quote = "14) Connected products that obtain, generate or collect, by means of their" },
   { document = "data-act", quote = "21) Where several persons or entities are considered to be users, for" },
+  { document = "data-act", quote = "36) Access to any data stored in and accessed from terminal equipment" },
 ]
 
 supplier-registry-content = [
@@ -1295,4 +1582,6 @@ supplier-registry-content = [
   { document = "enisa-nis2-implementation-guidance", quote = "3.3.2. The relevant entities shall, where appropriate, communicate the event" },
   { document = "enisa-nis2-implementation-guidance", quote = "Asset: anything that is of value to the entity, including information. Overall" },
   { document = "enisa-nis2-implementation-guidance", quote = "6.10.2. For the purpose of point 6.10.1., the" },
+  { document = "enisa-nis2-implementation-guidance", quote = "GUIDANCE · Ensure that, in all relevant new and renewed contracts, the requirements" },
+  { document = "enisa-nis2-implementation-guidance", quote = "5.1.5. The relevant entities shall take into account the elements" },
 ]
