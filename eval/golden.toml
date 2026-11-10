@@ -334,6 +334,7 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "gdpr", quote = "an assessment of the risks to the rights and freedoms of data subjects referred to in paragraph 1" },
+  { document = "gdpr", quote = "a data protection impact assessment to evaluate, in particular, the origin, nature, particularity and severity of that risk" },
 ]
 
 [[questions.evidence]]
@@ -636,6 +637,7 @@ any_of = [
 any_of = [
   { document = "gdpr", quote = "high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject" },
   { document = "edpb-guidelines-2022-09", quote = "Communication of a breach to the individual is only triggered where it is likely to result in a high risk" },
+  { document = "edpb-guidelines-2021-01", quote = "the given breach will not result in a high risk to the rights and freedoms of natural persons, a notification to the SA will suffice" },
 ]
 
 [[questions]]
@@ -652,6 +654,7 @@ any_of = [
   { document = "cnil-developer-guide-12", quote = "the organization must report the violation to the local data protection agency within **72 hours** if it is likely to pose a risk" },
   { document = "edpb-guidelines-2021-01", quote = "It should be documented in accordance with Article 33 (5) and notified to the SA in accordance with Article 33 (1)." },
   { document = "edpb-guidelines-2021-01", quote = "the relevant SA(s) should also be involved in the form of a data breach notification" },
+  { document = "edpb-guidelines-2021-01", quote = "Documenting the breach according to Article 33 (5) GDPR and notifying the SA about it are not optional in this scenario." },
 ]
 
 [[questions.evidence]]
@@ -662,6 +665,7 @@ any_of = [
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons, the data subjects should definitely be informed about it" },
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
   { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk." },
+  { document = "edpb-guidelines-2021-01", quote = "the controller should notify all 100.000 data subjects (including the data subjects whose accounts were not compromised) in accordance with Article 34 GDPR" },
 ]
 
 [[questions]]
@@ -682,6 +686,8 @@ any_of = [
   { document = "edpb-guidelines-2022-09", quote = "Yes, as could lead to high risk" },
   { document = "cnil-developer-guide-12", quote = "If these risks are high, the organization must also inform the persons concerned as soon as possible" },
   { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons. Therefore the breach should be communicated" },
+  { document = "edpb-guidelines-2021-01", quote = "likely to result in a high risk to the rights and freedoms of natural persons, the data subjects should definitely be informed about it" },
+  { document = "edpb-guidelines-2021-01", quote = "the controller should notify all 100.000 data subjects (including the data subjects whose accounts were not compromised) in accordance with Article 34 GDPR" },
 ]
 
 [[questions.evidence]]
@@ -689,6 +695,7 @@ any_of = [
   { document = "edpb-guidelines-2022-09", quote = "forcing password resets of the affected accounts" },
   { document = "edpb-guidelines-2021-01", quote = "forced password resets of the compromised accounts" },
   { document = "edpb-guidelines-2021-01", quote = "the controller forced a password change for the compromised accounts" },
+  { document = "edpb-guidelines-2021-01", quote = "asked them to change their passwords, especially if the same password was used for other services" },
 ]
 
 [[questions.evidence]]
@@ -714,6 +721,12 @@ any_of = [
 any_of = [
   { document = "edpb-guidelines-2022-09", quote = "Yes, report to the affected individuals" },
   { document = "edpb-guidelines-2021-01", quote = "Informing the data subjects about the breach is necessary due to the impact for the patients" },
+]
+
+[[questions.evidence]]
+any_of = [
+  { document = "edpb-guidelines-2022-09", quote = "a security incident resulting in personal data being made unavailable for a period of time is also a type of breach" },
+  { document = "edpb-guidelines-2022-09", quote = "a breach involving the temporary loss of availability should be documented in accordance with Article 33(5) GDPR" },
 ]
 
 [[questions]]
@@ -857,6 +870,7 @@ answer = "If the provider processes the data outside the EU/EEA, it is a transfe
 [[questions.evidence]]
 any_of = [
   { document = "cnil-developer-guide-05", quote = "transfers outside the EU/EEA are possible, provided that sufficient and appropriate level of data protection is ensured" },
+  { document = "gdpr", quote = "in order to ensure that the level of protection of natural persons guaranteed by this Regulation is not undermined" },
 ]
 
 [[questions.evidence]]
@@ -1401,16 +1415,20 @@ any_of = [
 [[questions.evidence]]
 any_of = [
   { document = "nis2", quote = "basic cyber hygiene practices and cybersecurity training" },
+  { document = "enisa-nis2-implementation-guidance", quote = "mechanisms to ensure that all employees, direct suppliers and service providers, wherever applicable, understand and follow the standard cyber hygiene practices" },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "nis2", quote = "policies and procedures regarding the use of cryptography and, where appropriate, encryption" },
+  { document = "enisa-nis2-implementation-guidance", quote = "the type, strength and quality of the cryptographic measures required to protect the relevant entities' assets, including data at rest and data in transit" },
+  { document = "enisa-nis2-implementation-guidance", quote = "Documented policy on cryptography in line with relevant regulations and state-of-the-art standards." },
 ]
 
 [[questions.evidence]]
 any_of = [
   { document = "nis2", quote = "human resources security, access control policies and asset management" },
+  { document = "enisa-nis2-implementation-guidance", quote = "mechanisms for hiring personnel qualified for the respective roles, such as reference checks, vetting procedures, validation of certifications or written tests" },
 ]
 
 [[questions.evidence]]
@@ -1535,6 +1553,7 @@ answer = "Assets in the employee's custody, such as their laptop, must be deposi
 any_of = [
   { document = "enisa-nis2-implementation-guidance", quote = "deposited, returned or deleted upon termination of employment and shall document the deposit, return and deletion of those assets" },
   { document = "enisa-nis2-implementation-guidance", quote = "Identify and document all assets to be returned upon termination or change of employment." },
+  { document = "enisa-nis2-implementation-guidance", quote = "Documented procedures for the timely return of assets upon termination of employment." },
 ]
 
 [[questions.evidence]]
