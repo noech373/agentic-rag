@@ -1,6 +1,7 @@
 """Which bricks the RAG is built from, read from a TOML file per variant (`pipelines/<name>.toml`).
 
-The defaults are the baseline: an empty file, or no file at all, is the plain vector RAG.
+The defaults are the best composition adopted so far: an empty file, or no file at all.
+`pipelines/baseline.toml` keeps the plain RAG, the start of the ablation.
 """
 
 import tomllib
@@ -17,11 +18,11 @@ CorpusName = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
 
 
 class PipelineConfig(BaseModel):
-    # extra="forbid": a misspelled key would otherwise run the baseline under another name
+    # extra="forbid": a misspelled key would otherwise run the defaults under another name
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    corpus: CorpusName = "public"
-    embedded_text: EmbeddedText = "chunk"
+    corpus: CorpusName = "titles"
+    embedded_text: EmbeddedText = "titles"
     contextualizer: ContextualizerName = "openai"  # read only when embedded_text = "context"
     retriever: Literal["vector", "bm25", "hybrid"] = "vector"
     reranker: RerankerName | None = None

@@ -175,8 +175,8 @@ def test_a_pipeline_without_a_reranker_never_imports_the_model_library() -> None
     subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603 - our own code
 
 
-def test_the_chunk_text_alone_is_embedded_by_default(settings: Settings) -> None:
-    assert make_texts_to_embed(settings, PipelineConfig()) is chunk_texts
+def test_the_chunk_mode_embeds_the_chunk_text_alone(settings: Settings) -> None:
+    assert make_texts_to_embed(settings, PipelineConfig(embedded_text="chunk")) is chunk_texts
 
 
 def test_the_titles_mode_embeds_the_titles(settings: Settings) -> None:
