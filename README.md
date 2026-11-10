@@ -196,6 +196,13 @@ Known limitations:
   available sources."* otherwise. The CLI lists the cited sources with their links. OpenAI is asked
   not to keep the responses (`store=False`).
 
+- **HyDE** (optional, `hyde = "ollama"`): an LLM first writes a short answer to the question
+  without any document, worded like a regulation, and the search uses that answer instead of the
+  question ([Gao et al., 2022](https://arxiv.org/abs/2212.10496)). A reranker, when there is one,
+  still scores the chunks against the real question. The answers are cached in
+  [`eval/hyde.jsonl`](eval/hyde.jsonl), so the evaluation runs can be redone the same. Measured, not
+  adopted (see [Results and findings](#results-and-findings)).
+
 Known limitations, to be measured by the evaluation: a fixed number of sources,
 and no access control on the documents yet.
 
@@ -220,7 +227,8 @@ keeps the plain RAG the ablation starts from. A variant file only states what di
 defaults, so a new brick stacks on what was adopted before it. A misspelled key is refused rather than
 silently running the defaults under another name, and the validated pipeline, defaults included, is saved with each evaluation run, so a result always says which system produced it. The
 file holds only what a brick needs: fields appear with the bricks (reranker, guardrails, LLM), while
-secrets and infrastructure stay in `.env`.
+secrets and infrastructure stay in `.env`. Each LLM role names who plays it (`contextualizer`,
+`hyde`, `generator`: `"openai"` or `"ollama"`); which model that is stays in `.env`.
 
 ## Tracing
 
@@ -317,7 +325,8 @@ The numbers come from the runs saved in [`eval/results/`](eval/results/) and can
 previous system, **bold** when the 95 % interval excludes 0.
 
 **Current system:** vector search on chunks embedded after their titles (entry 5). Hybrid search,
-reranking and contextual retrieval are available as pipelines but not the default (entries 2, 4, 5).
+reranking, contextual retrieval and HyDE are available as pipelines but not the default (entries 2,
+4, 5, 7).
 Entries keep the numbers of their time: entry 3 corrects those of 1 and 2. Entries 1 to 4 were
 measured on the plain baseline; since entry 5, the variants that only set the retriever stack on the
 titles. Entry 6 redoes BM25 and hybrid search on them; the reranking run is still from entry 4.
@@ -583,6 +592,67 @@ judgments of entry 5.
 
 **What this does not show:** anything on questions in exact legal terms, which the golden set still
 lacks (entry 2). The multi-document gain (0.44 to 0.51) rests on 7 questions.
+
+### 7. HyDE: not adopted
+
+The weakest questions are the vague ones (recall@8 0.67 against 0.84 for factual ones): worded as a
+user would, they share few words with the texts, and the right chunk is often found but ranked too
+low (recall@50 0.93 against 0.77 at 8). [HyDE](https://arxiv.org/abs/2212.10496) answers first and
+searches with the answer: an LLM (`qwen3.8:27b` through Ollama, temperature 0) writes two to four
+sentences "as the text of an EU regulation or of official guidance would", without article numbers,
+and only that answer is embedded. *"Our privacy person keeps blocking projects and management wants
+to let her go for it. Are we allowed to?"* becomes *"The data protection officer shall not be
+dismissed or penalised for performing his or her tasks…"*, almost the wording of GDPR Article 38(3),
+which the default search ranks below 20.
+
+**The rule was set before the run:** HyDE is adopted if its 95 % interval on recall@8 is entirely
+above 0 against the default, after pooling. The first run left 42 % of its top 8 unjudged, so its
+new chunks were pooled (third round, same method as entry 3): 257 pairs, 28 found relevant by the
+LLM, 128 checked blind by a person; 2 of 100 sampled rejections were wrong (upper bound 7.0 %), so
+the unchecked rejections were kept. The review also found a fact the golden set missed, added by hand,
+and a table question whose facts a prose chunk states too, now counted as factual. Both runs were
+then redone at the same commit, at judged@8 1.00.
+
+| | default | HyDE | HyDE − default |
+|---|---|---|---|
+| recall@5 | 0.73 | 0.77 | +0.04 [−0.07, +0.15] |
+| recall@8 | 0.77 | 0.83 | +0.06 [−0.03, +0.16] |
+| recall@20 | 0.86 | 0.87 | +0.01 [−0.07, +0.09] |
+| recall@50 | 0.93 | 0.91 | −0.02 [−0.09, +0.05] |
+| MRR@8 | 0.68 | 0.75 | +0.08 [−0.03, +0.18] |
+| recall@8, factual (46) | 0.84 | 0.86 | |
+| recall@8, vague (21) | 0.67 | 0.85 | |
+| recall@8, multi-document (7) | 0.44 | 0.56 | |
+| recall@8, table (3) | 1.00 | 0.75 | |
+
+- **It helps where it was aimed.** Vague questions rise from 0.67 to 0.85, the level of factual
+  ones; the DPO dismissal, DPO conflict of interest and TLPT frequency questions go from 0 to 1. Even
+  a wrong answer can help: Qwen wrote that a penetration test is due "at least once a year" (DORA
+  says every 3 years for TLPT), and its words still found the right article.
+- **It loses on concrete cases.** 16 questions gain and 11 lose. The answer reads like a
+  regulation, so the search finds articles and recitals where the default found the EDPB or CNIL
+  guidance that applies them: the 18 relevant chunks the pooling added were all outside the default
+  top 8, 12 of them GDPR provisions. The credential breach question falls from 1.00 to 0.25, three
+  others from 1 to 0.
+- **Not significant.** The gain is positive in 89 % of the bootstrap samples, but the interval
+  touches 0, as with contextual retrieval (entry 5): 77 questions cannot tell an effect of 5 or
+  6 points (about ±8 points).
+
+**Decision:** not adopted. The rule is not met, and HyDE costs an LLM call before every search (0.4
+to 8 s measured), outside the cache once real users ask new questions. It stays as
+`pipelines/hyde.toml`.
+
+**What this does not show:**
+- How much rests on the review's reading that a general rule states a fact (GDPR Article 34 for
+  "inform the patients" in the hospital case), applied as in earlier rounds; a stricter reading would
+  lower HyDE on those questions.
+- Anything about unanswerable questions, where the LLM invents a plausible answer and may bring up
+  misleading chunks: that needs the evaluation of the answers.
+- Another prompt: one that also asks for the wording of guidance, or searching with both the
+  question and the answer, fused, might keep the gains without the losses. Next: that fusion, measured
+  on a larger golden set.
+- Only one draw of Qwen per question: the answers are cached, so the runs repeat, but another draw
+  could rank differently.
 
 ## Development
 
