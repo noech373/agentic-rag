@@ -150,18 +150,18 @@ def _variant(tmp_path: Path, name: str = "variant") -> str:
     return str(path)
 
 
-def test_eval_without_pipeline_runs_and_saves_the_baseline(recorded: list[PipelineConfig]) -> None:
+def test_eval_without_pipeline_runs_and_saves_the_defaults(recorded: list[PipelineConfig]) -> None:
     result = runner.invoke(app, ["eval"])
 
     assert result.exit_code == 0, result.output
     assert recorded == [PipelineConfig()]
-    assert load_run(record.RESULTS_DIR / "baseline.json") == _run(1.0)
+    assert load_run(record.RESULTS_DIR / "default.json") == _run(1.0)
 
 
 def test_eval_shows_the_means_of_the_run(recorded: list[PipelineConfig]) -> None:
     result = runner.invoke(app, ["eval"])
 
-    assert "| metric | baseline [95% CI] |" in result.stdout
+    assert "| metric | default [95% CI] |" in result.stdout
     assert "| recall@8 | 1.00 [1.00, 1.00] |" in result.stdout
 
 
@@ -189,12 +189,12 @@ def test_eval_does_not_compare_with_a_saved_baseline(
 
 
 def test_rerunning_a_variant_replaces_its_run(recorded: list[PipelineConfig]) -> None:
-    save_run(_run(0.0), record.RESULTS_DIR / "baseline.json")
+    save_run(_run(0.0), record.RESULTS_DIR / "default.json")
 
     result = runner.invoke(app, ["eval"])
 
     assert result.exit_code == 0, result.output
-    assert load_run(record.RESULTS_DIR / "baseline.json") == _run(1.0)
+    assert load_run(record.RESULTS_DIR / "default.json") == _run(1.0)
 
 
 def test_a_bad_pipeline_file_stops_eval_before_any_run(
@@ -256,13 +256,13 @@ class _NoDocuments:
 contextualizers: list[str] = []  # who writes the contexts, for each ingestion
 
 
-def test_ingest_writes_the_chunk_texts_to_the_public_corpus_by_default(
+def test_ingest_writes_the_titled_chunks_to_the_titles_corpus_by_default(
     ingested: list[tuple[str, str]],
 ) -> None:
     result = runner.invoke(app, ["ingest"])
 
     assert result.exit_code == 0, result.output
-    assert ingested == [("public", "chunk")]
+    assert ingested == [("titles", "titles")]
 
 
 def test_ingest_reads_the_corpus_and_the_embedded_text_from_the_pipeline(

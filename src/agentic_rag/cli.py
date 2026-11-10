@@ -21,7 +21,7 @@ PipelineOption = Annotated[
         "--pipeline",
         exists=True,
         dir_okay=False,
-        help="Pipeline TOML file (pipelines/<name>.toml). Default: the baseline.",
+        help="Pipeline TOML file (pipelines/<name>.toml). Default: the adopted composition.",
     ),
 ]
 
@@ -166,7 +166,7 @@ def evaluate(
 
     config = _load_pipeline(pipeline)
     settings = get_settings()
-    name = pipeline.stem if pipeline is not None else "baseline"
+    name = pipeline.stem if pipeline is not None else "default"
 
     fingerprint = make_store(settings, config.corpus).fingerprint()  # a missing corpus stops here
     run = record.record_run(
@@ -329,7 +329,7 @@ def _load_run(path: Path, hint: str) -> RunRecord:
 
 
 def _load_pipeline(path: Path | None) -> PipelineConfig:
-    """No file means the baseline."""
+    """No file means the defaults: the adopted composition."""
     if path is None:
         return PipelineConfig()
     try:

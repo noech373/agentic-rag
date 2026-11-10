@@ -1,0 +1,3 @@
+# The plain RAG, start of the ablation: vector search on the chunk text alone.
+corpus = "public"
+embedded_text = "chunk"

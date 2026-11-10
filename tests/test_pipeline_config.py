@@ -37,8 +37,8 @@ def test_an_unknown_reranker_is_refused_when_the_file_is_read(tmp_path: Path) ->
         load_pipeline(path)
 
 
-def test_the_default_config_searches_the_public_corpus() -> None:
-    assert PipelineConfig().corpus == "public"
+def test_the_default_config_searches_the_titles_corpus() -> None:
+    assert PipelineConfig().corpus == "titles"
 
 
 @pytest.mark.parametrize("name", ["titles", "titles_v2", "c"])
@@ -58,8 +58,8 @@ def test_a_corpus_name_unsafe_in_sql_is_refused(name: str) -> None:
         PipelineConfig(corpus=name)
 
 
-def test_the_default_config_embeds_the_chunk_text_alone() -> None:
-    assert PipelineConfig().embedded_text == "chunk"
+def test_the_default_config_embeds_the_chunk_with_its_titles() -> None:
+    assert PipelineConfig().embedded_text == "titles"
 
 
 def test_the_embedded_text_is_read_from_a_file(tmp_path: Path) -> None:
@@ -129,16 +129,17 @@ def test_every_pipeline_file_of_the_repo_loads(path: Path) -> None:
     load_pipeline(path)
 
 
-def test_the_repo_has_a_pipeline_per_variant_besides_the_baseline() -> None:
+def test_the_repo_has_a_pipeline_per_variant() -> None:
     variants = {
         (config.corpus, config.embedded_text, config.retriever, config.reranker)
         for config in map(load_pipeline, PIPELINES.glob("*.toml"))
     }
 
     assert variants == {
-        ("public", "chunk", "bm25", None),
-        ("public", "chunk", "hybrid", None),
-        ("public", "chunk", "vector", "bge-reranker-v2-m3"),
+        ("public", "chunk", "vector", None),
+        ("titles", "titles", "bm25", None),
+        ("titles", "titles", "hybrid", None),
+        ("titles", "titles", "vector", "bge-reranker-v2-m3"),
         ("titles", "titles", "vector", None),
         ("contextual", "context", "vector", None),
     }
