@@ -53,6 +53,10 @@ def test_it_is_an_answer_writer() -> None:
     assert writer.write(QUESTION) == ANSWER
 
 
+def test_its_name_is_the_model() -> None:
+    assert OllamaAnswerWriter(_FakeOllama().client(), "qwen-test", 1000).name == "qwen-test"
+
+
 def test_the_model_reads_the_instructions_and_the_question_alone() -> None:
     """No document: the answer comes from the model's own knowledge."""
     fake = _FakeOllama()

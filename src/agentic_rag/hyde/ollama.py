@@ -13,5 +13,9 @@ class OllamaAnswerWriter(AnswerWriter):
         self._model = model
         self._num_ctx = num_ctx
 
+    @property
+    def name(self) -> str:
+        return self._model
+
     def write(self, question: str) -> str:
         return chat(self._client, self._model, self._num_ctx, INSTRUCTIONS, question)
