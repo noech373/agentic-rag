@@ -1,7 +1,7 @@
 {
-  "golden_sha256": "3c8fd69af5069e5e321e1e0c58479627620570340569b88c92120365bec5f149",
-  "judgments_sha256": "c02c90f435f35e2301e99fb11cb1e153da225abda5b5d4e1a3054942af54eb1e",
-  "git_sha": "7984cc6cde4b57fad5d4a6281d39cceca6f925ae",
+  "golden_sha256": "58941213055d7cad649dcdc170be079e53b2523de24b2e400d2d8f82863b9cb4",
+  "judgments_sha256": "cd309cbe94d3549aa8e1242750456f664786e95191f933cfb10acf845f74d86b",
+  "git_sha": "e2c58d56867db0aec370536b893ac3e824a29988",
   "dirty": false,
   "corpus_sha256": "869480de51f7e26c63cdf8497ec40641faa930dccd52be72bcaee85a9969aff6",
   "config": {
@@ -9,7 +9,9 @@
     "embedded_text": "titles",
     "contextualizer": "openai",
     "retriever": "vector",
-    "reranker": null
+    "hyde": null,
+    "reranker": null,
+    "generator": "openai"
   },
   "results": [
     {
@@ -948,8 +950,8 @@
         "gdpr#70",
         "data-act#169",
         "gdpr#248",
-        "gdpr#117",
         "gdpr#136",
+        "gdpr#117",
         "enisa-nis2-implementation-guidance#175",
         "gdpr#141",
         "gdpr#222",
@@ -961,8 +963,8 @@
         "gdpr#96",
         "gdpr#138",
         "gdpr#91",
-        "cnil-developer-guide-13#2",
         "data-act#171",
+        "cnil-developer-guide-13#2",
         "ai-act#18",
         "gdpr#128",
         "gdpr#93",
@@ -2371,8 +2373,8 @@
         "ai-act#59",
         "ai-act#232",
         "ai-act#122",
-        "ai-act#78",
         "ai-act#64",
+        "ai-act#78",
         "ai-act#65",
         "ai-act#90",
         "ai-act#25",
@@ -2656,8 +2658,8 @@
         "ai-act#226",
         "ai-act#214",
         "ai-act#227",
-        "ai-act#230",
         "ai-act#228",
+        "ai-act#230",
         "ai-act#84",
         "ai-act#85",
         "ai-act#225",
@@ -3598,7 +3600,7 @@
     },
     {
       "question_id": "dora-report-identification-code",
-      "category": "table",
+      "category": "factual",
       "recall": {
         "recall@5": 1.0,
         "recall@8": 1.0,
@@ -3812,8 +3814,8 @@
         "dora#27",
         "dora#160",
         "dora#67",
-        "esas-dora-incident-reporting#101",
         "dora#71",
+        "esas-dora-incident-reporting#101",
         "data-act#161",
         "enisa-nis2-implementation-guidance#96",
         "dora#163",
@@ -4032,8 +4034,8 @@
         "dora#91",
         "dora#188",
         "dora#28",
-        "dora#184",
         "dora#81",
+        "dora#184",
         "dora#176",
         "dora#72",
         "dora#186",
@@ -4297,7 +4299,7 @@
         "ai-act#194",
         "data-act#131",
         "ai-act#196",
-        "ai-act#16"
+        "ai-act#305"
       ]
     },
     {
@@ -4590,16 +4592,16 @@
         "data-act#81",
         "data-act#91",
         "data-act#96",
-        "data-act#171",
         "data-act#159",
+        "data-act#171",
         "data-act#93",
         "data-act#88",
         "data-act#128",
         "data-act#70",
         "data-act#97",
         "data-act#78",
-        "ai-act#244",
         "data-act#188",
+        "ai-act#244",
         "data-act#198",
         "data-act#121",
         "edpb-guidelines-2022-09#55",
@@ -4612,12 +4614,12 @@
         "data-act#131",
         "data-act#95",
         "data-act#125",
-        "data-act#72",
         "data-act#23",
+        "data-act#72",
         "data-act#116",
         "data-act#150",
         "data-act#129",
-        "data-act#85"
+        "data-act#73"
       ]
     },
     {
@@ -4752,8 +4754,8 @@
       "question_id": "data-act-cloud-foreign-government-access",
       "category": "factual",
       "recall": {
-        "recall@5": 1.0,
-        "recall@8": 1.0,
+        "recall@5": 0.8,
+        "recall@8": 0.8,
         "recall@20": 1.0,
         "recall@50": 1.0
       },
@@ -4920,8 +4922,8 @@
         "gdpr#44",
         "data-act#171",
         "gdpr#224",
-        "data-act#93",
         "data-act#81",
+        "data-act#93",
         "gdpr#78",
         "data-act#101",
         "data-act#97",
